@@ -7,13 +7,16 @@
 #include "MainWindow.g.cpp"
 #endif
 
-constexpr int cellsperrow = 50;
-
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace winrt::ModernLife::implementation
 {
+    bool drawgrid = false;
+    constexpr int cellcount = 50;
+    CanvasDevice device = CanvasDevice::GetSharedDevice();
+    CanvasRenderTarget back(device, 800, 800, 96);
+
     MainWindow::MainWindow()
     {
         InitializeComponent();
@@ -31,18 +34,30 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
     {
-        winrt::Windows::Foundation::Size huge = sender.Size();
-        float inc = huge.Width / cellsperrow;
+        RenderOffscreen(sender);
+        args.DrawingSession().DrawImage(back, 0, 0);
+    }
 
-        for (int i = 0; i < cellsperrow; i++)
+    void MainWindow::RenderOffscreen(CanvasControl const& sender)
+    {
+        CanvasDrawingSession ds = back.CreateDrawingSession();
+        ds.Clear(Colors::Black());
+
+        winrt::Windows::Foundation::Size huge = sender.Size();
+        float inc = huge.Width / cellcount;
+
+        if (drawgrid)
         {
-            args.DrawingSession().DrawLine(0, i* inc, huge.Height, i * inc, Colors::DarkSlateGray());
-            args.DrawingSession().DrawLine(i * inc, 0, i * inc, huge.Width, Colors::DarkSlateGray());
+            for (int i = 0; i <= cellcount; i++)
+            {
+                ds.DrawLine(0, i * inc, huge.Height, i * inc, Colors::DarkSlateGray());
+                ds.DrawLine(i * inc, 0, i * inc, huge.Width, Colors::DarkSlateGray());
+            }
         }
 
-        float w = (huge.Width / cellsperrow) - 2;
-        args.DrawingSession().DrawRectangle(1, 1, w, w, Colors::Red());
-        args.DrawingSession().DrawRoundedRectangle(inc+1, inc+1, w, w, 2, 2, Colors::Blue());
+        float w = (huge.Width / cellcount) - 2;
+        ds.DrawRoundedRectangle(1, 1, w, w, 2, 2, Colors::Red());
+        ds.DrawRoundedRectangle(inc+1, inc+1, w, w, 2, 2, Colors::Blue());
     }
 
 }

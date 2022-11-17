@@ -9,6 +9,7 @@ using namespace Microsoft::UI;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 using namespace Microsoft::Graphics;
+using namespace Microsoft::Graphics::Canvas;
 
 namespace winrt::ModernLife::implementation
 {
@@ -18,8 +19,10 @@ namespace winrt::ModernLife::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
+        //CanvasRenderTarget back(CanvasDevice::GetSharedDevice(), 800, 800, 96);
 
-        void CanvasControl_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        void CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args);
+        void RenderOffscreen(CanvasControl const& sender);
     };
 }
 
