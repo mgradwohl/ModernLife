@@ -4,7 +4,9 @@
 Conway's Game of Life using winrt, WinUI3, Win2d
 Will use Canvas Control for rendering
  
-Requires Win2D https://www.nuget.org/packages/Microsoft.Graphics.Win2D/
+Requires
+    Win2D https://www.nuget.org/packages/Microsoft.Graphics.Win2D/
+    cppwinrt https://www.nuget.org/packages/Microsoft.Windows.CppWinRT
 
 ========================================================================
 Learn more about Windows App SDK here:
