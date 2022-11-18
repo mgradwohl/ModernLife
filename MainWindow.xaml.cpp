@@ -14,12 +14,23 @@ namespace winrt::ModernLife::implementation
 {
     bool drawgrid = false;
     constexpr int cellcount = 50;
+    Board board(cellcount, cellcount);
+
     CanvasDevice device = CanvasDevice::GetSharedDevice();
     CanvasRenderTarget back(device, 800, 800, 96);
+
+    auto C = std::bind_front(&Board::ConwayRules, &board);
+    auto D = std::bind_front(&Board::DayAndNightRules, &board);
+    auto S = std::bind_front(&Board::SeedsRules, &board);
+    auto B = std::bind_front(&Board::BriansBrainRules, &board);
+    auto H = std::bind_front(&Board::HighlifeRules, &board);
+    auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
 
     MainWindow::MainWindow()
     {
         InitializeComponent();
+        int n = board.Width() * board.Height() / 4;
+        board.RandomizeBoard(n);
     }
 
     int32_t MainWindow::MyProperty()
@@ -57,8 +68,30 @@ namespace winrt::ModernLife::implementation
         }
 
         float w = (huge.Width / cellcount) - 2;
-        ds.DrawRoundedRectangle(1, 1, w, w, 2, 2, Colors::Red());
-        ds.DrawRoundedRectangle(inc+1, inc+1, w, w, 2, 2, Colors::Blue());
+
+        float posx = 1.0f;
+        float posy = 1.0f;
+        for (int y = 0; y < cellcount; y++)
+        {
+            for (int x = 0; x < cellcount; x++)
+            {
+                const Cell& cell = board.GetCell(x, y);
+                if (cell.IsAlive())
+                {
+                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, Colors::Green());
+                }
+                posx += w;
+            }
+            posy += w;
+            posx = 1.0f;
+        }
+
+        {
+            Sleep(250);
+            board.UpdateBoard(C);
+            board.NextGeneration();
+            sender.Invalidate();
+        }
 
         /*
         An app can close, and re-open drawing sessions on a CanvasRenderTarget abitrarily many times.
