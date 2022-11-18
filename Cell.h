@@ -22,7 +22,7 @@ public:
     {
     }
 
-    Cell const& operator=(Cell& cell) = delete;
+    //Cell const& operator=(Cell& cell) = delete;
 
     ~Cell() = default;
 

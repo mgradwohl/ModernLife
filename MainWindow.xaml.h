@@ -22,10 +22,11 @@ namespace winrt::ModernLife::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
-
+        //CanvasControl theCanvas;
         CanvasRenderTarget back{ nullptr };
+        Board board{ nullptr };
         
-        void CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args);
+        void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
     };
 }

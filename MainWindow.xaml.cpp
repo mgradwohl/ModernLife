@@ -14,28 +14,25 @@
 namespace winrt::ModernLife::implementation
 {
     bool drawgrid = false;
-    constexpr int cellcount = 100;
-    Board board(cellcount, cellcount);
+    constexpr int cellcount = 500;
 
-    //CanvasDevice device = CanvasDevice::GetSharedDevice();
-    //CanvasRenderTarget back(device, 2000, 1000, 96);
+    //auto C = std::bind_front(&Board::ConwayRules, &board);
+    //auto D = std::bind_front(&Board::DayAndNightRules, &board);
+    //auto S = std::bind_front(&Board::SeedsRules, &board);
+    //auto B = std::bind_front(&Board::BriansBrainRules, &board);
+    //auto H = std::bind_front(&Board::HighlifeRules, &board);
+    //auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
 
-    auto C = std::bind_front(&Board::ConwayRules, &board);
-    auto D = std::bind_front(&Board::DayAndNightRules, &board);
-    auto S = std::bind_front(&Board::SeedsRules, &board);
-    auto B = std::bind_front(&Board::BriansBrainRules, &board);
-    auto H = std::bind_front(&Board::HighlifeRules, &board);
-    auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
-
-    MainWindow::MainWindow() :
-        back(CanvasDevice::GetSharedDevice(), 2000, 2000, 96)
+    MainWindow::MainWindow()
     {
         InitializeComponent();
+        board = Board{ cellcount, cellcount };
+
         int n = board.Width() * board.Height() / 4;
         board.RandomizeBoard(n);
 
-        //CanvasDevice device = CanvasDevice::GetSharedDevice();
-        //CanvasRenderTarget temp(device, 2000, 1000, 96);
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
+        back = CanvasRenderTarget{ device, 2000, 1000, 96 };
     }
 
     int32_t MainWindow::MyProperty()
@@ -100,6 +97,7 @@ namespace winrt::ModernLife::implementation
         }
 
             Sleep(50);
+            auto C = std::bind_front(&Board::ConwayRules, &board);
             board.UpdateBoard(C);
             board.NextGeneration();
             sender.Invalidate();

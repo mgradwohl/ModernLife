@@ -16,10 +16,12 @@ private:
     int _y;
 
 public:
-    Board(const Board& b) = delete;
-    Board(Board& b) = delete;
+    Board(std::nullptr_t)
+    {};
+    //Board(const Board& b) = delete;
+    //Board(Board& b) = delete;
     ~Board() = default;
-    Board const& operator=(Board& b) = delete;
+    //Board const& operator=(Board& b) = delete;
 
     Board(int width, int height);
 
