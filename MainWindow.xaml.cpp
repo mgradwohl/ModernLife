@@ -6,6 +6,7 @@
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
+//#include <future>
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -13,11 +14,11 @@
 namespace winrt::ModernLife::implementation
 {
     bool drawgrid = false;
-    constexpr int cellcount = 50;
+    constexpr int cellcount = 100;
     Board board(cellcount, cellcount);
 
-    CanvasDevice device = CanvasDevice::GetSharedDevice();
-    CanvasRenderTarget back(device, 800, 800, 96);
+    //CanvasDevice device = CanvasDevice::GetSharedDevice();
+    //CanvasRenderTarget back(device, 2000, 1000, 96);
 
     auto C = std::bind_front(&Board::ConwayRules, &board);
     auto D = std::bind_front(&Board::DayAndNightRules, &board);
@@ -26,11 +27,15 @@ namespace winrt::ModernLife::implementation
     auto H = std::bind_front(&Board::HighlifeRules, &board);
     auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
 
-    MainWindow::MainWindow()
+    MainWindow::MainWindow() :
+        back(CanvasDevice::GetSharedDevice(), 2000, 2000, 96)
     {
         InitializeComponent();
         int n = board.Width() * board.Height() / 4;
         board.RandomizeBoard(n);
+
+        //CanvasDevice device = CanvasDevice::GetSharedDevice();
+        //CanvasRenderTarget temp(device, 2000, 1000, 96);
     }
 
     int32_t MainWindow::MyProperty()
@@ -52,6 +57,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
+
         CanvasDrawingSession ds = back.CreateDrawingSession();
         ds.Clear(Colors::Black());
 
@@ -87,11 +93,16 @@ namespace winrt::ModernLife::implementation
         }
 
         {
-            Sleep(250);
+            // auto theasync=std::async([&p,i]{ return p.sum(i);});
+            // auto theasync = std::async([&board]{ return board.UpdateBoard(); });
+            //std::async(Board::UpdateBoard, C);
+            //std::async(Board::NextGeneration);
+        }
+
+            Sleep(50);
             board.UpdateBoard(C);
             board.NextGeneration();
             sender.Invalidate();
-        }
 
         /*
         An app can close, and re-open drawing sessions on a CanvasRenderTarget abitrarily many times.
