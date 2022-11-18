@@ -40,6 +40,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
+        // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
         CanvasDrawingSession ds = back.CreateDrawingSession();
         ds.Clear(Colors::Black());
 
@@ -58,6 +59,12 @@ namespace winrt::ModernLife::implementation
         float w = (huge.Width / cellcount) - 2;
         ds.DrawRoundedRectangle(1, 1, w, w, 2, 2, Colors::Red());
         ds.DrawRoundedRectangle(inc+1, inc+1, w, w, 2, 2, Colors::Blue());
+
+        /*
+        An app can close, and re-open drawing sessions on a CanvasRenderTarget abitrarily many times.
+        Drawing operations are not committed to the CanvasRenderTarget until the drawing session object is disposed. In C#, a 'using' block can organize this.
+        It's worth pointing out that CanvasRenderTarget is not a XAML control, and does not involve the XAML tree at all. It is suitable for both XAML and non-XAML-based apps.
+        */
     }
 
 }
