@@ -25,7 +25,7 @@ std::ostream& operator<<(std::ostream& stream, Board& board)
 }
 
 Board::Board(int width, int height)
-	: _width(width), _height(height), _size(width* height), _generation(0), _x(0), _y(0)
+	: _width(width), _height(height), _size(width * height), _generation(0), _x(0), _y(0)
 {
 	_board.resize(_size);
 	for (int x = 0; x < _width; x++)

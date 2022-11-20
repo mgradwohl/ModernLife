@@ -13,20 +13,18 @@
 
 namespace winrt::ModernLife::implementation
 {
-    bool drawgrid = false;
-    constexpr int cellcount = 500;
-
     //auto C = std::bind_front(&Board::ConwayRules, &board);
     //auto D = std::bind_front(&Board::DayAndNightRules, &board);
     //auto S = std::bind_front(&Board::SeedsRules, &board);
     //auto B = std::bind_front(&Board::BriansBrainRules, &board);
     //auto H = std::bind_front(&Board::HighlifeRules, &board);
     //auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
+    bool drawgrid = false;
 
     MainWindow::MainWindow()
     {
         InitializeComponent();
-        board = Board{ cellcount, cellcount };
+        //board = Board{ cellcount, cellcount };
 
         int n = board.Width() * board.Height() / 4;
         board.RandomizeBoard(n);
@@ -55,8 +53,14 @@ namespace winrt::ModernLife::implementation
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
+        //CanvasDrawingSession ds = back.CreateDrawingSession();
+        //CanvasDevice device = CanvasDevice::GetSharedDevice();
+        //CanvasRenderTarget flip{ device, (float)sender.Width(), (float)sender.Height(), sender.Dpi()};
+
+        //back = flip;// CanvasRenderTarget{ device, (float)sender.Width(), (float)sender.Height(), sender.Dpi() };
         CanvasDrawingSession ds = back.CreateDrawingSession();
-        ds.Clear(Colors::Black());
+
+        ds.Clear(Colors::WhiteSmoke());
 
         winrt::Windows::Foundation::Size huge = sender.Size();
         float inc = huge.Width / cellcount;
@@ -81,7 +85,13 @@ namespace winrt::ModernLife::implementation
                 const Cell& cell = board.GetCell(x, y);
                 if (cell.IsAlive())
                 {
-                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, Colors::Green());
+                    auto cellcolor = Colors::Black();
+                    if (cell.Age() < 1)
+                    {
+                        cellcolor = Colors::Green();
+                    }
+
+                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
                 }
                 posx += w;
             }
