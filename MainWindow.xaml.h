@@ -16,14 +16,18 @@ using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
 namespace winrt::ModernLife::implementation
 {
+    constexpr int cellcount = 100;
+
     struct MainWindow : MainWindowT<MainWindow>
     {
         MainWindow();
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
-
-        void CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args);
+        CanvasRenderTarget back{ nullptr };
+        Board board{ cellcount, cellcount };
+        
+        void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
     };
 }

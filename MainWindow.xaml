@@ -11,7 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Width="1000" Height="1000">
-        <canvas:CanvasControl Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="Black"/>
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <canvas:CanvasControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="Black"/>
     </Grid>
 </Window>

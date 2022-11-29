@@ -114,13 +114,16 @@ void Cell::NextGeneration()
 	if (_state == Cell::State::Born)
 	{
 		SetState(Cell::State::Live);
+		_age = 0;
+		return;
 	}
 
 	if (_state == Cell::State::Dying)
 	{
 		SetState(Cell::State::Dead);
+		_age++;
+		return;
 	}
-
 	_age++;
 }
 

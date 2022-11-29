@@ -6,31 +6,31 @@
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
+//#include <future>
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace winrt::ModernLife::implementation
 {
+    //auto C = std::bind_front(&Board::ConwayRules, &board);
+    //auto D = std::bind_front(&Board::DayAndNightRules, &board);
+    //auto S = std::bind_front(&Board::SeedsRules, &board);
+    //auto B = std::bind_front(&Board::BriansBrainRules, &board);
+    //auto H = std::bind_front(&Board::HighlifeRules, &board);
+    //auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
     bool drawgrid = false;
-    constexpr int cellcount = 50;
-    Board board(cellcount, cellcount);
-
-    CanvasDevice device = CanvasDevice::GetSharedDevice();
-    CanvasRenderTarget back(device, 800, 800, 96);
-
-    auto C = std::bind_front(&Board::ConwayRules, &board);
-    auto D = std::bind_front(&Board::DayAndNightRules, &board);
-    auto S = std::bind_front(&Board::SeedsRules, &board);
-    auto B = std::bind_front(&Board::BriansBrainRules, &board);
-    auto H = std::bind_front(&Board::HighlifeRules, &board);
-    auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
 
     MainWindow::MainWindow()
     {
         InitializeComponent();
+        //board = Board{ cellcount, cellcount };
+
         int n = board.Width() * board.Height() / 4;
         board.RandomizeBoard(n);
+
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
+        back = CanvasRenderTarget{ device, 2000, 1000, 96 };
     }
 
     int32_t MainWindow::MyProperty()
@@ -52,8 +52,15 @@ namespace winrt::ModernLife::implementation
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
+
+        //CanvasDrawingSession ds = back.CreateDrawingSession();
+        //CanvasDevice device = CanvasDevice::GetSharedDevice();
+        //CanvasRenderTarget flip{ device, (float)sender.Width(), (float)sender.Height(), sender.Dpi()};
+
+        //back = flip;// CanvasRenderTarget{ device, (float)sender.Width(), (float)sender.Height(), sender.Dpi() };
         CanvasDrawingSession ds = back.CreateDrawingSession();
-        ds.Clear(Colors::Black());
+
+        ds.Clear(Colors::WhiteSmoke());
 
         winrt::Windows::Foundation::Size huge = sender.Size();
         float inc = huge.Width / cellcount;
@@ -78,7 +85,13 @@ namespace winrt::ModernLife::implementation
                 const Cell& cell = board.GetCell(x, y);
                 if (cell.IsAlive())
                 {
-                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, Colors::Green());
+                    auto cellcolor = Colors::Black();
+                    if (cell.Age() < 1)
+                    {
+                        cellcolor = Colors::Green();
+                    }
+
+                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
                 }
                 posx += w;
             }
@@ -87,11 +100,17 @@ namespace winrt::ModernLife::implementation
         }
 
         {
-            Sleep(250);
+            // auto theasync=std::async([&p,i]{ return p.sum(i);});
+            // auto theasync = std::async([&board]{ return board.UpdateBoard(); });
+            //std::async(Board::UpdateBoard, C);
+            //std::async(Board::NextGeneration);
+        }
+
+            Sleep(50);
+            auto C = std::bind_front(&Board::ConwayRules, &board);
             board.UpdateBoard(C);
             board.NextGeneration();
             sender.Invalidate();
-        }
 
         /*
         An app can close, and re-open drawing sessions on a CanvasRenderTarget abitrarily many times.
