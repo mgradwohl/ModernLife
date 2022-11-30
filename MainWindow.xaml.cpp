@@ -96,8 +96,8 @@ namespace winrt::ModernLife::implementation
         CanvasDevice device = CanvasDevice::GetSharedDevice();
 
         winrt::Windows::Foundation::Size huge = sender.Size();
-        float width = max(huge.Width, 10000);
-        float height = max(huge.Height, 10000);
+        float width = max(huge.Width, 5000);
+        float height = max(huge.Height, 5000);
 
         CanvasRenderTarget flip{ device, width, height, sender.Dpi() };
         CanvasDrawingSession ds = flip.CreateDrawingSession();

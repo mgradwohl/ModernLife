@@ -16,7 +16,7 @@ using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
 namespace winrt::ModernLife::implementation
 {
-    constexpr int cellcount = 500;
+    constexpr int cellcount = 100;
 
     struct MainWindow : MainWindowT<MainWindow>
     {
