@@ -23,7 +23,7 @@ public:
     }
 
     //Cell const& operator=(Cell& cell) = delete;
-    Cell operator=(Cell& cell) = delete;
+    //Cell operator=(Cell& cell) = delete;
 
     ~Cell() = default;
 

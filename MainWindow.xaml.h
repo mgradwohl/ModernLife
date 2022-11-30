@@ -16,7 +16,7 @@ using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
 namespace winrt::ModernLife::implementation
 {
-    constexpr int cellcount = 100;
+    constexpr int cellcount = 500;
 
     struct MainWindow : MainWindowT<MainWindow>
     {
@@ -25,10 +25,9 @@ namespace winrt::ModernLife::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
-        CanvasRenderTarget back{ nullptr };
-        Board board{ cellcount, cellcount };
         
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
+        CanvasRenderTarget& GetBackBuffer();
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, float width, float height);
 

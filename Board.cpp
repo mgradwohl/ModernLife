@@ -33,7 +33,8 @@ Board::Board(int width, int height)
 		for (int y = 0; y < _height; y++)
 		{
 			// gotta be a better way?
-			_board[x + (y * _width)].SetXY(x, y);
+			Cell& cell = _board[x + (y * _width)];
+			cell.SetXY(x, y);
 		}
 	}
 }

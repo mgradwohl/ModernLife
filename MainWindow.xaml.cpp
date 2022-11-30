@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
+#include<future>
 #include "MainWindow.xaml.h"
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
@@ -24,93 +25,100 @@ namespace winrt::ModernLife::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
-        //board = Board{ cellcount, cellcount };
+
+        board = Board{ cellcount, cellcount };
 
         int n = board.Width() * board.Height() / 4;
-        board.RandomizeBoard(n);
+        auto randomizer = std::async(&Board::RandomizeBoard, &board, n);
+        randomizer.wait();
 
         CanvasDevice device = CanvasDevice::GetSharedDevice();
-        back = CanvasRenderTarget{ device, 2000, 1000, 96 };
+        _back = CanvasRenderTarget{ device, 2000, 1000, 96 };
     }
 
-    int32_t MainWindow::MyProperty()
-    {
-        throw hresult_not_implemented();
-    }
-
-    void MainWindow::MyProperty(int32_t /* value */)
-    {
-        throw hresult_not_implemented();
-    }
 
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
     {
         RenderOffscreen(sender);
-        args.DrawingSession().DrawImage(back, 0, 0);
+        args.DrawingSession().DrawImage(GetBackBuffer(), 0, 0);
     }
+
+    CanvasRenderTarget& MainWindow::GetBackBuffer()
+    {
+        std::scoped_lock lock { lockbackbuffer };
+        return _back;
+    }
+
+	void MainWindow::DrawInto(CanvasDrawingSession& ds, float width, float height)
+	{
+		ds.Clear(Colors::WhiteSmoke());
+		float inc = width / cellcount;
+
+		if (drawgrid)
+		{
+			for (int i = 0; i <= cellcount; i++)
+			{
+				ds.DrawLine(0, i * inc, height, i * inc, Colors::DarkSlateGray());
+				ds.DrawLine(i * inc, 0, i * inc, width, Colors::DarkSlateGray());
+			}
+		}
+
+		float w = (width / cellcount) - 2;
+
+		float posx = 1.0f;
+		float posy = 1.0f;
+		for (int y = 0; y < cellcount; y++)
+		{
+			for (int x = 0; x < cellcount; x++)
+			{
+				const Cell& cell = board.GetCell(x, y);
+				if (cell.IsAlive())
+				{
+					auto cellcolor = Colors::Black();
+					if (cell.Age() < 1)
+					{
+						cellcolor = Colors::Green();
+					}
+
+					ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
+				}
+				posx += w;
+			}
+			posy += w;
+			posx = 1.0f;
+		}
+	}
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
-        //CanvasDrawingSession ds = back.CreateDrawingSession();
-        //CanvasDevice device = CanvasDevice::GetSharedDevice();
-        //CanvasRenderTarget flip{ device, (float)sender.Width(), (float)sender.Height(), sender.Dpi()};
+        { // resize the back buffer
+            std::scoped_lock lock { lockbackbuffer };
 
-        //back = flip;// CanvasRenderTarget{ device, (float)sender.Width(), (float)sender.Height(), sender.Dpi() };
-        CanvasDrawingSession ds = back.CreateDrawingSession();
+            CanvasDrawingSession ds = _back.CreateDrawingSession();
+            CanvasDevice device = CanvasDevice::GetSharedDevice();
 
-        ds.Clear(Colors::WhiteSmoke());
+            float width = max(sender.Width(), 10000);
+            float height = max(sender.Height(), 10000);
 
+            CanvasRenderTarget flip{ device, width, height, sender.Dpi()};
+            _back = flip;
+        }
+
+        CanvasDrawingSession ds = GetBackBuffer().CreateDrawingSession();
         winrt::Windows::Foundation::Size huge = sender.Size();
-        float inc = huge.Width / cellcount;
+        //DrawInto(ds, huge.Width, huge.Height);
 
-        if (drawgrid)
-        {
-            for (int i = 0; i <= cellcount; i++)
-            {
-                ds.DrawLine(0, i * inc, huge.Height, i * inc, Colors::DarkSlateGray());
-                ds.DrawLine(i * inc, 0, i * inc, huge.Width, Colors::DarkSlateGray());
-            }
-        }
+        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
+        drawinto.wait();
 
-        float w = (huge.Width / cellcount) - 2;
+        auto C = std::bind_front(&Board::ConwayRules, &board);
+        board.UpdateBoard(C);
 
-        float posx = 1.0f;
-        float posy = 1.0f;
-        for (int y = 0; y < cellcount; y++)
-        {
-            for (int x = 0; x < cellcount; x++)
-            {
-                const Cell& cell = board.GetCell(x, y);
-                if (cell.IsAlive())
-                {
-                    auto cellcolor = Colors::Black();
-                    if (cell.Age() < 1)
-                    {
-                        cellcolor = Colors::Green();
-                    }
-
-                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
-                }
-                posx += w;
-            }
-            posy += w;
-            posx = 1.0f;
-        }
-
-        {
-            // auto theasync=std::async([&p,i]{ return p.sum(i);});
-            // auto theasync = std::async([&board]{ return board.UpdateBoard(); });
-            //std::async(Board::UpdateBoard, C);
-            //std::async(Board::NextGeneration);
-        }
-
-            Sleep(50);
-            auto C = std::bind_front(&Board::ConwayRules, &board);
-            board.UpdateBoard(C);
-            board.NextGeneration();
-            sender.Invalidate();
+        auto nextgen = std::async(&Board::NextGeneration, &board);
+        nextgen.wait();
+        sender.Invalidate();
 
         /*
         An app can close, and re-open drawing sessions on a CanvasRenderTarget abitrarily many times.
@@ -119,4 +127,13 @@ namespace winrt::ModernLife::implementation
         */
     }
 
+    void MainWindow::MyProperty(int32_t /* value */)
+    {
+        throw hresult_not_implemented();
+    }
+
+    int32_t MainWindow::MyProperty()
+    {
+        throw hresult_not_implemented();
+    }
 }
