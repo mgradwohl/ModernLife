@@ -4,25 +4,9 @@
 void Cell::SetState(State state)
 {
 	_state = state;
-
-	switch (_state)
+	if (state == Cell::State::Born)
 	{
-		case Cell::State::Dead:
-		{
-			break;
-		}
-		case Cell::State::Born:
-		{
-			_age = 0;
-			break;
-		}
-		case Cell::State::Live:
-		{
-			break;
-		}
-		default:
-			// do nothing
-			break;
+		_age = 0;
 	}
 }
 
@@ -96,27 +80,6 @@ const std::u8string& Cell::GetEmojiStateString() const
 		default:
 			return sUnknown;
 	}
-}
-
-void Cell::NextGeneration()
-{
-	if (_state == Cell::State::Dead)
-	{
-		// no birthday for you
-		return;
-	}
-
-	if (_state == Cell::State::Born)
-	{
-		SetState(Cell::State::Live);
-	}
-
-	if (_state == Cell::State::Dying)
-	{
-		SetState(Cell::State::Dead);
-	}
-	
-	_age++;
 }
 
 //void Cell::KillOldCell()

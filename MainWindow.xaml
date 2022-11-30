@@ -11,7 +11,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <canvas:CanvasControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="Black"/>
+    <Grid Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Red">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="200" />
+        </Grid.ColumnDefinitions>
+        <canvas:CanvasControl Grid.Row="0" Grid.Column="0" x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="Black"/>
+        <canvas:CanvasControl Grid.Row="0" Grid.Column="1" x:Name="theCanvasDebug" Draw="theCanvasDebug_Draw" ClearColor="WhiteSmoke"/>
     </Grid>
 </Window>

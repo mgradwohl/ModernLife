@@ -25,7 +25,7 @@ std::ostream& operator<<(std::ostream& stream, Board& board)
 }
 
 Board::Board(int width, int height)
-	: _width(width), _height(height), _size(width * height), _generation(0)
+	: _width(width), _height(height), _size(width * height)
 {
 	_board.resize(_size);
 }
@@ -43,27 +43,28 @@ void Board::SetCell(Cell& cell, Cell::State state)
 	{
 		case Cell::State::Dead:
 		{
-			numDead++;
+			_numDead++;
 			break;
 		}
 		case Cell::State::Live:
 		{
-			numLive++;
+			_numLive++;
 			break;
 		}
 		case Cell::State::Born:
 		{
-			numBorn++;
+			_numBorn++;
+			cell.SetAge(0);
 			break;
 		}
 		case Cell::State::Old:
 		{
-			numOld++;
+			_numOld++;
 			break;
 		}
 		case Cell::State::Dying:
 		{
-			numDying++;
+			_numDying++;
 			break;
 		}
 		default:
@@ -128,9 +129,23 @@ void Board::ApplyNextStateToBoard()
 	_generation++;
 	ResetCounts();
 
-	for (auto& c : _board)
+	for (auto& cell : _board)
 	{
-		c.NextGeneration();
+		if (cell.GetState() == Cell::State::Born)
+		{
+			SetCell(cell, Cell::State::Live);
+			cell.SetAge(0);
+			continue;
+		}
+
+		if (cell.GetState() == Cell::State::Dying)
+		{
+			SetCell(cell, Cell::State::Dead);
+			continue;
+		}
+
+		SetCell(cell, cell.GetState());
+		cell.SetAge(cell.Age() + 1);
 	}
 }
 

@@ -56,7 +56,5 @@ public:
 
     const std::u8string& GetEmojiStateString() const;
 
-    void NextGeneration();
-
     //void KillOldCell();
 };

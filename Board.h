@@ -13,12 +13,12 @@ private:
     int _size = 0;
     int _generation = 0;
 
-    inline static int numDead = 0;
-    inline static int numLive = 0;
-    inline static int numBorn = 0;
-    inline static int numOld = 0;
-    inline static int numDying = 0;
-    inline static int OldAge = -1;
+    int _numDead = 0;
+    int _numLive = 0;
+    int _numBorn = 0;
+    int _numOld = 0;
+    int _numDying = 0;
+    int _OldAge = -1;
 
 public:
     Board(std::nullptr_t) {};
@@ -31,46 +31,46 @@ public:
 
     void SetOldAge(int age)
     {
-        OldAge = age;
+        _OldAge = age;
     }
 
     int GetOldAge()
     {
-        return OldAge;
+        return _OldAge;
     }
 
     int GetDeadCount()
     {
-        return numDead;
+        return _numDead;
     }
 
     int GetLiveCount()
     {
-        return numLive;
+        return _numLive;
     }
 
     int GetBornCount()
     {
-        return numBorn;
+        return _numBorn;
     }
 
     int GetOldCount()
     {
-        return numOld;
+        return _numOld;
     }
 
     int GetDyingCount()
     {
-        return numDying;
+        return _numDying;
     }
 
     void ResetCounts()
     {
-        numDead = 0;
-        numLive = 0;
-        numBorn = 0;
-        numDying = 0;
-        numOld = 0;
+        _numDead = 0;
+        _numLive = 0;
+        _numBorn = 0;
+        _numDying = 0;
+        _numOld = 0;
     }
 
     int Generation() const

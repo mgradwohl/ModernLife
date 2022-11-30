@@ -14,7 +14,7 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr int cellcount = 200;
+constexpr int cellcount = 100;
 
 namespace winrt::ModernLife::implementation
 {
@@ -36,6 +36,8 @@ namespace winrt::ModernLife::implementation
         CanvasRenderTarget _back{ nullptr };
         std::mutex lockbackbuffer;
         Board board{ nullptr };
+    public:
+        void theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
     };
 }
 

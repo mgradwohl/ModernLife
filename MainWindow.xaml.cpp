@@ -89,12 +89,6 @@ namespace winrt::ModernLife::implementation
 			}
 		}
 
-        if (drawstats)
-        {
-            std::wstring str = std::format(L"Modern Life\r\nGeneration {}\r\nAlive {}\r\n\0", board.Generation(), board.GetLiveCount());
-            ds.DrawTextW(str, 0, 0, Colors::Black());
-        }
-        
         float w = (width / cellcount) - 2;
 		float posx = 1.0f;
 		float posy = 1.0f;
@@ -154,4 +148,17 @@ namespace winrt::ModernLife::implementation
     {
         throw hresult_not_implemented();
     }
+}
+
+
+void winrt::ModernLife::implementation::MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+{
+    std::wstring str{L"Modern Life\0"};
+    if (drawstats)
+    {
+        str = std::format(L"Modern Life\r\nGeneration {}\r\nAlive {}\r\n\0", board.Generation(), board.GetLiveCount());
+        sender.Invalidate();
+    }
+
+    args.DrawingSession().DrawTextW(str, 0, 0, Colors::Black());
 }
