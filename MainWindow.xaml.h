@@ -14,10 +14,10 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
+constexpr int cellcount = 200;
+
 namespace winrt::ModernLife::implementation
 {
-    constexpr int cellcount = 250;
-
     struct MainWindow : MainWindowT<MainWindow>
     {
     public:

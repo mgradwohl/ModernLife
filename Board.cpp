@@ -25,7 +25,7 @@ std::ostream& operator<<(std::ostream& stream, Board& board)
 }
 
 Board::Board(int width, int height)
-	: _width(width), _height(height), _size(width * height), _generation(0), _x(0), _y(0)
+	: _width(width), _height(height), _size(width * height), _generation(0)
 {
 	_board.resize(_size);
 }
@@ -86,40 +86,36 @@ int Board::CountLiveNotDyingNeighbors(int x, int y)
 	return count;
 }
 
-//  could probably replace with a template that would call any lambda for all cells
 void Board::NextGeneration()
 {
 	_generation++;
 	ResetCounts();
 
-	for (int i = 0; i < _size; i++)
+	for (auto& c : _board)
 	{
-		_board[i].NextGeneration();
+		c.NextGeneration();
 	}
 }
 
-void Board::RandomizeBoard(int n)
+void Board::RandomizeBoard(float alivepct)
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> xdis(0, _width - 1);
-	std::uniform_int_distribution<> ydis(0, _height - 1);
-	std::uniform_int_distribution<> adis(0, 100);
+	std::uniform_real_distribution<> pdis(0.0, 1.0);
+	std::uniform_int_distribution<> adis(0, 1000);
 
-	int rx, ry, ra;
-
-	for (int z = 0; z < n; z++)
+	for (auto& c : _board)
 	{
-		rx = xdis(gen);
-		ry = ydis(gen);
+		static int ra;
+		static double rp;
 		ra = adis(gen);
+		rp = pdis(gen);
 
-		if (Cell& cell = GetCell(rx, ry); cell.GetState() == Cell::State::Dead)
+		if (rp <= alivepct)
 		{
-			cell.SetState(Cell::State::Born);
-			cell.SetAge(ra);
+			c.SetState(Cell::State::Live);
+			c.SetAge(ra);
 		}
-		NextGeneration();
 	}
 }
 

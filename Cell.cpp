@@ -18,7 +18,6 @@ void Cell::SetState(State state)
 		}
 		case Cell::State::Live:
 		{
-			_age = 0;
 			break;
 		}
 		default:
@@ -110,16 +109,14 @@ void Cell::NextGeneration()
 	if (_state == Cell::State::Born)
 	{
 		SetState(Cell::State::Live);
-		return;
 	}
 
 	if (_state == Cell::State::Dying)
 	{
 		SetState(Cell::State::Dead);
-		return;
 	}
 	
-	if (_age < 0xffffffff) _age++;
+	_age++;
 }
 
 //void Cell::KillOldCell()

@@ -12,8 +12,7 @@ private:
     int _height = 0;
     int _size = 0;
     int _generation = 0;
-    int _x = 0;
-    int _y = 0;
+
     inline static int numDead = 0;
     inline static int numLive = 0;
     inline static int numBorn = 0;
@@ -29,42 +28,43 @@ public:
     ~Board() = default;
 
     Board(int width, int height);
-    static void SetOldAge(int age)
+
+    void SetOldAge(int age)
     {
         OldAge = age;
     }
 
-    static int GetOldAge()
+    int GetOldAge()
     {
         return OldAge;
     }
 
-    static int GetDeadCount()
+    int GetDeadCount()
     {
         return numDead;
     }
 
-    static int GetLiveCount()
+    int GetLiveCount()
     {
         return numLive;
     }
 
-    static int GetBornCount()
+    int GetBornCount()
     {
         return numBorn;
     }
 
-    static int GetOldCount()
+    int GetOldCount()
     {
         return numOld;
     }
 
-    static int GetDyingCount()
+    int GetDyingCount()
     {
         return numDying;
     }
 
-    static void ResetCounts()
+    void ResetCounts()
     {
         numDead = 0;
         numLive = 0;
@@ -145,7 +145,7 @@ public:
 
     void NextGeneration();
 
-    void RandomizeBoard(int n);
+    void RandomizeBoard(float alivepct);
 
     // This form does not work: void UpdateBoard(std::function<void(Cell& cell)>& F)
     // but using auto is magic
@@ -173,5 +173,6 @@ public:
     void SeedsRules(Cell& cell) const;
 
     void BriansBrainRules(Cell& cell) const;
+ 
     void PrintBoard();
 };

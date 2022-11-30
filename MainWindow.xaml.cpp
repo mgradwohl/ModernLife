@@ -3,11 +3,12 @@
 
 #include "pch.h"
 #include<future>
+#include<format>
 #include "MainWindow.xaml.h"
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
-//#include <future>
+constexpr int maxage = 1000;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,14 +29,12 @@ namespace winrt::ModernLife::implementation
 
         board = Board{ cellcount, cellcount };
 
-        int n = board.Width() * board.Height() / 4;
-        auto randomizer = std::async(&Board::RandomizeBoard, &board, n);
+        auto randomizer = std::async(&Board::RandomizeBoard, &board, 0.4f);
         randomizer.wait();
 
         CanvasDevice device = CanvasDevice::GetSharedDevice();
-        _back = CanvasRenderTarget{ device, 2000, 1000, 96 };
+        _back = GetBackBuffer();
     }
-
 
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
     {
@@ -51,10 +50,11 @@ namespace winrt::ModernLife::implementation
 
 	void MainWindow::DrawInto(CanvasDrawingSession& ds, float width, float height)
 	{
-		ds.Clear(Colors::WhiteSmoke());
-		float inc = width / cellcount;
+		ds.Clear(Colors::White());
 
-		if (drawgrid)
+		float inc = width / cellcount;
+        
+        if (drawgrid)
 		{
 			for (int i = 0; i <= cellcount; i++)
 			{
@@ -64,23 +64,47 @@ namespace winrt::ModernLife::implementation
 		}
 
 		float w = (width / cellcount) - 2;
-
 		float posx = 1.0f;
 		float posy = 1.0f;
-		for (int y = 0; y < cellcount; y++)
+
+        for (int y = 0; y < cellcount; y++)
 		{
 			for (int x = 0; x < cellcount; x++)
 			{
 				const Cell& cell = board.GetCell(x, y);
 				if (cell.IsAlive())
 				{
-					auto cellcolor = Colors::Black();
-					if (cell.Age() < 1)
-					{
-						cellcolor = Colors::Green();
-					}
+                    uint8_t colorscale = 0;
+                    uint8_t red = 0;
+                    uint8_t green = 0;
+                    uint8_t blue = 0;
 
-					ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
+                    colorscale = (cell.Age() * 255) / maxage;
+                    colorscale = 254 - colorscale;
+
+                    if (cell.Age() <= (maxage * 1/4))
+                    {
+                        green = colorscale;
+                    }
+                    else if (cell.Age() > (maxage * 1/4) && cell.Age() <= (maxage * 1/2))
+                    {
+                        blue = colorscale;
+                    }
+                    else if (cell.Age() > (maxage * 1/2) && cell.Age() <= (maxage * 3/4))
+                    {
+                        red = colorscale;
+                    }
+                    else if (cell.Age() > (maxage * 3/4) && cell.Age() <= maxage)
+                    {
+                        red = colorscale;
+                        green = colorscale;
+                        blue = colorscale;
+                    }
+                    Windows::UI::Color cellcolor = ColorHelper::FromArgb(255, red, green, blue);
+                    //ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
+                    //std::wstring str = std::format(L"Generation {} \0", board.Generation());
+                    //ds.DrawTextW(str, 0, 0, Colors::Black());
+                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
 				}
 				posx += w;
 			}
@@ -93,19 +117,19 @@ namespace winrt::ModernLife::implementation
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
-        CanvasDevice device = CanvasDevice::GetSharedDevice();
-
         winrt::Windows::Foundation::Size huge = sender.Size();
         float width = max(huge.Width, 5000);
         float height = max(huge.Height, 5000);
 
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
         CanvasRenderTarget flip{ device, width, height, sender.Dpi() };
         CanvasDrawingSession ds = flip.CreateDrawingSession();
 
         auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
         drawinto.wait();
 
-        { // resize the back buffer
+        {
+            // resize the back buffer
             std::scoped_lock lock{ lockbackbuffer };
             _back = flip;
         }
