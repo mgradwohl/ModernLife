@@ -93,38 +93,30 @@ namespace winrt::ModernLife::implementation
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
-        { // resize the back buffer
-            std::scoped_lock lock { lockbackbuffer };
+        //CanvasDrawingSession ds = GetBackBuffer().CreateDrawingSession();
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
 
-            CanvasDrawingSession ds = _back.CreateDrawingSession();
-            CanvasDevice device = CanvasDevice::GetSharedDevice();
-
-            float width = max(sender.Width(), 10000);
-            float height = max(sender.Height(), 10000);
-
-            CanvasRenderTarget flip{ device, width, height, sender.Dpi()};
-            _back = flip;
-        }
-
-        CanvasDrawingSession ds = GetBackBuffer().CreateDrawingSession();
         winrt::Windows::Foundation::Size huge = sender.Size();
-        //DrawInto(ds, huge.Width, huge.Height);
+        float width = max(huge.Width, 10000);
+        float height = max(huge.Height, 10000);
+
+        CanvasRenderTarget flip{ device, width, height, sender.Dpi() };
+        CanvasDrawingSession ds = flip.CreateDrawingSession();
 
         auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
         drawinto.wait();
+
+        { // resize the back buffer
+            std::scoped_lock lock{ lockbackbuffer };
+            _back = flip;
+        }
+        sender.Invalidate();
 
         auto C = std::bind_front(&Board::ConwayRules, &board);
         board.UpdateBoard(C);
 
         auto nextgen = std::async(&Board::NextGeneration, &board);
         nextgen.wait();
-        sender.Invalidate();
-
-        /*
-        An app can close, and re-open drawing sessions on a CanvasRenderTarget abitrarily many times.
-        Drawing operations are not committed to the CanvasRenderTarget until the drawing session object is disposed. In C#, a 'using' block can organize this.
-        It's worth pointing out that CanvasRenderTarget is not a XAML control, and does not involve the XAML tree at all. It is suitable for both XAML and non-XAML-based apps.
-        */
     }
 
     void MainWindow::MyProperty(int32_t /* value */)
