@@ -50,8 +50,7 @@ namespace winrt::ModernLife::implementation
 
 	void MainWindow::DrawInto(CanvasDrawingSession& ds, float width, float height)
 	{
-		ds.Clear(Colors::White());
-
+		ds.Clear(Colors::WhiteSmoke());
 		float inc = width / cellcount;
         
         if (drawgrid)
