@@ -93,7 +93,6 @@ namespace winrt::ModernLife::implementation
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
-        //CanvasDrawingSession ds = GetBackBuffer().CreateDrawingSession();
         CanvasDevice device = CanvasDevice::GetSharedDevice();
 
         winrt::Windows::Foundation::Size huge = sender.Size();
