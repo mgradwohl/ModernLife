@@ -20,6 +20,7 @@ namespace winrt::ModernLife::implementation
 
     struct MainWindow : MainWindowT<MainWindow>
     {
+    public:
         MainWindow();
 
         int32_t MyProperty();
@@ -29,6 +30,12 @@ namespace winrt::ModernLife::implementation
         
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
+        void DrawInto(CanvasDrawingSession& ds, float width, float height);
+
+    private:
+        CanvasRenderTarget _back{ nullptr };
+        std::mutex lockbackbuffer;
+        Board board{ nullptr };
     };
 }
 
