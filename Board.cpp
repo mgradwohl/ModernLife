@@ -28,14 +28,6 @@ Board::Board(int width, int height)
 	: _width(width), _height(height), _size(width * height), _generation(0), _x(0), _y(0)
 {
 	_board.resize(_size);
-	//for (int x = 0; x < _width; x++)
-	//{
-	//	for (int y = 0; y < _height; y++)
-	//	{
-	//		// gotta be a better way?
-	//		//_board[x + (y * _width)].SetXY(x, y);
-	//	}
-	//}
 }
 
 void Board::PrintBoard()
@@ -51,7 +43,7 @@ int Board::CountLiveAndDyingNeighbors(int x, int y)
 	int yoabove = (y == 0) ? _height - 1 : -1;
 	int yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
-	int count = 0;
+	uint8_t count = 0;
 
 	if (GetCell(x + xoleft, y + yobelow).IsAlive()) count++;
 	if (GetCell(x, y + yobelow).IsAlive()) count++;
@@ -77,7 +69,7 @@ int Board::CountLiveNotDyingNeighbors(int x, int y)
 	int yoabove = (y == 0) ? _height - 1 : -1;
 	int yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
-	int count = 0;
+	uint8_t count = 0;
 
 	if (GetCell(x + xoleft, y + yobelow).IsAliveNotDying()) count++;
 	if (GetCell(x, y + yobelow).IsAliveNotDying()) count++;
@@ -98,7 +90,7 @@ int Board::CountLiveNotDyingNeighbors(int x, int y)
 void Board::NextGeneration()
 {
 	_generation++;
-	Cell::ResetCounts();
+	ResetCounts();
 
 	for (int i = 0; i < _size; i++)
 	{

@@ -9,22 +9,18 @@ void Cell::SetState(State state)
 	{
 		case Cell::State::Dead:
 		{
-			numDead++;
-			_age = 0;
 			break;
 		}
-		case Cell::State::Live: numLive++;
-			break;
 		case Cell::State::Born:
 		{
-			numBorn++;
 			_age = 0;
 			break;
 		}
-		case Cell::State::Old: numOld++;
+		case Cell::State::Live:
+		{
+			_age = 0;
 			break;
-		case Cell::State::Dying: numDying++;
-			break;
+		}
 		default:
 			// do nothing
 			break;
@@ -114,37 +110,36 @@ void Cell::NextGeneration()
 	if (_state == Cell::State::Born)
 	{
 		SetState(Cell::State::Live);
-		_age = 0;
 		return;
 	}
 
 	if (_state == Cell::State::Dying)
 	{
 		SetState(Cell::State::Dead);
-		_age++;
 		return;
 	}
-	_age++;
+	
+	if (_age < 0xffffffff) _age++;
 }
 
-void Cell::KillOldCell()
-{
-	// we only enforce this rule if age > 0
-	if (Cell::OldAge > 0)
-	{
-		if (_age == Cell::OldAge - 2)
-		{
-			// mark it as old, about to die
-			SetState(Cell::State::Old);
-		}
-		else if (_age == Cell::OldAge - 1)
-		{
-			// mark it as old, about to die
-			SetState(Cell::State::Dying);
-		}
-		else if (_age >= Cell::OldAge)
-		{
-			SetState(Cell::State::Dead);
-		}
-	}
-}
+//void Cell::KillOldCell()
+//{
+//	// we only enforce this rule if age > 0
+//	if (Cell::OldAge > 0)
+//	{
+//		if (_age == Cell::OldAge - 2)
+//		{
+//			// mark it as old, about to die
+//			SetState(Cell::State::Old);
+//		}
+//		else if (_age == Cell::OldAge - 1)
+//		{
+//			// mark it as old, about to die
+//			SetState(Cell::State::Dying);
+//		}
+//		else if (_age >= Cell::OldAge)
+//		{
+//			SetState(Cell::State::Dead);
+//		}
+//	}
+//}

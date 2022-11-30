@@ -6,16 +6,8 @@ public:
 
 private:
     State _state;
-    int _age;
-    //int _x;
-    //int _y;
-    int _neighbors;
-    inline static int numDead = 0;
-    inline static int numLive = 0;
-    inline static int numBorn = 0;
-    inline static int numOld = 0;
-    inline static int numDying = 0;
-    inline static int OldAge = -1;
+    uint32_t _age;
+    uint8_t _neighbors;
 
 public:
     Cell() : _state(State::Dead), _age(0), _neighbors(0)
@@ -27,63 +19,12 @@ public:
 
     ~Cell() = default;
 
-    static void SetOldAge(int age)
-    {
-        OldAge = age;
-    }
-
-    static int GetOldAge()
-    {
-        return OldAge;
-    }
-
-    static int GetDeadCount()
-    {
-        return numDead;
-    }
-
-    static int GetLiveCount()
-    {
-        return numLive;
-    }
-
-    static int GetBornCount()
-    {
-        return numBorn;
-    }
-
-    static int GetOldCount()
-    {
-        return numOld;
-    }
-
-    static int GetDyingCount()
-    {
-        return numDying;
-    }
-
-    static bool ResetCounts()
-    {
-        numDead = 0;
-        numLive = 0;
-        numBorn = 0;
-        numDying = 0;
-        numOld = 0;
-        return true;
-    }
-
-    //void SetXY(int x, int y)
-    //{
-    //    _x = x;
-    //    _y = y;
-    //}
-
     int Neighbors() const
     {
         return _neighbors;
     }
 
-    void SetNeighbors(int n)
+    void SetNeighbors(uint8_t n)
     {
         _neighbors = n;
     }
@@ -117,5 +58,5 @@ public:
 
     void NextGeneration();
 
-    void KillOldCell();
+    //void KillOldCell();
 };
