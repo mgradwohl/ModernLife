@@ -28,14 +28,14 @@ Board::Board(int width, int height)
 	: _width(width), _height(height), _size(width * height), _generation(0), _x(0), _y(0)
 {
 	_board.resize(_size);
-	for (int x = 0; x < _width; x++)
-	{
-		for (int y = 0; y < _height; y++)
-		{
-			// gotta be a better way?
-			_board[x + (y * _width)].SetXY(x, y);
-		}
-	}
+	//for (int x = 0; x < _width; x++)
+	//{
+	//	for (int y = 0; y < _height; y++)
+	//	{
+	//		// gotta be a better way?
+	//		//_board[x + (y * _width)].SetXY(x, y);
+	//	}
+	//}
 }
 
 void Board::PrintBoard()
@@ -43,13 +43,8 @@ void Board::PrintBoard()
 	std::cout << (*this) << std::endl;
 }
 
-int Board::CountLiveAndDyingNeighbors(Cell& cell)
+int Board::CountLiveAndDyingNeighbors(int x, int y)
 {
-	static int x = 0;
-	static int y = 0;
-	x = cell.X();
-	y = cell.Y();
-
 	// calculate offsets that wrap
 	int xoleft = (x == 0) ? _width - 1 : -1;
 	int xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
@@ -69,18 +64,13 @@ int Board::CountLiveAndDyingNeighbors(Cell& cell)
 	if (GetCell(x + xoleft, y).IsAlive()) count++;
 	if (GetCell(x + xoright, y).IsAlive()) count++;
 
-	cell.SetNeighbors(count);
+	GetCell(x,y).SetNeighbors(count);
 
 	return count;
 }
 
-int Board::CountLiveNotDyingNeighbors(Cell& cell)
+int Board::CountLiveNotDyingNeighbors(int x, int y)
 {
-	static int x = 0;
-	static int y = 0;
-	x = cell.X();
-	y = cell.Y();
-
 	// calculate offsets that wrap
 	int xoleft = (x == 0) ? _width - 1 : -1;
 	int xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
@@ -100,7 +90,7 @@ int Board::CountLiveNotDyingNeighbors(Cell& cell)
 	if (GetCell(x + xoleft, y).IsAliveNotDying()) count++;
 	if (GetCell(x + xoright, y).IsAliveNotDying()) count++;
 
-	cell.SetNeighbors(count);
+	GetCell(x,y).SetNeighbors(count);
 	return count;
 }
 

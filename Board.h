@@ -63,9 +63,9 @@ public:
         return _board[_x + (_y * _width)];
     }
 
-    int CountLiveAndDyingNeighbors(Cell& cell);
+    int CountLiveAndDyingNeighbors(int x, int y);
 
-    int CountLiveNotDyingNeighbors(Cell& cell);
+    int CountLiveNotDyingNeighbors(int x, int y);
 
     void NextGeneration();
 
@@ -80,7 +80,7 @@ public:
             for (int x = 0; x < Width(); x++)
             {
                 Cell& cc = GetCell(x, y);
-                CountLiveAndDyingNeighbors(cc);
+                CountLiveAndDyingNeighbors(x, y);
                 F(cc);
                 cc.KillOldCell();
             }

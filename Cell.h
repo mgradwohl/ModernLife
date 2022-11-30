@@ -7,8 +7,8 @@ public:
 private:
     State _state;
     int _age;
-    int _x;
-    int _y;
+    //int _x;
+    //int _y;
     int _neighbors;
     inline static int numDead = 0;
     inline static int numLive = 0;
@@ -18,7 +18,7 @@ private:
     inline static int OldAge = -1;
 
 public:
-    Cell() : _state(State::Dead), _age(0), _x(0), _y(0), _neighbors(0)
+    Cell() : _state(State::Dead), _age(0), _neighbors(0)
     {
     }
 
@@ -72,21 +72,11 @@ public:
         return true;
     }
 
-    void SetXY(int x, int y)
-    {
-        _x = x;
-        _y = y;
-    }
-
-    int X() const
-    {
-        return _x;
-    }
-
-    int Y() const
-    {
-        return _y;
-    }
+    //void SetXY(int x, int y)
+    //{
+    //    _x = x;
+    //    _y = y;
+    //}
 
     int Neighbors() const
     {
