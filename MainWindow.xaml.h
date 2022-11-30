@@ -30,6 +30,7 @@ namespace winrt::ModernLife::implementation
         CanvasRenderTarget& GetBackBuffer();
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, float width, float height);
+        Windows::UI::Color GetCellColor(const Cell& cell);
 
     private:
         CanvasRenderTarget _back{ nullptr };

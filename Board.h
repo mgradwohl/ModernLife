@@ -88,44 +88,7 @@ public:
         return _height;
     }
 
-    void SetCell(int x, int y, Cell::State state)
-    {
-        // no bounds checking
-        Cell& cell = GetCell(x, y);
-        cell.SetState(state);
-
-        switch (state)
-        {
-            case Cell::State::Dead:
-            {
-                numDead++;
-                break;
-            }
-            case Cell::State::Live:
-            {
-                numLive++;
-                break;
-            }
-            case Cell::State::Born:
-            {
-                numBorn++;
-                break;
-            }
-            case Cell::State::Old:
-            {
-                numOld++;
-                break;
-            }
-            case Cell::State::Dying:
-            {
-                numDying++;
-                break;
-            }
-            default:
-                // do nothing
-                break;
-        }
-    }
+    void SetCell(Cell& cell, Cell::State state);
 
     const Cell& GetCell(int x, int y) const
     {
@@ -162,7 +125,7 @@ public:
             }
         }
     }
-    void ConwayRules(Cell& cell) const;
+    void ConwayRules(Cell& cell);
 
     void DayAndNightRules(Cell& cell) const;
 

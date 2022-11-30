@@ -15,13 +15,8 @@ constexpr int maxage = 1000;
 
 namespace winrt::ModernLife::implementation
 {
-    //auto C = std::bind_front(&Board::ConwayRules, &board);
-    //auto D = std::bind_front(&Board::DayAndNightRules, &board);
-    //auto S = std::bind_front(&Board::SeedsRules, &board);
-    //auto B = std::bind_front(&Board::BriansBrainRules, &board);
-    //auto H = std::bind_front(&Board::HighlifeRules, &board);
-    //auto L = std::bind_front(&Board::LifeWithoutDeathRules, &board);
-    bool drawgrid = false;
+    constexpr bool drawgrid = false;
+    constexpr bool drawstats = true;
 
     MainWindow::MainWindow()
     {
@@ -48,7 +43,39 @@ namespace winrt::ModernLife::implementation
         return _back;
     }
 
-	void MainWindow::DrawInto(CanvasDrawingSession& ds, float width, float height)
+    Windows::UI::Color MainWindow::GetCellColor(const Cell& cell)
+    {
+        uint8_t colorscale = 0;
+        uint8_t red = 0;
+        uint8_t green = 0;
+        uint8_t blue = 0;
+
+        colorscale = (cell.Age() * 255) / maxage;
+        colorscale = 254 - colorscale;
+
+        if (cell.Age() <= (maxage * 1/4))
+        {
+            green = colorscale;
+        }
+        else if (cell.Age() > (maxage * 1/4) && cell.Age() <= (maxage * 1/2))
+        {
+            blue = colorscale;
+        }
+        else if (cell.Age() > (maxage * 1/2) && cell.Age() <= (maxage * 3/4))
+        {
+            red = colorscale;
+        }
+        else if (cell.Age() > (maxage * 3/4) && cell.Age() <= maxage)
+        {
+            red = colorscale;
+            green = colorscale;
+            blue = colorscale;
+        }
+        Windows::UI::Color cellcolor = ColorHelper::FromArgb(255, red, green, blue);
+        return cellcolor;
+    }
+
+    void MainWindow::DrawInto(CanvasDrawingSession& ds, float width, float height)
 	{
 		ds.Clear(Colors::WhiteSmoke());
 		float inc = width / cellcount;
@@ -62,7 +89,13 @@ namespace winrt::ModernLife::implementation
 			}
 		}
 
-		float w = (width / cellcount) - 2;
+        if (drawstats)
+        {
+            std::wstring str = std::format(L"Modern Life\r\nGeneration {}\r\nAlive {}\r\n\0", board.Generation(), board.GetLiveCount());
+            ds.DrawTextW(str, 0, 0, Colors::Black());
+        }
+        
+        float w = (width / cellcount) - 2;
 		float posx = 1.0f;
 		float posy = 1.0f;
 
@@ -73,36 +106,7 @@ namespace winrt::ModernLife::implementation
 				const Cell& cell = board.GetCell(x, y);
 				if (cell.IsAlive())
 				{
-                    uint8_t colorscale = 0;
-                    uint8_t red = 0;
-                    uint8_t green = 0;
-                    uint8_t blue = 0;
-
-                    colorscale = (cell.Age() * 255) / maxage;
-                    colorscale = 254 - colorscale;
-
-                    if (cell.Age() <= (maxage * 1/4))
-                    {
-                        green = colorscale;
-                    }
-                    else if (cell.Age() > (maxage * 1/4) && cell.Age() <= (maxage * 1/2))
-                    {
-                        blue = colorscale;
-                    }
-                    else if (cell.Age() > (maxage * 1/2) && cell.Age() <= (maxage * 3/4))
-                    {
-                        red = colorscale;
-                    }
-                    else if (cell.Age() > (maxage * 3/4) && cell.Age() <= maxage)
-                    {
-                        red = colorscale;
-                        green = colorscale;
-                        blue = colorscale;
-                    }
-                    Windows::UI::Color cellcolor = ColorHelper::FromArgb(255, red, green, blue);
-                    //ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
-                    //std::wstring str = std::format(L"Generation {} \0", board.Generation());
-                    //ds.DrawTextW(str, 0, 0, Colors::Black());
+                    Windows::UI::Color cellcolor = GetCellColor(cell);
                     ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
 				}
 				posx += w;

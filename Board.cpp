@@ -35,6 +35,43 @@ void Board::PrintBoard()
 	std::cout << (*this) << std::endl;
 }
 
+void Board::SetCell(Cell& cell, Cell::State state)
+{
+	cell.SetState(state);
+
+	switch (state)
+	{
+		case Cell::State::Dead:
+		{
+			numDead++;
+			break;
+		}
+		case Cell::State::Live:
+		{
+			numLive++;
+			break;
+		}
+		case Cell::State::Born:
+		{
+			numBorn++;
+			break;
+		}
+		case Cell::State::Old:
+		{
+			numOld++;
+			break;
+		}
+		case Cell::State::Dying:
+		{
+			numDying++;
+			break;
+		}
+		default:
+			// do nothing
+			break;
+	}
+}
+
 int Board::CountLiveAndDyingNeighbors(int x, int y)
 {
 	// calculate offsets that wrap
@@ -113,13 +150,13 @@ void Board::RandomizeBoard(float alivepct)
 
 		if (rp <= alivepct)
 		{
-			c.SetState(Cell::State::Live);
+			SetCell(c, Cell::State::Live);
 			c.SetAge(ra);
 		}
 	}
 }
 
-void Board::ConwayRules(Cell& cell) const
+void Board::ConwayRules(Cell& cell)
 {
 	// Any live cell with two or three live neighbours survives.
 	// Any dead cell with three live neighbours becomes a live cell.
@@ -139,9 +176,9 @@ void Board::ConwayRules(Cell& cell) const
 		}
 		else
 			if (cell.IsAlive())
-			{
+		{
 				cell.SetState(Cell::State::Dying);
-			}
+		}
 }
 
 void Board::DayAndNightRules(Cell& cell) const
