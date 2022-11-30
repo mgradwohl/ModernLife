@@ -123,7 +123,7 @@ int Board::CountLiveNotDyingNeighbors(int x, int y)
 	return count;
 }
 
-void Board::NextGeneration()
+void Board::ApplyNextStateToBoard()
 {
 	_generation++;
 	ResetCounts();

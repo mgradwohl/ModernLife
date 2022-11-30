@@ -106,13 +106,13 @@ public:
 
     int CountLiveNotDyingNeighbors(int x, int y);
 
-    void NextGeneration();
+    void ApplyNextStateToBoard();
 
     void RandomizeBoard(float alivepct);
 
     // This form does not work: void UpdateBoard(std::function<void(Cell& cell)>& F)
     // but using auto is magic
-    void UpdateBoard(auto F)
+    void UpdateBoardWithNextState(auto F)
     {
         for (int y = 0; y < Height(); y++)
         {

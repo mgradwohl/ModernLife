@@ -139,9 +139,9 @@ namespace winrt::ModernLife::implementation
         sender.Invalidate();
 
         auto C = std::bind_front(&Board::ConwayRules, &board);
-        board.UpdateBoard(C);
+        board.UpdateBoardWithNextState(C);
 
-        auto nextgen = std::async(&Board::NextGeneration, &board);
+        auto nextgen = std::async(&Board::ApplyNextStateToBoard, &board);
         nextgen.wait();
     }
 
