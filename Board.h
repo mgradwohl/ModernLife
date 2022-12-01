@@ -125,6 +125,9 @@ public:
             }
         }
     }
+
+    void ConwayUpdateBoardWithNextState();
+
     void ConwayRules(Cell& cell);
 
     void DayAndNightRules(Cell& cell) const;

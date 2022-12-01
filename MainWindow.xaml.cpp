@@ -146,8 +146,9 @@ namespace winrt::ModernLife::implementation
         drawinto.wait();
         sender.Invalidate();
 
-        auto C = std::bind_front(&Board::ConwayRules, &board);
-        board.UpdateBoardWithNextState(C);
+        //auto C = std::bind_front(&Board::ConwayRules, &board);
+        //board.UpdateBoardWithNextState(C);
+        board.ConwayUpdateBoardWithNextState();
 
         auto nextgen = std::async(&Board::ApplyNextStateToBoard, &board);
         nextgen.wait();

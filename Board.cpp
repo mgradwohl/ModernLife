@@ -171,6 +171,19 @@ void Board::RandomizeBoard(float alivepct)
 	}
 }
 
+void Board::ConwayUpdateBoardWithNextState()
+{
+	for (int y = 0; y < Height(); y++)
+	{
+		for (int x = 0; x < Width(); x++)
+		{
+			Cell& cc = GetCell(x, y);
+			CountLiveAndDyingNeighbors(x, y);
+			ConwayRules(cc);
+		}
+	}
+}
+
 void Board::ConwayRules(Cell& cell)
 {
 	// Any live cell with two or three live neighbours survives.
