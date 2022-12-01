@@ -22,6 +22,7 @@ namespace winrt::ModernLife::implementation
     {
     public:
         MainWindow();
+        void StartGameLoop();
 
         int32_t MyProperty();
         void MyProperty(int32_t value);

@@ -22,13 +22,17 @@ namespace winrt::ModernLife::implementation
     {
         InitializeComponent();
 
+        StartGameLoop();
+    }
+
+    void MainWindow::StartGameLoop()
+    {
+        // create the board
         board = Board{ cellcount, cellcount };
 
+        // add a random population
         auto randomizer = std::async(&Board::RandomizeBoard, &board, 0.4f);
         randomizer.wait();
-
-        CanvasDevice device = CanvasDevice::GetSharedDevice();
-        _back = GetBackBuffer();
     }
 
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
@@ -78,8 +82,8 @@ namespace winrt::ModernLife::implementation
     void MainWindow::DrawInto(CanvasDrawingSession& ds, float width, float height)
 	{
 		ds.Clear(Colors::WhiteSmoke());
-		float inc = width / cellcount;
-        
+
+        float inc = width / cellcount;
         if (drawgrid)
 		{
 			for (int i = 0; i <= cellcount; i++)
@@ -97,8 +101,7 @@ namespace winrt::ModernLife::implementation
 		{
 			for (int x = 0; x < cellcount; x++)
 			{
-				const Cell& cell = board.GetCell(x, y);
-				if (cell.IsAlive())
+				if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
 				{
                     Windows::UI::Color cellcolor = GetCellColor(cell);
                     ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
