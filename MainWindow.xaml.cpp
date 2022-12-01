@@ -118,17 +118,16 @@ namespace winrt::ModernLife::implementation
         float width = max(huge.Width, 5000);
         float height = max(huge.Height, 5000);
 
-        CanvasDevice device = CanvasDevice::GetSharedDevice();
-        CanvasRenderTarget flip{ device, width, height, sender.Dpi() };
-        CanvasDrawingSession ds = flip.CreateDrawingSession();
-
-        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
-        drawinto.wait();
-
         {
             // resize the back buffer
             std::scoped_lock lock{ lockbackbuffer };
-            _back = flip;
+            
+            CanvasDevice device = CanvasDevice::GetSharedDevice();
+            _back = CanvasRenderTarget( device, width, height, sender.Dpi() );
+            CanvasDrawingSession ds = _back.CreateDrawingSession();
+
+            auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
+            drawinto.wait();
         }
         sender.Invalidate();
 
