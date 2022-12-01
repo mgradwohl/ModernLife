@@ -118,17 +118,29 @@ namespace winrt::ModernLife::implementation
         float width = max(huge.Width, 5000);
         float height = max(huge.Height, 5000);
 
+        // if the back buffer doesn't exist, create it
+        if (nullptr == _back)
         {
-            // resize the back buffer
-            std::scoped_lock lock{ lockbackbuffer };
-            
             CanvasDevice device = CanvasDevice::GetSharedDevice();
-            _back = CanvasRenderTarget( device, width, height, sender.Dpi() );
-            CanvasDrawingSession ds = _back.CreateDrawingSession();
-
-            auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
-            drawinto.wait();
+            {
+                std::scoped_lock lock{ lockbackbuffer };
+                _back = CanvasRenderTarget(device, width, height, sender.Dpi());
+            }
         }
+
+        // if the back buffer is the wrong size, recreate it
+        if (_back.Size() != sender.Size())
+        {
+            CanvasDevice device = CanvasDevice::GetSharedDevice();
+            {
+                std::scoped_lock lock{ lockbackbuffer };
+                _back = CanvasRenderTarget(device, width, height, sender.Dpi());
+            }
+        }
+
+        CanvasDrawingSession ds = _back.CreateDrawingSession();
+        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
+        drawinto.wait();
         sender.Invalidate();
 
         auto C = std::bind_front(&Board::ConwayRules, &board);
