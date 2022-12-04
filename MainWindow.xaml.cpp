@@ -159,7 +159,7 @@ namespace winrt::ModernLife::implementation
         }
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
-        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), width, height);
+        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), _back.Size().Width, _back.Size().Height);
         drawinto.wait();
     }
 
