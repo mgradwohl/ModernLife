@@ -104,8 +104,6 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::DrawInto(CanvasDrawingSession& ds, int startY, int endY, float width)
 	{
-		ds.Clear(Colors::WhiteSmoke());
-
         //float inc = width / cellcount;
         //if (drawgrid)
 		//{
@@ -158,6 +156,7 @@ namespace winrt::ModernLife::implementation
         }
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
+        ds.Clear(Colors::White());
 
         //render in one thread
         //auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width, _back.Size().Height);
