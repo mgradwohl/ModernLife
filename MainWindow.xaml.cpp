@@ -102,32 +102,31 @@ namespace winrt::ModernLife::implementation
         return cellcolor;
     }
 
-    void MainWindow::DrawInto(CanvasDrawingSession& ds, float width, float height)
+    void MainWindow::DrawInto(CanvasDrawingSession& ds, int startY, int endY, float width)
 	{
 		ds.Clear(Colors::WhiteSmoke());
 
-        float inc = width / cellcount;
-        if (drawgrid)
-		{
-			for (int i = 0; i <= cellcount; i++)
-			{
-				ds.DrawLine(0, i * inc, height, i * inc, Colors::DarkSlateGray());
-				ds.DrawLine(i * inc, 0, i * inc, width, Colors::DarkSlateGray());
-			}
-		}
+        //float inc = width / cellcount;
+        //if (drawgrid)
+		//{
+		//	for (int i = 0; i <= cellcount; i++)
+		//	{
+		//		ds.DrawLine(0, i * inc, height, i * inc, Colors::DarkSlateGray());
+		//		ds.DrawLine(i * inc, 0, i * inc, width, Colors::DarkSlateGray());
+		//	}
+		//}
 
-        float w = (width / cellcount) - 2;
-		float posx = 1.0f;
-		float posy = 1.0f;
+        float w = (width / cellcount);
+		float posx = 0.0f;
+		float posy = startY * w;
 
-        for (int y = 0; y < cellcount; y++)
+        for (int y = startY; y < endY; y++)
 		{
-			for (int x = 0; x < cellcount; x++)
+			for (int x = 0; x < board.Width(); x++)
 			{
 				if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
 				{
-                    Windows::UI::Color cellcolor = GetCellColor(cell);
-                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, cellcolor);
+                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor(cell));
 				}
 				posx += w;
 			}
@@ -146,10 +145,10 @@ namespace winrt::ModernLife::implementation
         // if the back buffer doesn't exist or is the wrong size, create it
         if (nullptr == _back || _back.Size() != sender.Size())
         {
-            constexpr int bestsize = cellcount * 4;
+            constexpr int bestsize = cellcount * 8;
             winrt::Windows::Foundation::Size huge = sender.Size();
-            float width = max(huge.Width, bestsize);
-            float height = max(huge.Height, bestsize);
+            float width = min(huge.Width, bestsize);
+            float height = min(huge.Height, bestsize);
 
             CanvasDevice device = CanvasDevice::GetSharedDevice();
             {
@@ -159,8 +158,21 @@ namespace winrt::ModernLife::implementation
         }
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
-        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), _back.Size().Width, _back.Size().Height);
-        drawinto.wait();
+
+        //render in one thread
+        //auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width, _back.Size().Height);
+        //drawinto0.wait();
+
+        // render in 4 threads
+        auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0,                    board.Height() * 1/4, _back.Size().Width);
+        auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/4, board.Height() * 1/2, _back.Size().Width);
+        auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/2, board.Height() * 3/4, _back.Size().Width);
+        auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 3/4, board.Height(),       _back.Size().Width);
+
+        drawinto1.wait();
+        drawinto2.wait();
+        drawinto3.wait();
+        drawinto4.wait();
     }
 
     void MainWindow::MyProperty(int32_t /* value */)

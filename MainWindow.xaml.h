@@ -15,7 +15,7 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr int cellcount = 500;
+constexpr int cellcount = 250;
 
 namespace winrt::ModernLife::implementation
 {
@@ -31,7 +31,7 @@ namespace winrt::ModernLife::implementation
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         CanvasRenderTarget& GetBackBuffer();
         void RenderOffscreen(CanvasControl const& sender);
-        void DrawInto(CanvasDrawingSession& ds, float width, float height);
+        void DrawInto(CanvasDrawingSession& ds, int sx, int ex, float width);
         Windows::UI::Color GetCellColor(const Cell& cell);
         void theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void OnTick(IInspectable const& sender, IInspectable const& event);
