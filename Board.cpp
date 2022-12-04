@@ -171,7 +171,7 @@ void Board::RandomizeBoard(float alivepct)
 			c.SetAge(ra);
 		}
 	}
-	_dirty = true;
+	_dirty = 1; // must be dirty, we just randomized it
 }
 
 void Board::ConwayUpdateBoardWithNextState()

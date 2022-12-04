@@ -143,9 +143,10 @@ namespace winrt::ModernLife::implementation
         if (!board.IsDirty())
             return;
 
+        constexpr int bestsize = cellcount * 4;
         winrt::Windows::Foundation::Size huge = sender.Size();
-        float width = max(huge.Width, 1000);
-        float height = max(huge.Height, 1000);
+        float width = max(huge.Width, bestsize);
+        float height = max(huge.Height, bestsize);
 
         // if the back buffer doesn't exist or is the wrong size, create it
         if (nullptr == _back || _back.Size() != sender.Size())

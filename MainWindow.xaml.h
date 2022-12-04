@@ -43,7 +43,6 @@ namespace winrt::ModernLife::implementation
         DispatcherQueueController _controller{ nullptr };
         Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
         DispatcherQueueTimer _timer{ nullptr };
-    public:
     };
 }
 
