@@ -5,6 +5,7 @@
 #include<future>
 #include<format>
 #include "MainWindow.xaml.h"
+
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
@@ -25,6 +26,16 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
+    void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
+    {
+        auto conway = std::async(&Board::ConwayUpdateBoardWithNextState, &board);
+        conway.wait();
+
+        auto nextgen = std::async(&Board::ApplyNextStateToBoard, &board);
+        nextgen.wait();
+        theCanvas().Invalidate();
+    }
+
     void MainWindow::StartGameLoop()
     {
         // create the board
@@ -33,6 +44,17 @@ namespace winrt::ModernLife::implementation
         // add a random population
         auto randomizer = std::async(&Board::RandomizeBoard, &board, 0.4f);
         randomizer.wait();
+
+        // create and start a timer
+        _controller = DispatcherQueueController::CreateOnDedicatedThread();
+        _queue = _controller.DispatcherQueue();
+        _timer = _queue.CreateTimer();
+        using namespace  std::literals::chrono_literals;
+        _timer.Interval(std::chrono::milliseconds{ 16 });
+        _timer.IsRepeating(true);
+        auto registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+
+        _timer.Start();
     }
 
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
@@ -44,6 +66,7 @@ namespace winrt::ModernLife::implementation
     CanvasRenderTarget& MainWindow::GetBackBuffer()
     {
         std::scoped_lock lock { lockbackbuffer };
+
         return _back;
     }
 
@@ -117,22 +140,15 @@ namespace winrt::ModernLife::implementation
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
+        if (!board.IsDirty())
+            return;
+
         winrt::Windows::Foundation::Size huge = sender.Size();
-        float width = max(huge.Width, 5000);
-        float height = max(huge.Height, 5000);
+        float width = max(huge.Width, 1000);
+        float height = max(huge.Height, 1000);
 
-        // if the back buffer doesn't exist, create it
-        if (nullptr == _back)
-        {
-            CanvasDevice device = CanvasDevice::GetSharedDevice();
-            {
-                std::scoped_lock lock{ lockbackbuffer };
-                _back = CanvasRenderTarget(device, width, height, sender.Dpi());
-            }
-        }
-
-        // if the back buffer is the wrong size, recreate it
-        if (_back.Size() != sender.Size())
+        // if the back buffer doesn't exist or is the wrong size, create it
+        if (nullptr == _back || _back.Size() != sender.Size())
         {
             CanvasDevice device = CanvasDevice::GetSharedDevice();
             {
@@ -142,16 +158,8 @@ namespace winrt::ModernLife::implementation
         }
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
-        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), huge.Width, huge.Height);
+        auto drawinto = std::async(&MainWindow::DrawInto, this, std::ref(ds), width, height);
         drawinto.wait();
-        sender.Invalidate();
-
-        //auto C = std::bind_front(&Board::ConwayRules, &board);
-        //board.UpdateBoardWithNextState(C);
-        board.ConwayUpdateBoardWithNextState();
-
-        auto nextgen = std::async(&Board::ApplyNextStateToBoard, &board);
-        nextgen.wait();
     }
 
     void MainWindow::MyProperty(int32_t /* value */)
@@ -163,17 +171,19 @@ namespace winrt::ModernLife::implementation
     {
         throw hresult_not_implemented();
     }
-}
 
-
-void winrt::ModernLife::implementation::MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
-{
-    std::wstring str{L"Modern Life\0"};
-    if (drawstats)
+    void MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        str = std::format(L"Modern Life\r\nGeneration {}\r\nAlive {}\r\n\0", board.Generation(), board.GetLiveCount());
-        sender.Invalidate();
-    }
+        args.DrawingSession().Clear(Colors::WhiteSmoke());
+        std::wstring str{L"Modern Life\0"};
+        if (drawstats)
+        {
+            str = std::format(L"Modern Life\r\nGeneration {}\r\nAlive {}\r\nTotal Cells {}\r\n\0", board.Generation(), board.GetLiveCount(), board.GetSize());
+            sender.Invalidate();
+        }
 
-    args.DrawingSession().DrawTextW(str, 0, 0, Colors::Black());
+        args.DrawingSession().DrawTextW(str, 0, 0, Colors::Black());
+    }
 }
+
+

@@ -135,12 +135,14 @@ void Board::ApplyNextStateToBoard()
 		{
 			SetCell(cell, Cell::State::Live);
 			cell.SetAge(0);
+			_dirty++;
 			continue;
 		}
 
 		if (cell.GetState() == Cell::State::Dying)
 		{
 			SetCell(cell, Cell::State::Dead);
+			_dirty++;
 			continue;
 		}
 
@@ -169,6 +171,7 @@ void Board::RandomizeBoard(float alivepct)
 			c.SetAge(ra);
 		}
 	}
+	_dirty = true;
 }
 
 void Board::ConwayUpdateBoardWithNextState()
@@ -197,16 +200,14 @@ void Board::ConwayRules(Cell& cell)
 	{
 		cell.SetState(Cell::State::Live);
 	}
-	else
-		if (cell.IsDead() && count == 3)
-		{
-			cell.SetState(Cell::State::Born);
-		}
-		else
-			if (cell.IsAlive())
-		{
-				cell.SetState(Cell::State::Dying);
-		}
+	else if (cell.IsDead() && count == 3)
+	{
+		cell.SetState(Cell::State::Born);
+	}
+	else if (cell.IsAlive())
+	{
+		cell.SetState(Cell::State::Dying);
+	}
 }
 
 void Board::DayAndNightRules(Cell& cell) const

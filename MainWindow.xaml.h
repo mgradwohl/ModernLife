@@ -9,12 +9,13 @@
 
 using namespace winrt;
 using namespace Microsoft::UI;
+using namespace Microsoft::UI::Dispatching;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr int cellcount = 100;
+constexpr int cellcount = 500;
 
 namespace winrt::ModernLife::implementation
 {
@@ -32,13 +33,17 @@ namespace winrt::ModernLife::implementation
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, float width, float height);
         Windows::UI::Color GetCellColor(const Cell& cell);
-
+        void theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        void OnTick(IInspectable const& sender, IInspectable const& event);
     private:
         CanvasRenderTarget _back{ nullptr };
         std::mutex lockbackbuffer;
         Board board{ nullptr };
+
+        DispatcherQueueController _controller{ nullptr };
+        Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
+        DispatcherQueueTimer _timer{ nullptr };
     public:
-        void theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
     };
 }
 

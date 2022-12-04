@@ -19,6 +19,7 @@ private:
     int _numOld = 0;
     int _numDying = 0;
     int _OldAge = -1;
+    int _dirty = 0;
 
 public:
     Board(std::nullptr_t) {};
@@ -37,6 +38,11 @@ public:
     int GetOldAge()
     {
         return _OldAge;
+    }
+
+    int GetSize() const
+    {
+        return _size;
     }
 
     int GetDeadCount()
@@ -71,6 +77,12 @@ public:
         _numBorn = 0;
         _numDying = 0;
         _numOld = 0;
+        _dirty = 0;
+    }
+
+    bool IsDirty() const
+    {
+        return _dirty;
     }
 
     int Generation() const
