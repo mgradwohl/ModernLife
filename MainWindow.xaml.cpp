@@ -50,7 +50,11 @@ namespace winrt::ModernLife::implementation
         _timer.IsRepeating(true);
         auto registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
 
-        _timer.Start();
+        using namespace Microsoft::UI::Xaml::Controls;
+        GoButton().Icon(SymbolIcon(Symbol::Play));
+        GoButton().Label(L"Play");
+
+        theCanvas().Invalidate();
     }
 
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
