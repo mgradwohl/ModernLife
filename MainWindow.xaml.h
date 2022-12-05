@@ -15,11 +15,19 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr int cellcount = 250;
-constexpr int maxage = 1000;
-constexpr bool drawgrid = false;
-constexpr bool drawstats = true;
-constexpr bool singlerenderer = false;
+#ifdef _DEBUG
+    constexpr int cellcount = 250;
+    constexpr int maxage = 1000;
+    constexpr bool drawgrid = false;
+    constexpr bool drawstats = true;
+    constexpr bool singlerenderer = false;
+#else
+    constexpr int cellcount = 250;
+    constexpr int maxage = 1000;
+    constexpr bool drawgrid = false;
+    constexpr bool drawstats = false;
+    constexpr bool singlerenderer = false;
+#endif
 
 namespace winrt::ModernLife::implementation
 {

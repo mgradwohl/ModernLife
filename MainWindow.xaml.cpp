@@ -136,14 +136,14 @@ namespace winrt::ModernLife::implementation
         if (!board.IsDirty())
             return;
 
+        constexpr int bestsize = cellcount * 8;
+        winrt::Windows::Foundation::Size huge = sender.Size();
+        float width = min(huge.Width, bestsize);
+        float height = (width/cellcount) * board.Height();
+
         // if the back buffer doesn't exist or is the wrong size, create it
         if (nullptr == _back || _back.Size() != sender.Size())
         {
-            constexpr int bestsize = cellcount * 8;
-            winrt::Windows::Foundation::Size huge = sender.Size();
-            float width = min(huge.Width, bestsize);
-            float height = min(huge.Height, bestsize);
-
             CanvasDevice device = CanvasDevice::GetSharedDevice();
             {
                 std::scoped_lock lock{ lockbackbuffer };
@@ -152,7 +152,16 @@ namespace winrt::ModernLife::implementation
         }
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
-        ds.Clear(Colors::White());
+
+        using namespace Microsoft::UI::Xaml::Controls;
+        using namespace Microsoft::UI::Xaml::Media;
+        Brush backBrush{ splitView().PaneBackground() };
+        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
+        Windows::UI::Color colorBack{scbBack.Color()};
+
+        ds.FillRectangle(0, 0, huge.Width, huge.Height, colorBack);
+
+        ds.FillRectangle(0, 0, width, height, Colors::WhiteSmoke());
 
         if (singlerenderer)
         {
@@ -191,10 +200,8 @@ namespace winrt::ModernLife::implementation
         using namespace Microsoft::UI::Xaml::Media;
 
         Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
-        hstring fontFamily = PaneHeader().FontFamily().Source();
-        float fontSize = PaneHeader().FontSize();
-        canvasFmt.FontFamily(fontFamily);
-        canvasFmt.FontSize(fontSize);
+        canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
+        canvasFmt.FontSize(PaneHeader().FontSize());
 
         Brush backBrush{ splitView().PaneBackground() };
         Brush textBrush{ PaneHeader().Foreground() };
@@ -230,10 +237,10 @@ namespace winrt::ModernLife::implementation
         else
         {
             GoButton().Icon(SymbolIcon(Symbol::Pause));
+            GoButton().Label(L"Pause");
             _timer.Start();
         }
     }
-
 
     void winrt::ModernLife::implementation::MainWindow::RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
@@ -241,6 +248,7 @@ namespace winrt::ModernLife::implementation
 
         _timer.Stop();
         GoButton().Icon(SymbolIcon(Symbol::Pause));
+        GoButton().Label(L"Pause");
         StartGameLoop();
     }
 }
