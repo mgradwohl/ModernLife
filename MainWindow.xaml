@@ -13,18 +13,21 @@
 
     <SplitView x:Name="splitView" IsPaneOpen="True" OpenPaneLength="200" Margin="6,6,0,0" DisplayMode="Inline" PanePlacement="Right"
                PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="2">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+            <canvas:CanvasControl x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="{StaticResource SystemChromeMediumLowColor}" />
+        </Grid>
         <SplitView.Pane>
             <StackPanel Orientation="Vertical" >
                 <TextBlock Text="MODERN LIFE" x:Name="PaneHeader" HorizontalAlignment="Center" Margin="0,12,0,12" Style="{StaticResource BaseTextBlockStyle}"/>
                 <AppBarButton HorizontalAlignment="Center" Icon="Pause" x:Name="GoButton"  Label="Pause" Click="GoButton_Click" />
-                <AppBarButton HorizontalAlignment="Center" Icon="Shuffle" x:Name="RestartButton"  Label="Restart" Click="RestartButton_Click" />
+                <AppBarButton HorizontalAlignment="Center" Icon="Shuffle" x:Name="RestartButton"  Label="Reshuffle" Click="RestartButton_Click" />
                 <Grid Margin="12,6,6,6" HorizontalAlignment="Stretch" Width="200" Height="400">
                     <canvas:CanvasControl x:Name="theCanvasDebug" Draw="theCanvasDebug_Draw" />
                 </Grid>
             </StackPanel>
         </SplitView.Pane>
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <canvas:CanvasControl x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="{StaticResource SystemChromeMediumLowColor}" />
-        </Grid>
     </SplitView>
 </Window>
+
+
+
