@@ -163,8 +163,6 @@ namespace winrt::ModernLife::implementation
         SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
         Windows::UI::Color colorBack{scbBack.Color()};
 
-        //ds.FillRectangle(0, 0, huge.Width, huge.Height, colorBack);
-
         ds.FillRectangle(0, 0, width, height, Colors::WhiteSmoke());
 
         if (singlerenderer)
