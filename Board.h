@@ -23,9 +23,8 @@ private:
 
 public:
     Board(std::nullptr_t) {};
-    Board(const Board& b) = delete;
     Board(Board& b) = delete;
-    //Board operator=(Board& b) = delete;
+
     ~Board() = default;
 
     Board(int width, int height);

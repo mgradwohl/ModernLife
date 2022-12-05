@@ -11,17 +11,20 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Red">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="200" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="20" />
-        </Grid.RowDefinitions>
-        <canvas:CanvasControl Grid.Row="0" Grid.Column="0" x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="WhiteSmoke" />
-        <canvas:CanvasControl Grid.Row="0" Grid.Column="1" x:Name="theCanvasDebug" Draw="theCanvasDebug_Draw" ClearColor="WhiteSmoke"/>
-        <TextBlock x:Name="StatusBar" Grid.Row="1" Grid.Column="0" Text="Modern Life" />
-    </Grid>
+    <SplitView x:Name="splitView" IsPaneOpen="True" OpenPaneLength="200" DisplayMode="Inline" PanePlacement="Right"
+               PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}">
+        <SplitView.Pane>
+            <StackPanel Orientation="Vertical" >
+                <TextBlock Text="MODERN LIFE" x:Name="PaneHeader" HorizontalAlignment="Center" Margin="0,12,0,12" Style="{StaticResource BaseTextBlockStyle}"/>
+                <AppBarToggleButton BorderBrush="AntiqueWhite" HorizontalAlignment="Center" Icon="Pause" x:Name="GoButton"  Label="Pause" Click="GoButton_Click" />
+                <AppBarToggleButton BorderBrush="AntiqueWhite" HorizontalAlignment="Center" Icon="Shuffle" x:Name="RestartButton"  Label="Restart" Click="RestartButton_Click" />
+                <Grid Margin="6" HorizontalAlignment="Stretch" Height="400">
+                    <canvas:CanvasControl x:Name="theCanvasDebug" Draw="theCanvasDebug_Draw" />
+                </Grid>
+            </StackPanel>
+        </SplitView.Pane>
+        <Grid Margin="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderThickness="1" BorderBrush="Red">
+            <canvas:CanvasControl x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="WhiteSmoke" />
+        </Grid>
+    </SplitView>
 </Window>

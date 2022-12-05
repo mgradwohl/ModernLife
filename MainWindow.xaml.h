@@ -16,6 +16,10 @@ using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
 constexpr int cellcount = 250;
+constexpr int maxage = 1000;
+constexpr bool drawgrid = false;
+constexpr bool drawstats = true;
+constexpr bool singlerenderer = false;
 
 namespace winrt::ModernLife::implementation
 {
@@ -43,6 +47,9 @@ namespace winrt::ModernLife::implementation
         DispatcherQueueController _controller{ nullptr };
         Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
         DispatcherQueueTimer _timer{ nullptr };
+    public:
+        void GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 

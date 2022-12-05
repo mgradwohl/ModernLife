@@ -9,16 +9,12 @@
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
-constexpr int maxage = 1000;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace winrt::ModernLife::implementation
 {
-    constexpr bool drawgrid = false;
-    constexpr bool drawstats = true;
-
     MainWindow::MainWindow()
     {
         InitializeComponent();
@@ -158,20 +154,25 @@ namespace winrt::ModernLife::implementation
         CanvasDrawingSession ds = _back.CreateDrawingSession();
         ds.Clear(Colors::White());
 
-        //render in one thread
-        //auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width, _back.Size().Height);
-        //drawinto0.wait();
+        if (singlerenderer)
+        {
+            // render in one thread
+            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width);
+            drawinto0.wait();
+        }
+        else
+        {
+            // render in 4 threads
+            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0,                    board.Height() * 1/4, _back.Size().Width);
+            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/4, board.Height() * 1/2, _back.Size().Width);
+            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/2, board.Height() * 3/4, _back.Size().Width);
+            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 3/4, board.Height(),       _back.Size().Width);
 
-        // render in 4 threads
-        auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0,                    board.Height() * 1/4, _back.Size().Width);
-        auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/4, board.Height() * 1/2, _back.Size().Width);
-        auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/2, board.Height() * 3/4, _back.Size().Width);
-        auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 3/4, board.Height(),       _back.Size().Width);
-
-        drawinto1.wait();
-        drawinto2.wait();
-        drawinto3.wait();
-        drawinto4.wait();
+            drawinto1.wait();
+            drawinto2.wait();
+            drawinto3.wait();
+            drawinto4.wait();
+        }
     }
 
     void MainWindow::MyProperty(int32_t /* value */)
@@ -186,16 +187,61 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        args.DrawingSession().Clear(Colors::WhiteSmoke());
+        using namespace Microsoft::UI::Xaml::Controls;
+        using namespace Microsoft::UI::Xaml::Media;
+
+        Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
+        hstring fontFamily = PaneHeader().FontFamily().Source();
+        float fontSize = PaneHeader().FontSize();
+        canvasFmt.FontFamily(fontFamily);
+        canvasFmt.FontSize(fontSize);
+
+        Brush backBrush{ splitView().PaneBackground() };
+        Brush textBrush{ PaneHeader().Foreground() };
+
+        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
+        SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
+
+        Windows::UI::Color colorBack{scbBack.Color()};
+        Windows::UI::Color colorText{scbText.Color()};
+
+        args.DrawingSession().Clear(colorBack);
+
         std::wstring str{L"Modern Life\0"};
         if (drawstats)
         {
-            str = std::format(L"Modern Life\r\nGeneration {}\r\nAlive {}\r\nTotal Cells {}\r\n\0", board.Generation(), board.GetLiveCount(), board.GetSize());
+            str = std::format(L"Generation {}\r\nAlive {}\r\nTotal Cells {}\r\n\0", board.Generation(), board.GetLiveCount(), board.GetSize());
             sender.Invalidate();
         }
 
-        args.DrawingSession().DrawTextW(str, 0, 0, Colors::Black());
+        args.DrawingSession().DrawText(str, 0, 0, 200, 200, colorText, canvasFmt);
+    }
+
+    void winrt::ModernLife::implementation::MainWindow::GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        using namespace Microsoft::UI::Xaml::Controls;
+        if (_timer.IsRunning())
+        {
+            GoButton().Label(L"Play");
+            GoButton().Icon(SymbolIcon(Symbol::Play));
+            _timer.Stop();
+
+        }
+        else
+        {
+            GoButton().Icon(SymbolIcon(Symbol::Pause));
+            _timer.Start();
+        }
+    }
+
+
+    void winrt::ModernLife::implementation::MainWindow::RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        using namespace Microsoft::UI::Xaml::Controls;
+
+        _timer.Stop();
+        GoButton().Icon(SymbolIcon(Symbol::Pause));
+        StartGameLoop();
     }
 }
-
 
