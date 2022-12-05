@@ -163,7 +163,7 @@ namespace winrt::ModernLife::implementation
         SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
         Windows::UI::Color colorBack{scbBack.Color()};
 
-        ds.FillRectangle(0, 0, huge.Width, huge.Height, colorBack);
+        //ds.FillRectangle(0, 0, huge.Width, huge.Height, colorBack);
 
         ds.FillRectangle(0, 0, width, height, Colors::WhiteSmoke());
 
@@ -200,6 +200,10 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
+        if (!drawstats)
+        {
+            return;
+        }
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
@@ -218,12 +222,8 @@ namespace winrt::ModernLife::implementation
 
         args.DrawingSession().Clear(colorBack);
 
-        std::wstring str{L"Modern Life\0"};
-        if (drawstats)
-        {
-            str = std::format(L"Generation {}\r\nAlive {}\r\nTotal Cells {}\r\n\0", board.Generation(), board.GetLiveCount(), board.GetSize());
-            sender.Invalidate();
-        }
+        std::wstring str = std::format(L"Generation {}\r\nAlive {}\r\nTotal Cells {}", board.Generation(), board.GetLiveCount(), board.GetSize());
+        sender.Invalidate();
 
         args.DrawingSession().DrawText(str, 0, 0, 200, 200, colorText, canvasFmt);
     }
