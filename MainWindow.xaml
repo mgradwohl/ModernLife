@@ -25,6 +25,7 @@
                 <TextBlock TextWrapping="WrapWholeWords" HorizontalAlignment="Center">
                     <Span xml:space="preserve"><Run>YouTube </Run><Hyperlink NavigateUri="https://youtu.be/Kk2MH9O4pXY">John Conway</Hyperlink></Span>
                 </TextBlock>
+                <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,12,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
                 <Grid Margin="12,6,6,6" HorizontalAlignment="Stretch" Width="200" Height="400">
                     <canvas:CanvasControl x:Name="theCanvasDebug" Draw="theCanvasDebug_Draw" />
                 </Grid>

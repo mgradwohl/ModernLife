@@ -220,7 +220,7 @@ namespace winrt::ModernLife::implementation
 
         args.DrawingSession().Clear(colorBack);
 
-        std::wstring str = std::format(L"Generation {}\r\nAlive {}\r\nTotal Cells {}", board.Generation(), board.GetLiveCount(), board.GetSize());
+        std::wstring str = std::format(L"Generation\t{}\r\nAlive\t\t{}\r\nTotal Cells\t{}", board.Generation(), board.GetLiveCount(), board.GetSize());
         sender.Invalidate();
 
         args.DrawingSession().DrawText(str, 0, 0, 200, 200, colorText, canvasFmt);
