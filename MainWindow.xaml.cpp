@@ -24,6 +24,9 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
     {
+        sender;
+        event;
+
         auto conway = std::async(&Board::ConwayUpdateBoardWithNextState, &board);
         conway.wait();
 
@@ -198,10 +201,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        if (!drawstats)
-        {
-            return;
-        }
+        sender;
+        
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
@@ -228,6 +229,9 @@ namespace winrt::ModernLife::implementation
 
     void winrt::ModernLife::implementation::MainWindow::GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
+        e;
+        sender;
+
         using namespace Microsoft::UI::Xaml::Controls;
         if (_timer.IsRunning())
         {
@@ -246,6 +250,9 @@ namespace winrt::ModernLife::implementation
 
     void winrt::ModernLife::implementation::MainWindow::RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
+        e;
+        sender;
+
         using namespace Microsoft::UI::Xaml::Controls;
 
         _timer.Stop();

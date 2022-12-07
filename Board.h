@@ -22,7 +22,7 @@ private:
     int _dirty = 0;
 
 public:
-    Board(std::nullptr_t) {};
+    explicit Board(std::nullptr_t) {};
     Board(Board& b) = delete;
 
     ~Board() = default;
@@ -34,7 +34,7 @@ public:
         _OldAge = age;
     }
 
-    int GetOldAge()
+    int GetOldAge() const
     {
         return _OldAge;
     }
@@ -44,27 +44,27 @@ public:
         return _size;
     }
 
-    int GetDeadCount()
+    int GetDeadCount() const
     {
         return _numDead;
     }
 
-    int GetLiveCount()
+    int GetLiveCount() const
     {
         return _numLive;
     }
 
-    int GetBornCount()
+    int GetBornCount() const
     {
         return _numBorn;
     }
 
-    int GetOldCount()
+    int GetOldCount() const
     {
         return _numOld;
     }
 
-    int GetDyingCount()
+    int GetDyingCount() const
     {
         return _numDying;
     }
@@ -103,13 +103,20 @@ public:
 
     const Cell& GetCell(int x, int y) const
     {
-        // no bounds checking
+        if (x * y > _size)
+        {
+            exit(-1);
+        }
+
         return _board[x + (y * _width)];
     }
 
     Cell& GetCell(int x, int y)
     {
-        // no bounds checking
+        if (x * y > _size)
+        {
+            exit(-1);
+        }
         return _board[x + (y * _width)];
     }
 
