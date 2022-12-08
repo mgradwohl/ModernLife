@@ -174,13 +174,13 @@ namespace winrt::ModernLife::implementation
 
         ds.FillRectangle(0, 0, width, height, Colors::WhiteSmoke());
 
-        //if (singlerenderer)
-        //{
-        //    // render in one thread
-        //    auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width);
-        //    drawinto0.wait();
-        //}
-        //else
+        if (singlerenderer)
+        {
+            // render in one thread
+            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width);
+            drawinto0.wait();
+        }
+        else
         {
             // render in 4 threads
             auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0,                    board.Height() * 1/4, _back.Size().Width);
