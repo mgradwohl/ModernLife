@@ -50,6 +50,7 @@ namespace winrt::ModernLife::implementation
     private:
         CanvasRenderTarget _back{ nullptr };
         std::mutex lockbackbuffer;
+        std::mutex lockboard;
         Board board{ nullptr };
 
         DispatcherQueueController _controller{ nullptr };

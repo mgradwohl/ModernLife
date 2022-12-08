@@ -27,11 +27,14 @@ namespace winrt::ModernLife::implementation
         sender;
         event;
 
-        auto conway = std::async(&Board::ConwayUpdateBoardWithNextState, &board);
-        conway.wait();
+        {
+            std::scoped_lock lock{ lockboard };
+            auto conway = std::async(&Board::ConwayUpdateBoardWithNextState, &board);
+            conway.wait();
 
-        auto nextgen = std::async(&Board::ApplyNextStateToBoard, &board);
-        nextgen.wait();
+            auto nextgen = std::async(&Board::ApplyNextStateToBoard, &board);
+            nextgen.wait();
+        }
         theCanvas().Invalidate();
     }
 
@@ -120,20 +123,23 @@ namespace winrt::ModernLife::implementation
         float w = (width / cellcount);
 		float posx = 0.0f;
 		float posy = startY * w;
+        {
+            std::scoped_lock lock{ lockboard };
 
-        for (int y = startY; y < endY; y++)
-		{
-			for (int x = 0; x < board.Width(); x++)
-			{
-				if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
-				{
-                    ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor(cell));
-				}
-				posx += w;
-			}
-			posy += w;
-			posx = 1.0f;
-		}
+            for (int y = startY; y < endY; y++)
+            {
+                for (int x = 0; x < board.Width(); x++)
+                {
+                    if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
+                    {
+                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor(cell));
+                    }
+                    posx += w;
+                }
+                posy += w;
+                posx = 1.0f;
+            }
+        }
 	}
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
@@ -168,13 +174,13 @@ namespace winrt::ModernLife::implementation
 
         ds.FillRectangle(0, 0, width, height, Colors::WhiteSmoke());
 
-        if (singlerenderer)
-        {
-            // render in one thread
-            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width);
-            drawinto0.wait();
-        }
-        else
+        //if (singlerenderer)
+        //{
+        //    // render in one thread
+        //    auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width);
+        //    drawinto0.wait();
+        //}
+        //else
         {
             // render in 4 threads
             auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0,                    board.Height() * 1/4, _back.Size().Width);
