@@ -41,7 +41,6 @@ namespace winrt::ModernLife::implementation
         void MyProperty(int32_t value);
         
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
-        CanvasRenderTarget& GetBackBuffer();
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, int sx, int ex, float width);
         Windows::UI::Color GetCellColor(const Cell& cell);

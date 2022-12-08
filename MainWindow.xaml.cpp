@@ -73,14 +73,12 @@ namespace winrt::ModernLife::implementation
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
     {
         RenderOffscreen(sender);
-        args.DrawingSession().DrawImage(GetBackBuffer(), 0, 0);
-    }
-
-    CanvasRenderTarget& MainWindow::GetBackBuffer()
-    {
-        std::scoped_lock lock { lockbackbuffer };
-
-        return _back;
+        {
+            {
+                std::scoped_lock lock{ lockbackbuffer };
+                args.DrawingSession().DrawImage(_back, 0, 0);
+            }
+        }
     }
 
     Windows::UI::Color MainWindow::GetCellColor(const Cell& cell)
