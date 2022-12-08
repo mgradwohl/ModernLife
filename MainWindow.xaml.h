@@ -56,9 +56,11 @@ namespace winrt::ModernLife::implementation
         DispatcherQueueController _controller{ nullptr };
         Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
         DispatcherQueueTimer _timer{ nullptr };
+        float _randompercent = 0.3f;
     public:
         void GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void sliderPop_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
     };
 }
 

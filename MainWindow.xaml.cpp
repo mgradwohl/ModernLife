@@ -19,6 +19,12 @@ namespace winrt::ModernLife::implementation
     {
         InitializeComponent();
 
+        std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
+        if (nullptr != popSliderText())
+        {
+            popSliderText().Text(slidertext);
+        }
+
         StartGameLoop();
     }
 
@@ -44,7 +50,11 @@ namespace winrt::ModernLife::implementation
         board = Board{ cellcount, cellcount };
 
         // add a random population
-        auto randomizer = std::async(&Board::RandomizeBoard, &board, 0.4f);
+        if (nullptr != sliderPop())
+        {
+            _randompercent = sliderPop().Value() / 100;
+        }
+        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent);
         randomizer.wait();
 
         // create and start a timer
@@ -266,5 +276,19 @@ namespace winrt::ModernLife::implementation
         GoButton().Label(L"Pause");
         StartGameLoop();
     }
+
+    void winrt::ModernLife::implementation::MainWindow::sliderPop_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
+    {
+        _randompercent = sliderPop().Value() / 100;
+        int val = sliderPop().Value();
+        std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
+        if (nullptr != popSliderText())
+        {
+            popSliderText().Text(slidertext);
+        }
+    }
 }
+
+
+
 
