@@ -36,12 +36,7 @@ namespace winrt::ModernLife::implementation
         {
             std::scoped_lock lock{ lockboard };
             board.ConwayUpdateBoardWithNextState();
-            //auto conway = std::async(&Board::ConwayUpdateBoardWithNextState, &board);
-            //conway.wait();
-
             board.ApplyNextStateToBoard();
-            //auto nextgen = std::async(&Board::ApplyNextStateToBoard, &board);
-            //nextgen.wait();
         }
         theCanvas().Invalidate();
     }
