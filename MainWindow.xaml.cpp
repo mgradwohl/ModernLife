@@ -40,6 +40,8 @@ namespace winrt::ModernLife::implementation
         // create the board
         board = Board{ cellcount, cellcount };
 
+        //m_propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
+
         auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
         randomizer.wait();
 
