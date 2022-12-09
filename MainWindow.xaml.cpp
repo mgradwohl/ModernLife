@@ -19,12 +19,6 @@ namespace winrt::ModernLife::implementation
     {
         InitializeComponent();
 
-        std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
-        if (nullptr != popSliderText())
-        {
-            popSliderText().Text(slidertext);
-        }
-
         StartGameLoop();
     }
 
@@ -46,12 +40,7 @@ namespace winrt::ModernLife::implementation
         // create the board
         board = Board{ cellcount, cellcount };
 
-        // add a random population
-        if (nullptr != sliderPop())
-        {
-            _randompercent = sliderPop().Value() / 100;
-        }
-        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent);
+        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
         randomizer.wait();
 
         // create and start a timer
@@ -200,6 +189,21 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    int32_t MainWindow::SeedPercent()
+    {
+        return _randompercent;
+    }
+
+    void MainWindow::SeedPercent(int32_t value)
+    {
+        if (_randompercent != value)
+        {
+            _randompercent = value;
+
+            m_propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
+        }
+    }
+
     void MainWindow::MyProperty(int32_t /* value */)
     {
         throw hresult_not_implemented();
@@ -272,10 +276,15 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
+    hstring MainWindow::GetSliderText()
+    {
+        std::wstring slidertext = L"fuck you";// std::format(L"{0}% random", sliderPop().Value());
+        hstring hslidertext{ slidertext };
+        return hslidertext;
+    }
+
     void winrt::ModernLife::implementation::MainWindow::sliderPop_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
     {
-        _randompercent = sliderPop().Value() / 100;
-        int val = sliderPop().Value();
         std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
         if (nullptr != popSliderText())
         {
