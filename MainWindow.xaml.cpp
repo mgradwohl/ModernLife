@@ -4,6 +4,13 @@
 #include "pch.h"
 #include<future>
 #include<format>
+#include<windows.ui.h>
+
+#include<windows.ui.xaml.h>
+#include<windows.ui.xaml.media.h>
+#include<winrt/Microsoft.Graphics.Canvas.h>
+
+
 #include "MainWindow.xaml.h"
 
 #if __has_include("MainWindow.g.cpp")
@@ -80,6 +87,18 @@ namespace winrt::ModernLife::implementation
             }
         }
     }
+
+    //Windows::UI::Color MainWindow::GetCellColor2(const Cell& cell)
+    //{
+    //    //using namespace Microsoft::UI::Xaml::Media;
+    //    int z = 200;
+    //    int i = cell.Age() / z;
+    //    //CanvasBitmap bmp = legendAge().   .as<CanvasBitmap>();
+    //    //com_array<Windows::UI::Color> clr { bmp.GetPixelColors(0, 0, 0, 100)};
+    //    //return clr[i];
+
+    //    return ColorHelper::FromArgb(255, 34, 34, 34);
+    //}
 
     Windows::UI::Color MainWindow::GetCellColor(const Cell& cell)
     {
@@ -277,6 +296,7 @@ namespace winrt::ModernLife::implementation
         _randompercent = sliderPop().Value() / 100;
         int val = sliderPop().Value();
         std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
+
         if (nullptr != popSliderText())
         {
             popSliderText().Text(slidertext);

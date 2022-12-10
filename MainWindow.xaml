@@ -16,6 +16,7 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <canvas:CanvasControl x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="{StaticResource SystemChromeMediumLowColor}" />
         </Grid>
+       
         <SplitView.Pane>
             <StackPanel Orientation="Vertical" >
                 <TextBlock Text="MODERN LIFE" x:Name="PaneHeader" HorizontalAlignment="Center" Margin="0,12,0,12" Style="{StaticResource BaseTextBlockStyle}"/>
@@ -29,9 +30,25 @@
                     <Span xml:space="preserve"><Run>YouTube </Run><Hyperlink NavigateUri="https://youtu.be/Kk2MH9O4pXY">John Conway</Hyperlink></Span>
                 </TextBlock>
                 <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,12,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
-                <Grid Margin="12,6,6,6" HorizontalAlignment="Stretch" Width="200" Height="400">
+                <Grid Margin="12,6,6,6" HorizontalAlignment="Stretch" Width="200" Height="200">
                     <canvas:CanvasControl x:Name="theCanvasDebug" Draw="theCanvasDebug_Draw" />
                 </Grid>
+                <TextBlock Text="AGE LEGEND" HorizontalAlignment="Center" Margin="0,12,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
+                <Canvas Width="100" Height="200" HorizontalAlignment="Center" x:Name="legendAge">
+                    <Canvas.Background>
+                        <LinearGradientBrush x:Name="legendBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+                            <GradientStop Color="Violet" Offset="0.0" />
+                            <GradientStop Color="Indigo" Offset="0.125" />
+                            <GradientStop Color="Blue" Offset="0.25" />
+                            <GradientStop Color="Green" Offset="0.375" />
+                            <GradientStop Color="Yellow" Offset="0.5" />
+                            <GradientStop Color="Orange" Offset="0.625" />
+                            <GradientStop Color="Red" Offset="0.75" />
+                            <GradientStop Color="SlateGray" Offset=".875" />
+                            <GradientStop Color="Black" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Canvas.Background>
+                </Canvas>
             </StackPanel>
         </SplitView.Pane>
     </SplitView>
