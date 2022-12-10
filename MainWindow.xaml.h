@@ -11,6 +11,7 @@ using namespace winrt;
 using namespace Microsoft::UI;
 using namespace Microsoft::UI::Dispatching;
 using namespace Microsoft::UI::Xaml;
+using namespace Microsoft::UI::Xaml::Data;
 using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
@@ -39,6 +40,8 @@ namespace winrt::ModernLife::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
+        int32_t SeedPercent();
+        void SeedPercent(int32_t value);
         
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
@@ -47,6 +50,22 @@ namespace winrt::ModernLife::implementation
         //Windows::UI::Color GetCellColor2(const Cell& cell);
         void theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void OnTick(IInspectable const& sender, IInspectable const& event);
+        static hstring GetSliderText();
+        void GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void sliderPop_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
+
+
+        winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
+        {
+            return m_propertyChanged.add(value);
+        }
+
+        void PropertyChanged(winrt::event_token const& token)
+        {
+            m_propertyChanged.remove(token);
+        }
+
     private:
         CanvasRenderTarget _back{ nullptr };
         std::mutex lockbackbuffer;
@@ -56,11 +75,9 @@ namespace winrt::ModernLife::implementation
         DispatcherQueueController _controller{ nullptr };
         Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
         DispatcherQueueTimer _timer{ nullptr };
-        float _randompercent = 0.3f;
-    public:
-        void GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void sliderPop_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
+        int32_t _randompercent = 30;
+
+        winrt::event<PropertyChangedEventHandler> m_propertyChanged;
     };
 }
 
