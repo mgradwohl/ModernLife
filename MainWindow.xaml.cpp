@@ -47,8 +47,6 @@ namespace winrt::ModernLife::implementation
         // create the board
         board = Board{ cellcount, cellcount };
 
-        //m_propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
-
         auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
         randomizer.wait();
 
@@ -72,10 +70,8 @@ namespace winrt::ModernLife::implementation
     {
         RenderOffscreen(sender);
         {
-            {
-                std::scoped_lock lock{ lockbackbuffer };
-                args.DrawingSession().DrawImage(_back, 0, 0);
-            }
+            std::scoped_lock lock{ lockbackbuffer };
+            args.DrawingSession().DrawImage(_back, 0, 0);
         }
     }
 
@@ -96,15 +92,42 @@ namespace winrt::ModernLife::implementation
             // setup vector of colors
             _colorinit = true;
         }
-        int age = cell.Age();
-        if (age > maxage)
-        {
-            age = maxage;
-        }
+        int age = cell.Age() > maxage ? maxage : cell.Age();
+
         return vecColors[age];
     }
 
-    Windows::UI::Color MainWindow::GetCellColor(const Cell& cell)
+    Windows::UI::Color MainWindow::GetCellColor3(const Cell& cell)
+    {
+        if (!_colorinit)
+        {
+            float h = 0.0f;
+
+            vecColors.resize(maxage + 1);
+            for (int index = 100; index < maxage - 100 + 1; index++)
+            {
+                h = ((float)index) / maxage * 360.0f;
+                vecColors[index] = HSVtoRGB2(h, 60.0, 60.0);
+            }
+            _colorinit = true;
+        }
+
+        if (cell.Age() < 100)
+        {
+            return Windows::UI::Colors::Green();
+        }
+        
+        if (cell.Age() > maxage - 100)
+        {
+            return Windows::UI::Colors::Black();
+        }
+
+        int age = cell.Age() > maxage ? maxage : cell.Age();
+
+        return vecColors[age];
+    }
+
+    Windows::UI::Color MainWindow::GetCellColor(const Cell& cell) const
     {
         uint8_t colorscale = 0;
         uint8_t red = 0;
@@ -160,7 +183,7 @@ namespace winrt::ModernLife::implementation
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor2(cell));
+                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell));
                     }
                     posx += w;
                 }
@@ -223,7 +246,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    int32_t MainWindow::SeedPercent()
+    int32_t MainWindow::SeedPercent() const
     {
         return _randompercent;
     }
@@ -276,7 +299,7 @@ namespace winrt::ModernLife::implementation
         args.DrawingSession().DrawText(str, 0, 0, 200, 200, colorText, canvasFmt);
     }
 
-    void winrt::ModernLife::implementation::MainWindow::GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
         e;
         sender;
@@ -297,7 +320,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void winrt::ModernLife::implementation::MainWindow::RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
         e;
         sender;
@@ -312,12 +335,12 @@ namespace winrt::ModernLife::implementation
 
     hstring MainWindow::GetSliderText()
     {
-        std::wstring slidertext = L"fuck you";// std::format(L"{0}% random", sliderPop().Value());
+        std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
         hstring hslidertext{ slidertext };
         return hslidertext;
     }
 
-    void winrt::ModernLife::implementation::MainWindow::sliderPop_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
+    void MainWindow::sliderPop_ValueChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
     {
         std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
 
@@ -325,6 +348,42 @@ namespace winrt::ModernLife::implementation
         {
             popSliderText().Text(slidertext);
         }
+    }
+
+    Windows::UI::Color MainWindow::HSVtoRGB2(float H, float S, float V)
+    {
+        float s = S / 100;
+        float v = V / 100;
+        float C = s * v;
+        float X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
+        float m = v - C;
+        float r = 0;
+        float g = 0;
+        float b = 0;
+
+        if (H >= 0 && H < 60) {
+            r = C, g = X, b = 0;
+        }
+        else if (H >= 60 && H < 120) {
+            r = X, g = C, b = 0;
+        }
+        else if (H >= 120 && H < 180) {
+            r = 0, g = C, b = X;
+        }
+        else if (H >= 180 && H < 240) {
+            r = 0, g = X, b = C;
+        }
+        else if (H >= 240 && H < 300) {
+            r = X, g = 0, b = C;
+        }
+        else {
+            r = C, g = 0, b = X;
+        }
+        int R = (r + m) * 255;
+        int G = (g + m) * 255;
+        int B = (b + m) * 255;
+    
+        return ColorHelper::FromArgb(255, R, G, B);
     }
 }
 

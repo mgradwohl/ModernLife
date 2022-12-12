@@ -40,21 +40,22 @@ namespace winrt::ModernLife::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
-        int32_t SeedPercent();
+        int32_t SeedPercent() const;
         void SeedPercent(int32_t value);
         
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, int sx, int ex, float width);
-        Windows::UI::Color GetCellColor(const Cell& cell);
+        Windows::UI::Color GetCellColor(const Cell& cell) const;
         Windows::UI::Color GetCellColor2(const Cell& cell);
+        Windows::UI::Color GetCellColor3(const Cell& cell);
         void theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void OnTick(IInspectable const& sender, IInspectable const& event);
-        static hstring GetSliderText();
-        void GoButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void RestartButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void sliderPop_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
-
+        hstring GetSliderText();
+        void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void sliderPop_ValueChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
+        Windows::UI::Color HSVtoRGB2(float H, float S, float V);
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
         {

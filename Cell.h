@@ -14,8 +14,6 @@ public:
     {
     }
 
-    //Cell operator=(Cell& cell) = delete;
-
     ~Cell() = default;
 
     int Neighbors() const
