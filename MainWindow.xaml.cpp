@@ -79,17 +79,30 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    //Windows::UI::Color MainWindow::GetCellColor2(const Cell& cell)
-    //{
-    //    //using namespace Microsoft::UI::Xaml::Media;
-    //    int z = 200;
-    //    int i = cell.Age() / z;
-    //    //CanvasBitmap bmp = legendAge().   .as<CanvasBitmap>();
-    //    //com_array<Windows::UI::Color> clr { bmp.GetPixelColors(0, 0, 0, 100)};
-    //    //return clr[i];
+    Windows::UI::Color MainWindow::GetCellColor2(const Cell& cell)
+    {
+        if (!_colorinit)
+        {
+            for (int index = 0; index <= maxage + 1; index++)
+            {
+                int a = 255;
+                int r = (index * 255)/maxage;
+                int g = 128;
+                int b = 128;
+                vecColors.emplace_back(ColorHelper::FromArgb(a, r, g, b));
 
-    //    return ColorHelper::FromArgb(255, 34, 34, 34);
-    //}
+            }
+
+            // setup vector of colors
+            _colorinit = true;
+        }
+        int age = cell.Age();
+        if (age > maxage)
+        {
+            age = maxage;
+        }
+        return vecColors[age];
+    }
 
     Windows::UI::Color MainWindow::GetCellColor(const Cell& cell)
     {
@@ -147,7 +160,7 @@ namespace winrt::ModernLife::implementation
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor(cell));
+                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor2(cell));
                     }
                     posx += w;
                 }

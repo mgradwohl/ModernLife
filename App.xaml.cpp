@@ -45,4 +45,5 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     window = make<MainWindow>();
     window.Activate();
+    //window.StartGameLoop();
 }

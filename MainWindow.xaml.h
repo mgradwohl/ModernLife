@@ -47,7 +47,7 @@ namespace winrt::ModernLife::implementation
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, int sx, int ex, float width);
         Windows::UI::Color GetCellColor(const Cell& cell);
-        //Windows::UI::Color GetCellColor2(const Cell& cell);
+        Windows::UI::Color GetCellColor2(const Cell& cell);
         void theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void OnTick(IInspectable const& sender, IInspectable const& event);
         static hstring GetSliderText();
@@ -78,6 +78,8 @@ namespace winrt::ModernLife::implementation
         int32_t _randompercent = 30;
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
+        bool _colorinit = false;
+        std::vector<Windows::UI::Color> vecColors;
     };
 }
 
