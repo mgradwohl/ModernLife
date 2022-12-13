@@ -272,10 +272,10 @@ namespace winrt::ModernLife::implementation
         throw hresult_not_implemented();
     }
 
-    void MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    void MainWindow::theCanvasStatsTitle_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
         sender;
-        
+
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
@@ -291,15 +291,45 @@ namespace winrt::ModernLife::implementation
         SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
         SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
 
+        Windows::UI::Color colorBack{ scbBack.Color() };
+        Windows::UI::Color colorText{ scbText.Color() };
+
+        args.DrawingSession().Clear(colorBack);
+
+        std::wstring str = std::format(L"Generation\r\nAlive\r\nTotal Cells");
+        sender.Invalidate();
+
+        args.DrawingSession().DrawText(str, 0, 0, 80, 100, colorText, canvasFmt);
+    }
+
+    void MainWindow::theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    {
+        sender;
+        
+        using namespace Microsoft::UI::Xaml::Controls;
+        using namespace Microsoft::UI::Xaml::Media;
+
+        Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
+        canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
+        canvasFmt.FontSize(PaneHeader().FontSize());
+
+        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
+
+        Brush backBrush{ splitView().PaneBackground() };
+        Brush textBrush{ PaneHeader().Foreground() };
+
+        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
+        SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
+
         Windows::UI::Color colorBack{scbBack.Color()};
         Windows::UI::Color colorText{scbText.Color()};
 
         args.DrawingSession().Clear(colorBack);
 
-        std::wstring str = std::format(L"Generation\t{:6}\r\nAlive\t\t{:6}\r\nTotal Cells\t{:6}", board.Generation(), board.GetLiveCount(), board.GetSize());
+        std::wstring str = std::format(L"{:8}\r\n{:8}\r\n{:8}", board.Generation(), board.GetLiveCount(), board.GetSize());
         sender.Invalidate();
 
-        args.DrawingSession().DrawText(str, 0, 0, 200, 200, colorText, canvasFmt);
+        args.DrawingSession().DrawText(str, 0, 0, 80, 100, colorText, canvasFmt);
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
@@ -336,10 +366,10 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    hstring MainWindow::GetSliderText(int32_t value)
+    hstring MainWindow::GetSliderText(double_t value)
     {
         // only called once when the app starts
-        std::wstring slidertext = std::format(L"{0}% random", value);
+        std::wstring slidertext = std::format(L"{0}% random", static_cast<int>(value));
         hstring hslidertext{ slidertext };
         return hslidertext;
     }

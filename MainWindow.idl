@@ -9,7 +9,7 @@ namespace ModernLife
         MainWindow();
         Int32 MyProperty;
         Int32 SeedPercent;
-        String GetSliderText(Int32 value);
+        String GetSliderText(Double value);
         Microsoft.UI.Xaml.Controls.Slider sliderPop{get;};
     }
 }
