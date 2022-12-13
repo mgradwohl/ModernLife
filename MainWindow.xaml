@@ -27,7 +27,7 @@
                 <TextBlock x:Name="popSliderText" Text="{x:Bind GetSliderText(sliderPop.Value), Mode=OneWay}" HorizontalAlignment="Center" Margin = "6"/>
                 <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,12,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
                 <StackPanel Orientation="Horizontal">
-                    <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="80" Height="100">
+                    <Grid Margin="12,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="80" Height="100">
                         <canvas:CanvasControl x:Name="theCanvasStatsTitle" Draw="theCanvasStatsTitle_Draw" />
                     </Grid>
                     <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="80" Height="100">
