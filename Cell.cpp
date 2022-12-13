@@ -56,14 +56,14 @@ const char* Cell::GetStateString() const
 	}
 }
 
-const std::u8string& Cell::GetEmojiStateString() const
+const std::string& Cell::GetEmojiStateString() const
 {
-	static std::u8string sDead(u8"🖤");
-	static std::u8string sLive(u8"😀");
-	static std::u8string sBorn(u8"💕");
-	static std::u8string sOld(u8"🤡");
-	static std::u8string sDying(u8"🤢");
-	static std::u8string sUnknown(u8"⁉️");
+	static std::string sDead("🖤");
+	static std::string sLive("😀");
+	static std::string sBorn("💕");
+	static std::string sOld("🤡");
+	static std::string sDying("🤢");
+	static std::string sUnknown("⁉️");
 
 	switch (_state)
 	{

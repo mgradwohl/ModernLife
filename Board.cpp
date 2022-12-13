@@ -6,7 +6,7 @@
 // optimized to never use std::endl until the full board is done printing
 std::ostream& operator<<(std::ostream& stream, Board& board)
 {
-	static std::u8string str(((board.Width() + 2) * board.Height()) + 1, ' ');
+	static std::string str(((board.Width() + 2) * board.Height()) + 1, ' ');
 	// clear the static string of any leftover goo
 	str.clear();
 
@@ -17,7 +17,7 @@ std::ostream& operator<<(std::ostream& stream, Board& board)
 			const Cell& cell = board.GetCell(x, y);
 			str += cell.GetEmojiStateString();
 		}
-		str += u8"\r\n";
+		str += "\r\n";
 	}
 
 	printf((const char*)str.c_str());

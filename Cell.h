@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <string>
 class Cell
 {
 public:
@@ -51,7 +52,7 @@ public:
 
     const char* GetStateString() const;
 
-    const std::u8string& GetEmojiStateString() const;
+    const std::string& GetEmojiStateString() const;
 
     //void KillOldCell();
 };
