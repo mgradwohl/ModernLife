@@ -16,7 +16,7 @@ public:
 
     ~Cell() = default;
 
-    int Neighbors() const
+    uint8_t Neighbors() const
     {
         return _neighbors;
     }
@@ -26,12 +26,12 @@ public:
         _neighbors = n;
     }
 
-    void SetAge(int age)
+    void SetAge(uint16_t age)
     {
         _age = age;
     }
 
-    int Age() const
+    uint16_t Age() const
     {
         return _age;
     }

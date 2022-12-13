@@ -18,7 +18,7 @@ private:
     uint16_t _numBorn = 0;
     uint16_t _numOld = 0;
     uint16_t _numDying = 0;
-    uint16_t _OldAge = -1;
+    uint16_t _OldAge = static_cast<uint16_t>(- 1);
     uint16_t _dirty = 0;
 
 public:
@@ -120,9 +120,9 @@ public:
         return _board[x + (y * _width)];
     }
 
-    uint16_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
+    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
 
-    uint16_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
+    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
 
     void ApplyNextStateToBoard();
 

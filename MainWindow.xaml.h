@@ -45,7 +45,7 @@ namespace winrt::ModernLife::implementation
         
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
-        void DrawInto(CanvasDrawingSession& ds, int sx, int ex, float width);
+        void DrawInto(CanvasDrawingSession& ds, uint16_t sx, uint16_t ex, float width);
         Windows::UI::Color GetCellColor(const Cell& cell) const;
         Windows::UI::Color GetCellColor2(const Cell& cell);
         Windows::UI::Color GetCellColor3(const Cell& cell);
@@ -54,7 +54,6 @@ namespace winrt::ModernLife::implementation
         hstring GetSliderText(double_t value);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void sliderPop_ValueChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
         Windows::UI::Color HSVtoRGB2(float H, float S, float V);
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)

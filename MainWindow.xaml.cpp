@@ -73,12 +73,12 @@ namespace winrt::ModernLife::implementation
     {
         if (!_colorinit)
         {
-            for (int index = 0; index <= maxage + 1; index++)
+            for (uint16_t index = 0; index <= maxage + 1; index++)
             {
-                int a = 255;
-                int r = (index * 255)/maxage;
-                int g = 128;
-                int b = 128;
+                uint8_t a = 255;
+                uint8_t r = static_cast<uint8_t>((index * 255)/maxage);
+                uint8_t g = 128;
+                uint8_t b = 128;
                 vecColors.emplace_back(ColorHelper::FromArgb(a, r, g, b));
 
             }
@@ -86,7 +86,7 @@ namespace winrt::ModernLife::implementation
             // setup vector of colors
             _colorinit = true;
         }
-        int age = cell.Age() > maxage ? maxage : cell.Age();
+        uint16_t age = cell.Age() > maxage ? maxage : cell.Age();
 
         return vecColors[age];
     }
@@ -128,7 +128,7 @@ namespace winrt::ModernLife::implementation
         uint8_t green = 0;
         uint8_t blue = 0;
 
-        colorscale = (cell.Age() * 255) / maxage;
+        colorscale = static_cast<uint8_t>((cell.Age() * 255) / maxage);
         colorscale = 254 - colorscale;
 
         if (cell.Age() <= (maxage * 1/4))
@@ -153,7 +153,7 @@ namespace winrt::ModernLife::implementation
         return cellcolor;
     }
 
-    void MainWindow::DrawInto(CanvasDrawingSession& ds, int startY, int endY, float width)
+    void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY, float width)
 	{
         //float inc = width / cellcount;
         //if (drawgrid)
@@ -171,9 +171,9 @@ namespace winrt::ModernLife::implementation
         {
             std::scoped_lock lock{ lockboard };
 
-            for (int y = startY; y < endY; y++)
+            for (uint16_t y = startY; y < endY; y++)
             {
-                for (int x = 0; x < board.Width(); x++)
+                for (uint16_t x = 0; x < board.Width(); x++)
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
@@ -182,7 +182,7 @@ namespace winrt::ModernLife::implementation
                     posx += w;
                 }
                 posy += w;
-                posx = 1.0f;
+                posx = 0.0f;
             }
         }
 	}
@@ -222,16 +222,16 @@ namespace winrt::ModernLife::implementation
         if (singlerenderer)
         {
             // render in one thread
-            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width);
+            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()), _back.Size().Width);
             drawinto0.wait();
         }
         else
         {
             // render in 4 threads
-            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0,                    board.Height() * 1/4, _back.Size().Width);
-            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/4, board.Height() * 1/2, _back.Size().Width);
-            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/2, board.Height() * 3/4, _back.Size().Width);
-            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 3/4, board.Height(),       _back.Size().Width);
+            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0)                   , static_cast<uint16_t>(board.Height() * 1/4), _back.Size().Width);
+            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1/4), static_cast<uint16_t>(board.Height() * 1/2), _back.Size().Width);
+            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1/2), static_cast<uint16_t>(board.Height() * 3/4), _back.Size().Width);
+            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3/4), static_cast<uint16_t>(board.Height())      , _back.Size().Width);
 
             drawinto1.wait();
             drawinto2.wait();
@@ -276,7 +276,7 @@ namespace winrt::ModernLife::implementation
         // to make this canvas aligned with styles
         Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
-        canvasFmt.FontSize(PaneHeader().FontSize());
+        canvasFmt.FontSize(static_cast<float>(PaneHeader().FontSize()));
 
         Brush backBrush{ splitView().PaneBackground() };
         Brush textBrush{ PaneHeader().Foreground() };
@@ -345,27 +345,16 @@ namespace winrt::ModernLife::implementation
         return hslidertext;
     }
 
-    void MainWindow::sliderPop_ValueChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
-    {
-        // old way, this works
-        //std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
-
-        //if (nullptr != popSliderText())
-        //{
-        //    popSliderText().Text(slidertext);
-        //}
-    }
-
     Windows::UI::Color MainWindow::HSVtoRGB2(float H, float S, float V)
     {
-        float s = S / 100;
-        float v = V / 100;
+        float s = S / 100.0f;
+        float v = V / 100.0f;
         float C = s * v;
-        float X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
+        float X = static_cast<float>(C * (1.0f - abs(fmod(H / 60.0, 2.0f) - 1.0f)));
         float m = v - C;
-        float r = 0;
-        float g = 0;
-        float b = 0;
+        float r = 0.0f;
+        float g = 0.0f;
+        float b = 0.0f;
 
         if (H >= 0 && H < 60) {
             r = C, g = X, b = 0;
@@ -385,9 +374,9 @@ namespace winrt::ModernLife::implementation
         else {
             r = C, g = 0, b = X;
         }
-        int R = (r + m) * 255;
-        int G = (g + m) * 255;
-        int B = (b + m) * 255;
+        uint8_t R = static_cast<uint8_t>((r + m) * 255);
+        uint8_t G = static_cast<uint8_t>((g + m) * 255);
+        uint8_t B = static_cast<uint8_t>((b + m) * 255);
     
         return ColorHelper::FromArgb(255, R, G, B);
     }

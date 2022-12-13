@@ -73,7 +73,7 @@ void Board::SetCell(Cell& cell, Cell::State state)
 	}
 }
 
-uint16_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -81,7 +81,7 @@ uint16_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
 	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
-	uint16_t count = 0;
+	uint8_t count = 0;
 
 	if (GetCell(x + xoleft, y + yobelow).IsAlive()) count++;
 	if (GetCell(x, y + yobelow).IsAlive()) count++;
@@ -99,7 +99,7 @@ uint16_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	return count;
 }
 
-uint16_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -107,7 +107,7 @@ uint16_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
 	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
-	uint16_t count = 0;
+	uint8_t count = 0;
 
 	if (GetCell(x + xoleft, y + yobelow).IsAliveNotDying()) count++;
 	if (GetCell(x, y + yobelow).IsAliveNotDying()) count++;
@@ -168,7 +168,7 @@ void Board::RandomizeBoard(float alivepct)
 		if (rp <= alivepct)
 		{
 			SetCell(c, Cell::State::Live);
-			c.SetAge(ra);
+			c.SetAge(static_cast<uint16_t>(ra));
 		}
 	}
 	_dirty = 1; // must be dirty, we just randomized it
