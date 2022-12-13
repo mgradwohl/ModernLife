@@ -336,7 +336,7 @@ namespace winrt::ModernLife::implementation
     hstring MainWindow::GetSliderText(int32_t value)
     {
         // only called once when the app starts
-        std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
+        std::wstring slidertext = std::format(L"{0}% random", value);
         hstring hslidertext{ slidertext };
         return hslidertext;
     }
