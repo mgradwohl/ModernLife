@@ -5,13 +5,6 @@
 #include<future>
 #include<format>
 
-#include<windows.ui.h>
-#include<windows.ui.xaml.h>
-#include<windows.ui.xaml.media.h>
-#include<winrt/Microsoft.Graphics.Canvas.h>
-#include<winrt/Microsoft.Graphics.Canvas.Text.h>
-
-
 #include "MainWindow.xaml.h"
 
 #if __has_include("MainWindow.g.cpp")
@@ -272,36 +265,6 @@ namespace winrt::ModernLife::implementation
         throw hresult_not_implemented();
     }
 
-    void MainWindow::theCanvasStatsTitle_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
-    {
-        sender;
-
-        using namespace Microsoft::UI::Xaml::Controls;
-        using namespace Microsoft::UI::Xaml::Media;
-
-        Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
-        canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
-        canvasFmt.FontSize(PaneHeader().FontSize());
-
-        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
-
-        Brush backBrush{ splitView().PaneBackground() };
-        Brush textBrush{ PaneHeader().Foreground() };
-
-        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
-        SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
-
-        Windows::UI::Color colorBack{ scbBack.Color() };
-        Windows::UI::Color colorText{ scbText.Color() };
-
-        args.DrawingSession().Clear(colorBack);
-
-        std::wstring str = std::format(L"Generation\r\nAlive\r\nTotal Cells");
-        sender.Invalidate();
-
-        args.DrawingSession().DrawText(str, 0, 0, 80, 100, colorText, canvasFmt);
-    }
-
     void MainWindow::theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
         sender;
@@ -309,11 +272,11 @@ namespace winrt::ModernLife::implementation
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
+        // copy colors, font details etc from other controls
+        // to make this canvas aligned with styles
         Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
         canvasFmt.FontSize(PaneHeader().FontSize());
-
-        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
 
         Brush backBrush{ splitView().PaneBackground() };
         Brush textBrush{ PaneHeader().Foreground() };
@@ -326,10 +289,18 @@ namespace winrt::ModernLife::implementation
 
         args.DrawingSession().Clear(colorBack);
 
-        std::wstring str = std::format(L"{:8}\r\n{:8}\r\n{:8}", board.Generation(), board.GetLiveCount(), board.GetSize());
+        // create the strings to draw
+        std::wstring strTitle = std::format(L"Generation\r\nAlive\r\nTotal Cells");
+        std::wstring strContent = std::format(L"{:8}\r\n{:8}\r\n{:8}", board.Generation(), board.GetLiveCount(), board.GetSize());
         sender.Invalidate();
+        
+        // draw the text left aligned
+        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
+        args.DrawingSession().DrawText(strTitle, 0, 0, 160, 100, colorText, canvasFmt);
 
-        args.DrawingSession().DrawText(str, 0, 0, 80, 100, colorText, canvasFmt);
+        // draw the values right aligned
+        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
+        args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
