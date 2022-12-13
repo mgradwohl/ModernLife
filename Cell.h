@@ -6,7 +6,7 @@ public:
 
 private:
     State _state;
-    uint32_t _age;
+    uint16_t _age;
     uint8_t _neighbors;
 
 public:
