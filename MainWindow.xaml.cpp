@@ -333,8 +333,9 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    hstring MainWindow::GetSliderText()
+    hstring MainWindow::GetSliderText(int32_t value)
     {
+        // only called once when the app starts
         std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
         hstring hslidertext{ slidertext };
         return hslidertext;
@@ -342,12 +343,13 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::sliderPop_ValueChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
     {
-        std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
+        // old way, this works
+        //std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
 
-        if (nullptr != popSliderText())
-        {
-            popSliderText().Text(slidertext);
-        }
+        //if (nullptr != popSliderText())
+        //{
+        //    popSliderText().Text(slidertext);
+        //}
     }
 
     Windows::UI::Color MainWindow::HSVtoRGB2(float H, float S, float V)
