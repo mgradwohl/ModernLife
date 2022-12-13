@@ -194,10 +194,10 @@ namespace winrt::ModernLife::implementation
         if (!board.IsDirty())
             return;
 
-        constexpr int bestsize = cellcount * 8;
+        constexpr int bestsize = cellcount * 5;
         winrt::Windows::Foundation::Size huge = sender.Size();
         float width = min(huge.Width, bestsize);
-        float height = (width/cellcount) * board.Height();
+        float height = width;// (width / cellcount)* board.Height();
 
         // if the back buffer doesn't exist or is the wrong size, create it
         if (nullptr == _back || _back.Size() != sender.Size())
