@@ -4,11 +4,12 @@
 #include "pch.h"
 #include<future>
 #include<format>
-#include<windows.ui.h>
 
+#include<windows.ui.h>
 #include<windows.ui.xaml.h>
 #include<windows.ui.xaml.media.h>
 #include<winrt/Microsoft.Graphics.Canvas.h>
+#include<winrt/Microsoft.Graphics.Canvas.Text.h>
 
 
 #include "MainWindow.xaml.h"
@@ -282,6 +283,8 @@ namespace winrt::ModernLife::implementation
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
         canvasFmt.FontSize(PaneHeader().FontSize());
 
+        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
+
         Brush backBrush{ splitView().PaneBackground() };
         Brush textBrush{ PaneHeader().Foreground() };
 
@@ -293,7 +296,7 @@ namespace winrt::ModernLife::implementation
 
         args.DrawingSession().Clear(colorBack);
 
-        std::wstring str = std::format(L"Generation\t{}\r\nAlive\t\t{}\r\nTotal Cells\t{}", board.Generation(), board.GetLiveCount(), board.GetSize());
+        std::wstring str = std::format(L"Generation\t{:6}\r\nAlive\t\t{:6}\r\nTotal Cells\t{:6}", board.Generation(), board.GetLiveCount(), board.GetSize());
         sender.Invalidate();
 
         args.DrawingSession().DrawText(str, 0, 0, 200, 200, colorText, canvasFmt);
