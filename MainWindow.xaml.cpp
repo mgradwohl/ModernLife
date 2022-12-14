@@ -11,9 +11,6 @@
 #include "MainWindow.g.cpp"
 #endif
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace winrt::ModernLife::implementation
 {
     MainWindow::MainWindow()
@@ -38,16 +35,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
-        // create the board
-        {
-            std::scoped_lock lock{ lockboard };
-            board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
-        }
-
-        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
-        randomizer.wait();
-
-        // create and start a timer
+        // create and start a timer without recreating it when the user changes options
         if (nullptr == _controller)
         {
             _controller = DispatcherQueueController::CreateOnDedicatedThread();
@@ -56,7 +44,6 @@ namespace winrt::ModernLife::implementation
         if (nullptr == _queue)
         {
             _queue = _controller.DispatcherQueue();
-
         }
 
         if (nullptr == _timer)
@@ -64,20 +51,31 @@ namespace winrt::ModernLife::implementation
             _timer = _queue.CreateTimer();
         }
 
+        if (! _tokeninit)
+        {
+            _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+            _tokeninit = true;
+        }
+
         using namespace  std::literals::chrono_literals;
         _timer.Interval(std::chrono::milliseconds{ 33 });
         _timer.IsRepeating(true);
-
-        if (! _tokeninit)
-        {
-            winrt::event_token _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
-            _tokeninit = true;
-        }
 
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
         GoButton().Label(L"Play");
 
+        // create the board, lock it in the case that OnTick is updating it
+        {
+            std::scoped_lock lock{ lockboard };
+            board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
+        }
+
+        // add a random population
+        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
+        randomizer.wait();
+
+        // draw the initial population
         theCanvas().Invalidate();
     }
 
@@ -311,9 +309,6 @@ namespace winrt::ModernLife::implementation
         {
             _boardwidth = value;
             _timer.Stop();
-            //using namespace Microsoft::UI::Xaml::Controls;
-            //GoButton().Icon(SymbolIcon(Symbol::Play));
-            //GoButton().Label(L"Play");
             StartGameLoop();
 
             m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
@@ -451,7 +446,3 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, R, G, B);
     }
 }
-
-
-
-
