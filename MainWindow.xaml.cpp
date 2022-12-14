@@ -410,6 +410,17 @@ namespace winrt::ModernLife::implementation
         return htext;
     }
 
+    void MainWindow::speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+		using namespace Microsoft::UI::Xaml::Controls;
+        MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
+        int speed = item.Tag().as<int>();
+        
+		dropdownSpeed().Content(winrt::box_value(item.Text()));
+
+		_timer.Interval(std::chrono::milliseconds(1000/speed));
+    }
+
     Windows::UI::Color MainWindow::HSVtoRGB2(float H, float S, float V)
     {
         float s = S / 100.0f;

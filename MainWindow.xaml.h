@@ -85,6 +85,8 @@ namespace winrt::ModernLife::implementation
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
         bool _colorinit = false;
         std::vector<Windows::UI::Color> vecColors;
+    public:
+        void speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 
