@@ -10,16 +10,16 @@ private:
     std::vector<Cell> _board;
     uint16_t _width = 0;
     uint16_t _height = 0;
-    uint16_t _size = 0;
-    uint16_t _generation = 0;
+    uint32_t _size = 0;
+    uint32_t _generation = 0;
 
-    uint16_t _numDead = 0;
-    uint16_t _numLive = 0;
-    uint16_t _numBorn = 0;
-    uint16_t _numOld = 0;
-    uint16_t _numDying = 0;
-    uint16_t _OldAge = static_cast<uint16_t>(- 1);
-    uint16_t _dirty = 0;
+    uint32_t _numDead = 0;
+    uint32_t _numLive = 0;
+    uint32_t _numBorn = 0;
+    uint32_t _numOld = 0;
+    uint32_t _numDying = 0;
+    uint32_t _OldAge = static_cast<uint16_t>(- 1);
+    uint32_t _dirty = 0;
 
 public:
     explicit Board(std::nullptr_t) {};
@@ -29,42 +29,42 @@ public:
 
     Board(uint16_t width, uint16_t height);
 
-    void SetOldAge(uint16_t age)
+    void SetOldAge(uint32_t age)
     {
         _OldAge = age;
     }
 
-    int GetOldAge() const
+    uint32_t GetOldAge() const
     {
         return _OldAge;
     }
 
-    int GetSize() const
+    uint32_t GetSize() const
     {
         return _size;
     }
 
-    int GetDeadCount() const
+    uint32_t GetDeadCount() const
     {
         return _numDead;
     }
 
-    int GetLiveCount() const
+    uint32_t GetLiveCount() const
     {
         return _numLive;
     }
 
-    int GetBornCount() const
+    uint32_t GetBornCount() const
     {
         return _numBorn;
     }
 
-    int GetOldCount() const
+    uint32_t GetOldCount() const
     {
         return _numOld;
     }
 
-    int GetDyingCount() const
+    uint32_t GetDyingCount() const
     {
         return _numDying;
     }
@@ -84,17 +84,17 @@ public:
         return _dirty;
     }
 
-    int Generation() const
+    uint32_t Generation() const
     {
         return _generation;
     }
 
-    int Width() const
+    uint32_t Width() const
     {
         return _width;
     }
 
-    int Height() const
+    uint32_t Height() const
     {
         return _height;
     }
@@ -103,7 +103,8 @@ public:
 
     const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        if (x * y > _size)
+        uint32_t check = x * y;
+        if (check > _size)
         {
             exit(-1);
         }
@@ -113,7 +114,8 @@ public:
 
     Cell& GetCell(uint16_t x, uint16_t y)
     {
-        if (x * y > _size)
+        uint32_t check = x * y;
+        if (check > _size)
         {
             exit(-1);
         }
@@ -144,6 +146,7 @@ public:
         }
     }
 
+    void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
     void ConwayUpdateBoardWithNextState();
 
     void ConwayRules(Cell& cell);

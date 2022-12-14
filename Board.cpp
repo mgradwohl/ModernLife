@@ -2,7 +2,7 @@
 // as x increases move right, as y increases move down
 #include "pch.h"
 #include "Board.h"
-
+#include <future>
 // optimized to never use std::endl until the full board is done printing
 std::ostream& operator<<(std::ostream& stream, Board& board)
 {
@@ -174,9 +174,9 @@ void Board::RandomizeBoard(float alivepct)
 	_dirty = 1; // must be dirty, we just randomized it
 }
 
-void Board::ConwayUpdateBoardWithNextState()
+void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 {
-	for (uint16_t y = 0; y < Height(); y++)
+	for (uint16_t y = startRow; y < endRow; y++)
 	{
 		for (uint16_t x = 0; x < Width(); x++)
 		{
@@ -184,6 +184,35 @@ void Board::ConwayUpdateBoardWithNextState()
 			CountLiveAndDyingNeighbors(x, y);
 			ConwayRules(cc);
 		}
+	}
+
+}
+void Board::ConwayUpdateBoardWithNextState()
+{
+	if (GetSize() < 100000)
+	{
+		auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(0), static_cast<uint16_t>(Height()));
+		update1.wait();
+	}
+	else
+	{
+		auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(0), static_cast<uint16_t>(Height() * 1/8));
+		auto update2 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 1/8), static_cast<uint16_t>(Height() * 2/8));
+		auto update3 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 2/8), static_cast<uint16_t>(Height() * 3/8));
+		auto update4 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 3/8), static_cast<uint16_t>(Height() * 4/8));
+		auto update5 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 4/8), static_cast<uint16_t>(Height() * 5/8));
+		auto update6 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 5/8), static_cast<uint16_t>(Height() * 6/8));
+		auto update7 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 6/8), static_cast<uint16_t>(Height() * 7/8));
+		auto update8 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 7/8), static_cast<uint16_t>(Height()));
+		update1.wait();
+		update2.wait();
+		update3.wait();
+		update4.wait();
+		update5.wait();
+		update6.wait();
+		update7.wait();
+		update8.wait();
+
 	}
 }
 

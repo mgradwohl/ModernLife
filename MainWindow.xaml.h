@@ -17,16 +17,16 @@ using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
 #ifdef _DEBUG
-    constexpr int cellcount = 250;
+    constexpr int cellcount = 500;
     constexpr int maxage = 1000;
     constexpr bool drawgrid = false;
     constexpr bool drawstats = true;
     constexpr bool singlerenderer = false;
 #else
-    constexpr int cellcount = 250;
+    constexpr int cellcount = 350;
     constexpr int maxage = 1000;
     constexpr bool drawgrid = false;
-    constexpr bool drawstats = false;
+    constexpr bool drawstats = true;
     constexpr bool singlerenderer = false;
 #endif
 

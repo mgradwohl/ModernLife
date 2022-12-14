@@ -45,12 +45,26 @@ namespace winrt::ModernLife::implementation
         randomizer.wait();
 
         // create and start a timer
-        _controller = DispatcherQueueController::CreateOnDedicatedThread();
-        _queue = _controller.DispatcherQueue();
-        _timer = _queue.CreateTimer();
+        if (nullptr == _controller)
+        {
+            _controller = DispatcherQueueController::CreateOnDedicatedThread();
+        }
+
+        if (nullptr == _queue)
+        {
+            _queue = _controller.DispatcherQueue();
+
+        }
+
+        if (nullptr == _timer)
+        {
+            _timer = _queue.CreateTimer();
+        }
+
         using namespace  std::literals::chrono_literals;
         _timer.Interval(std::chrono::milliseconds{ 16 });
         _timer.IsRepeating(true);
+
         auto registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
 
         using namespace Microsoft::UI::Xaml::Controls;
@@ -194,7 +208,7 @@ namespace winrt::ModernLife::implementation
         if (!board.IsDirty())
             return;
 
-        constexpr int bestsize = cellcount * 5;
+        constexpr int bestsize = 1250;// cellcount * 5;
         winrt::Windows::Foundation::Size huge = sender.Size();
         float width = min(huge.Width, bestsize);
         float height = width;// (width / cellcount)* board.Height();
@@ -227,16 +241,40 @@ namespace winrt::ModernLife::implementation
         }
         else
         {
-            // render in 4 threads
-            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0)                   , static_cast<uint16_t>(board.Height() * 1/4), _back.Size().Width);
-            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1/4), static_cast<uint16_t>(board.Height() * 1/2), _back.Size().Width);
-            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1/2), static_cast<uint16_t>(board.Height() * 3/4), _back.Size().Width);
-            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3/4), static_cast<uint16_t>(board.Height())      , _back.Size().Width);
+            if (cellcount < 100000)
+            {
+                // render in 4 threads
+                auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4), _back.Size().Width);
+                auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2), _back.Size().Width);
+                auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4), _back.Size().Width);
+                auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()), _back.Size().Width);
 
-            drawinto1.wait();
-            drawinto2.wait();
-            drawinto3.wait();
-            drawinto4.wait();
+                drawinto1.wait();
+                drawinto2.wait();
+                drawinto3.wait();
+                drawinto4.wait();
+            }
+            else
+            {
+                // render in 8 threads
+                auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 8), _back.Size().Width);
+                auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 8), static_cast<uint16_t>(board.Height() * 2 / 8), _back.Size().Width);
+                auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 2 / 8), static_cast<uint16_t>(board.Height() * 3 / 8), _back.Size().Width);
+                auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 8), static_cast<uint16_t>(board.Height() * 4 / 8), _back.Size().Width);
+                auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 4 / 8), static_cast<uint16_t>(board.Height() * 5 / 8), _back.Size().Width);
+                auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 5 / 8), static_cast<uint16_t>(board.Height() * 6 / 8), _back.Size().Width);
+                auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 6 / 8), static_cast<uint16_t>(board.Height() * 7 / 8), _back.Size().Width);
+                auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 7 / 8), static_cast<uint16_t>(board.Height()), _back.Size().Width);
+
+                drawinto1.wait();
+                drawinto2.wait();
+                drawinto3.wait();
+                drawinto4.wait();
+                drawinto5.wait();
+                drawinto6.wait();
+                drawinto7.wait();
+                drawinto8.wait();
+            }
         }
     }
 
@@ -339,7 +377,6 @@ namespace winrt::ModernLife::implementation
 
     hstring MainWindow::GetSliderText(double_t value)
     {
-        // only called once when the app starts
         std::wstring slidertext = std::format(L"{0}% random", static_cast<int>(value));
         hstring hslidertext{ slidertext };
         return hslidertext;
