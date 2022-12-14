@@ -39,7 +39,10 @@ namespace winrt::ModernLife::implementation
     void MainWindow::StartGameLoop()
     {
         // create the board
-        board = Board{ cellcount, cellcount };
+        {
+            std::scoped_lock lock{ lockboard };
+            board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
+        }
 
         auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
         randomizer.wait();
@@ -62,10 +65,14 @@ namespace winrt::ModernLife::implementation
         }
 
         using namespace  std::literals::chrono_literals;
-        _timer.Interval(std::chrono::milliseconds{ 16 });
+        _timer.Interval(std::chrono::milliseconds{ 33 });
         _timer.IsRepeating(true);
 
-        auto registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+        if (! _tokeninit)
+        {
+            winrt::event_token _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+            _tokeninit = true;
+        }
 
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
@@ -179,7 +186,7 @@ namespace winrt::ModernLife::implementation
 		//	}
 		//}
 
-        float w = (width / cellcount);
+        float w = (width / _boardwidth);
 		float posx = 0.0f;
 		float posy = startY * w;
         {
@@ -241,7 +248,7 @@ namespace winrt::ModernLife::implementation
         }
         else
         {
-            if (cellcount < 100000)
+            if (_boardwidth < 100000)
             {
                 // render in 4 threads
                 auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4), _back.Size().Width);
@@ -293,6 +300,25 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    int16_t MainWindow::BoardWidth() const
+    {
+        return _boardwidth;
+    }
+
+    void MainWindow::BoardWidth(int16_t value)
+    {
+        if (_boardwidth != value)
+        {
+            _boardwidth = value;
+            _timer.Stop();
+            //using namespace Microsoft::UI::Xaml::Controls;
+            //GoButton().Icon(SymbolIcon(Symbol::Play));
+            //GoButton().Label(L"Play");
+            StartGameLoop();
+
+            m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
+        }
+    }
     void MainWindow::MyProperty(int32_t /* value */)
     {
         throw hresult_not_implemented();
@@ -375,11 +401,18 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    hstring MainWindow::GetSliderText(double_t value)
+    hstring MainWindow::GetRandPercentText(double_t value)
     {
-        std::wstring slidertext = std::format(L"{0}% random", static_cast<int>(value));
-        hstring hslidertext{ slidertext };
-        return hslidertext;
+        std::wstring text = std::format(L"{0}% random", static_cast<int>(value));
+        hstring htext{ text };
+        return htext;
+    }
+
+    hstring MainWindow::GetBoardWidthText(double_t value)
+    {
+        std::wstring text = std::format(L"Width {0} x Height {0}", static_cast<int>(value));
+        hstring htext{ text };
+        return htext;
     }
 
     Windows::UI::Color MainWindow::HSVtoRGB2(float H, float S, float V)
