@@ -23,7 +23,7 @@
                 <AppBarButton HorizontalAlignment="Center" Icon="Pause" x:Name="GoButton"  Label="Pause" Click="GoButton_Click" />
                 <AppBarButton HorizontalAlignment="Center" Icon="Shuffle" x:Name="RestartButton"  Label="Reshuffle" Click="RestartButton_Click" />
 
-                <TextBlock Text="UPDATE SPEED" Margin="0,36,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                <TextBlock Text="UPDATE SPEED" Margin="0,36,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
                 <DropDownButton HorizontalAlignment="Center" x:Name="dropdownSpeed" Content="Fast" >
                     <DropDownButton.Flyout>
                         <MenuFlyout Placement="Bottom">
