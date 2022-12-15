@@ -412,7 +412,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-		using namespace Microsoft::UI::Xaml::Controls;
+        e;
+        using namespace Microsoft::UI::Xaml::Controls;
         MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
         int speed = item.Tag().as<int>();
         
