@@ -87,6 +87,7 @@ namespace winrt::ModernLife::implementation
         std::vector<Windows::UI::Color> vecColors;
     public:
         void speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void OnWindowActivate(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
     };
 }
 

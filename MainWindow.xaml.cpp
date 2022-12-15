@@ -16,8 +16,29 @@ namespace winrt::ModernLife::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
-
+        ExtendsContentIntoTitleBar(true);
+        SetTitleBar(AppTitleBar());
         StartGameLoop();
+    }
+
+    void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
+    {
+        using namespace Microsoft::UI::Xaml::Media;
+
+        if (args.WindowActivationState() == WindowActivationState::Deactivated)
+        {
+        
+//            SolidColorBrush brush = Application().Current().Resources().TryLookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
+            SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
+            
+            AppTitleTextBlock().Foreground(brush);
+        }
+        else
+        {
+//            SolidColorBrush brush = Application().Current().Resources().TryLookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
+            SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
+            AppTitleTextBlock().Foreground(brush);
+        }
     }
 
     void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
