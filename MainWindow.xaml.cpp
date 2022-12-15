@@ -27,15 +27,11 @@ namespace winrt::ModernLife::implementation
 
         if (args.WindowActivationState() == WindowActivationState::Deactivated)
         {
-        
-//            SolidColorBrush brush = Application().Current().Resources().TryLookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
             SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
-            
             AppTitleTextBlock().Foreground(brush);
         }
         else
         {
-//            SolidColorBrush brush = Application().Current().Resources().TryLookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
             SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
             AppTitleTextBlock().Foreground(brush);
         }
