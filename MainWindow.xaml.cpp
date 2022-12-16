@@ -378,7 +378,7 @@ namespace winrt::ModernLife::implementation
 
         // create the strings to draw
         std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells");
-        std::wstring strContent = std::format(L"{}:{}\r\n{:8}\r\n{:8}\r\n{:8}", _speed, fps.FPS(), board.Generation(), board.GetLiveCount(), board.GetSize());
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", _speed, fps.FPS(), board.Generation(), board.GetLiveCount(), board.GetSize());
         sender.Invalidate();
         
         // draw the text left aligned
