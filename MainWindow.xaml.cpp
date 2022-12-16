@@ -216,15 +216,15 @@ namespace winrt::ModernLife::implementation
 		float posx = 0.0f;
 		float posy = startY * w;
         {
-            //std::scoped_lock lock{ lockboard };
-
             for (uint16_t y = startY; y < endY; y++)
             {
                 for (uint16_t x = 0; x < board.Width(); x++)
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell));
+                        // there seems to be no speed difference between DrawRectangle and DrawRoundedRectangle
+                        ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
+                        //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell));
                     }
                     posx += w;
                 }
@@ -241,10 +241,9 @@ namespace winrt::ModernLife::implementation
         if (!board.IsDirty())
             return;
 
-        constexpr int bestsize = 1250;// cellcount * 5;
+        constexpr int bestsize = 1250;
         winrt::Windows::Foundation::Size huge = sender.Size();
-        float width = min(huge.Width, bestsize);
-        float height = width;// (width / cellcount)* board.Height();
+        float size = min(huge.Width, bestsize);
 
         // if the back buffer doesn't exist or is the wrong size, create it
         if (nullptr == _back || _back.Size() != sender.Size())
@@ -252,72 +251,56 @@ namespace winrt::ModernLife::implementation
             CanvasDevice device = CanvasDevice::GetSharedDevice();
             {
                 std::scoped_lock lock{ lockbackbuffer };
-                _back = CanvasRenderTarget(device, width, height, sender.Dpi());
+                _back = CanvasRenderTarget(device, size, size, sender.Dpi());
             }
         }
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
+        ds.FillRectangle(0, 0, size, size, Colors::WhiteSmoke());
 
-        using namespace Microsoft::UI::Xaml::Controls;
-        using namespace Microsoft::UI::Xaml::Media;
-        Brush backBrush{ splitView().PaneBackground() };
-        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
-        Windows::UI::Color colorBack{scbBack.Color()};
-
-        ds.FillRectangle(0, 0, width, height, Colors::WhiteSmoke());
-
-        if (singlerenderer)
+        if (board.GetSize() < 100000)
         {
-            {
-                // render in one thread
-                std::scoped_lock lock{ lockboard };
-                auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()), _back.Size().Width);
-                drawinto0.wait();
-            }
+            // render in one thread
+            std::scoped_lock lock{ lockboard };
+            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()), _back.Size().Width);
+            drawinto0.wait();
+        }
+        else if (board.GetSize() >= 100000 && board.GetSize() < 200000)
+        {
+            std::scoped_lock lock{ lockboard };
+
+            // render in 4 threads
+            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4), _back.Size().Width);
+            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2), _back.Size().Width);
+            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4), _back.Size().Width);
+            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()), _back.Size().Width);
+
+            drawinto1.wait();
+            drawinto2.wait();
+            drawinto3.wait();
+            drawinto4.wait();
         }
         else
         {
-            if (_boardwidth < 100000)
-            {
-                {
-                    std::scoped_lock lock{ lockboard };
+            std::scoped_lock lock{ lockboard };
+            // render in 8 threads
+            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 8), _back.Size().Width);
+            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 8), static_cast<uint16_t>(board.Height() * 2 / 8), _back.Size().Width);
+            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 2 / 8), static_cast<uint16_t>(board.Height() * 3 / 8), _back.Size().Width);
+            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 8), static_cast<uint16_t>(board.Height() * 4 / 8), _back.Size().Width);
+            auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 4 / 8), static_cast<uint16_t>(board.Height() * 5 / 8), _back.Size().Width);
+            auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 5 / 8), static_cast<uint16_t>(board.Height() * 6 / 8), _back.Size().Width);
+            auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 6 / 8), static_cast<uint16_t>(board.Height() * 7 / 8), _back.Size().Width);
+            auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 7 / 8), static_cast<uint16_t>(board.Height()), _back.Size().Width);
 
-                    // render in 4 threads
-                    auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4), _back.Size().Width);
-                    auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2), _back.Size().Width);
-                    auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4), _back.Size().Width);
-                    auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()), _back.Size().Width);
-
-                    drawinto1.wait();
-                    drawinto2.wait();
-                    drawinto3.wait();
-                    drawinto4.wait();
-                }
-            }
-            else
-            {
-                {
-                    std::scoped_lock lock{ lockboard };
-                    // render in 8 threads
-                    auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 8), _back.Size().Width);
-                    auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 8), static_cast<uint16_t>(board.Height() * 2 / 8), _back.Size().Width);
-                    auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 2 / 8), static_cast<uint16_t>(board.Height() * 3 / 8), _back.Size().Width);
-                    auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 8), static_cast<uint16_t>(board.Height() * 4 / 8), _back.Size().Width);
-                    auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 4 / 8), static_cast<uint16_t>(board.Height() * 5 / 8), _back.Size().Width);
-                    auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 5 / 8), static_cast<uint16_t>(board.Height() * 6 / 8), _back.Size().Width);
-                    auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 6 / 8), static_cast<uint16_t>(board.Height() * 7 / 8), _back.Size().Width);
-                    auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 7 / 8), static_cast<uint16_t>(board.Height()), _back.Size().Width);
-
-                    drawinto1.wait();
-                    drawinto2.wait();
-                    drawinto3.wait();
-                    drawinto4.wait();
-                    drawinto5.wait();
-                    drawinto6.wait();
-                    drawinto7.wait();
-                    drawinto8.wait();
-                }
-            }
+            drawinto1.wait();
+            drawinto2.wait();
+            drawinto3.wait();
+            drawinto4.wait();
+            drawinto5.wait();
+            drawinto6.wait();
+            drawinto7.wait();
+            drawinto8.wait();
         }
     }
 
