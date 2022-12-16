@@ -18,6 +18,10 @@ namespace winrt::ModernLife::implementation
         InitializeComponent();
         ExtendsContentIntoTitleBar(true);
         SetTitleBar(AppTitleBar());
+        #ifdef _DEBUG
+                AppTitlePreview().Text(L"PREVIEW DEBUG");
+        #endif
+
         StartGameLoop();
     }
 
@@ -29,11 +33,13 @@ namespace winrt::ModernLife::implementation
         {
             SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
             AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
         }
         else
         {
             SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
             AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
         }
     }
 
