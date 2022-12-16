@@ -31,9 +31,6 @@ namespace winrt::ModernLife::implementation
             Windows::Graphics::PointInt32 pos(appWnd.Position());
             pos.Y = 32;
             appWnd.Move(pos);
-            //Windows::Graphics::SizeInt32 size;
-            //size.Height = 1920;
-            //size.Width = 2220;
             appWnd.ResizeClient(Windows::Graphics::SizeInt32{2220, 1920});
             auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
             //presenter.IsMaximizable(false);
