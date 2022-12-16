@@ -22,14 +22,19 @@ namespace winrt::ModernLife::implementation
     
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
-        HWND hWnd{ 0 };
+        HWND hWnd{ nullptr };
         windowNative->get_WindowHandle(&hWnd);
         Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);        
-        auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd);
 
-        if (appWnd)
+        if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
-            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ 2220,1960 });
+            Windows::Graphics::PointInt32 pos(appWnd.Position());
+            pos.Y = 32;
+            appWnd.Move(pos);
+            //Windows::Graphics::SizeInt32 size;
+            //size.Height = 1920;
+            //size.Width = 2220;
+            appWnd.ResizeClient(Windows::Graphics::SizeInt32{2220, 1920});
             auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
             //presenter.IsMaximizable(false);
             //presenter.IsResizable(false);
