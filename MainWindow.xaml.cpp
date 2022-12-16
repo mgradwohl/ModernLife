@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
-#include<future>
-#include<format>
 #include"fpscounter.h"
 #include "MainWindow.xaml.h"
 
@@ -21,6 +19,21 @@ namespace winrt::ModernLife::implementation
         #ifdef _DEBUG
                 AppTitlePreview().Text(L"PREVIEW DEBUG");
         #endif
+    
+        auto windowNative{ this->try_as<::IWindowNative>() };
+        winrt::check_bool(windowNative);
+        HWND hWnd{ 0 };
+        windowNative->get_WindowHandle(&hWnd);
+        Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);        
+        auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd);
+
+        if (appWnd)
+        {
+            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ 2220,1960 });
+            auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
+            //presenter.IsMaximizable(false);
+            //presenter.IsResizable(false);
+        }
 
         StartGameLoop();
     }
@@ -223,8 +236,8 @@ namespace winrt::ModernLife::implementation
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
                         // there seems to be no speed difference between DrawRectangle and DrawRoundedRectangle
-                        ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
-                        //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell));
+                        //ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
+                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell));
                     }
                     posx += w;
                 }
