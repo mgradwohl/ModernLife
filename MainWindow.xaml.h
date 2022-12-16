@@ -6,6 +6,7 @@
 #include "MainWindow.g.h"
 
 #include "Board.h"
+#include "fpscounter.h"
 
 using namespace winrt;
 using namespace Microsoft::UI;
@@ -67,6 +68,8 @@ namespace winrt::ModernLife::implementation
             m_propertyChanged.remove(token);
         }
 
+        FPScounter fps;
+
     private:
         CanvasRenderTarget _back{ nullptr };
         std::mutex lockbackbuffer;
@@ -85,6 +88,7 @@ namespace winrt::ModernLife::implementation
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
         bool _colorinit = false;
         std::vector<Windows::UI::Color> vecColors;
+        int _speed = 30;
     public:
         void speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void OnWindowActivate(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
