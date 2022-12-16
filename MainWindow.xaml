@@ -21,7 +21,10 @@
 
         <Grid x:Name="AppTitleBar" Height="32">
             <Image Source="Assets/StoreLogo.png" HorizontalAlignment="Left" Width="16" Height="16" Margin="8,0"/>
-            <TextBlock x:Name="AppTitleTextBlock" Text="Modern Life" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" Margin="28,0,0,0"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="AppTitleTextBlock" Text="Modern Life" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" Margin="28,2,0,0"/>
+                <TextBlock x:Name="AppTitlePreview" FontSize="10" Text="PREVIEW" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" Margin="12,2,0,0"/>
+            </StackPanel>
         </Grid>
         <SplitView Grid.Row="1" x:Name="splitView" IsPaneOpen="True" MinWidth="200" OpenPaneLength="200" DisplayMode="Inline" Margin="0,6,6,6" PanePlacement="Right"
                PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="4">

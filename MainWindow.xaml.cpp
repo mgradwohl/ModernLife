@@ -4,7 +4,7 @@
 #include "pch.h"
 #include<future>
 #include<format>
-
+#include"fpscounter.h"
 #include "MainWindow.xaml.h"
 
 #if __has_include("MainWindow.g.cpp")
@@ -18,6 +18,10 @@ namespace winrt::ModernLife::implementation
         InitializeComponent();
         ExtendsContentIntoTitleBar(true);
         SetTitleBar(AppTitleBar());
+        #ifdef _DEBUG
+                AppTitlePreview().Text(L"PREVIEW DEBUG");
+        #endif
+
         StartGameLoop();
     }
 
@@ -29,11 +33,13 @@ namespace winrt::ModernLife::implementation
         {
             SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
             AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
         }
         else
         {
             SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
             AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
         }
     }
 
@@ -75,7 +81,8 @@ namespace winrt::ModernLife::implementation
         }
 
         using namespace  std::literals::chrono_literals;
-        _timer.Interval(std::chrono::milliseconds{ 33 });
+
+        _timer.Interval(std::chrono::milliseconds(1000/_speed));
         _timer.IsRepeating(true);
 
         using namespace Microsoft::UI::Xaml::Controls;
@@ -92,6 +99,9 @@ namespace winrt::ModernLife::implementation
         auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
         randomizer.wait();
 
+        // start the FPSCounter
+        fps.Start();
+        
         // draw the initial population
         theCanvas().Invalidate();
     }
@@ -103,6 +113,7 @@ namespace winrt::ModernLife::implementation
             std::scoped_lock lock{ lockbackbuffer };
             args.DrawingSession().DrawImage(_back, 0, 0);
         }
+        fps.AddFrame();
     }
 
     Windows::UI::Color MainWindow::GetCellColor2(const Cell& cell)
@@ -376,8 +387,8 @@ namespace winrt::ModernLife::implementation
         args.DrawingSession().Clear(colorBack);
 
         // create the strings to draw
-        std::wstring strTitle = std::format(L"Generation\r\nAlive\r\nTotal Cells");
-        std::wstring strContent = std::format(L"{:8}\r\n{:8}\r\n{:8}", board.Generation(), board.GetLiveCount(), board.GetSize());
+        std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells");
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", _speed, fps.FPS(), board.Generation(), board.GetLiveCount(), board.GetSize());
         sender.Invalidate();
         
         // draw the text left aligned
@@ -442,11 +453,11 @@ namespace winrt::ModernLife::implementation
         e;
         using namespace Microsoft::UI::Xaml::Controls;
         MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
-        int speed = item.Tag().as<int>();
+        _speed = item.Tag().as<int>();
         
 		dropdownSpeed().Content(winrt::box_value(item.Text()));
 
-		_timer.Interval(std::chrono::milliseconds(1000/speed));
+		_timer.Interval(std::chrono::milliseconds(1000/_speed));
     }
 
     Windows::UI::Color MainWindow::HSVtoRGB2(float H, float S, float V)
