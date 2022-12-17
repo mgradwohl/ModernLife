@@ -47,16 +47,19 @@ namespace winrt::ModernLife::implementation
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, uint16_t sx, uint16_t ex, float width);
-        Windows::UI::Color GetCellColor(const Cell& cell) const;
-        Windows::UI::Color GetCellColor2(const Cell& cell);
-        Windows::UI::Color GetCellColor3(const Cell& cell);
+        Windows::UI::Color GetCellColor(uint16_t age) const;
+        Windows::UI::Color GetCellColor2(uint16_t age);
+        Windows::UI::Color GetCellColor3(uint16_t age);
+        Windows::UI::Color GetCellColor4(uint16_t age);
+        Windows::UI::Color GetCellColor5(uint16_t age);
+
         void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void OnTick(IInspectable const& sender, IInspectable const& event);
         hstring GetRandPercentText(double_t value);
         hstring GetBoardWidthText(double_t value);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        Windows::UI::Color HSVtoRGB2(float H, float S, float V);
+        Windows::UI::Color HSVtoRGB2(double H, double S, double V);
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
         {
