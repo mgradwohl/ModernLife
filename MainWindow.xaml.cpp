@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
-#include"fpscounter.h"
+#include "fpscounter.h"
 #include "MainWindow.xaml.h"
 
 #if __has_include("MainWindow.g.cpp")
@@ -42,6 +42,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
     {
+        sender;
         using namespace Microsoft::UI::Xaml::Media;
 
         if (args.WindowActivationState() == WindowActivationState::Deactivated)
@@ -131,187 +132,25 @@ namespace winrt::ModernLife::implementation
         fps.AddFrame();
     }
 
-    Windows::UI::Color MainWindow::GetCellColor2(uint16_t age)
+    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
         if (!_colorinit)
         {
-            for (uint16_t index = 0; index <= maxage + 1; index++)
+            vecColors.resize(maxage);
+            for (int index = 0; index < maxage; index++)
             {
-                uint8_t a = 255;
-                uint8_t r = static_cast<uint8_t>((index * 255)/maxage);
-                uint8_t g = 128;
-                uint8_t b = 128;
-                vecColors.emplace_back(ColorHelper::FromArgb(a, r, g, b));
-
-            }
-
-            // setup vector of colors
-            _colorinit = true;
-        }
-        uint16_t _age = age > maxage ? maxage : age;
-
-        return vecColors[_age];
-    }
-
-    Windows::UI::Color MainWindow::GetCellColor5(uint16_t age)
-    {
-        double value = static_cast<double>(age);
-        
-        double hue = 0;
-
-        if (value < 250)
-        {
-            // Red to yellow gradient
-            hue = 60 * (value / 250.0);
-        }
-        else if (value < 500)
-        {
-            // Yellow to green gradient
-            hue = 60 + (60 * ((value - 250) / 250.0));
-        }
-        else if (value < 750)
-        {
-            // Green to blue gradient
-            hue = 120 + (60 * ((value - 500) / 250.0));
-        }
-        else
-        {
-            // Blue to purple gradient
-            hue = 180 + (60 * ((value - 750) / 250.0));
-        }
-
-		return HSVtoRGB2(hue, 1.0f, 1.0f);
-    }
-    
-    Windows::UI::Color MainWindow::GetCellColor3(uint16_t age)
-    {
-        if (!_colorinit)
-        {
-            float h = 0.0f;
-
-            vecColors.resize(maxage + 1);
-            for (int index = 0; index <= maxage; index++)
-            {
-                h = ((float)index) / maxage * 360.0f;
-                vecColors[index] = HSVtoRGB2(h, 100.0, 100.0);
+                float s = static_cast<float>(index) / static_cast<float>(maxage);
+                vecColors[index] = HSVtoColor(s * 360.0f, 0.9f, 0.9f);
             }
             _colorinit = true;
         }
-
-        //if (age <= 1)
-        //{
-        //    return Windows::UI::Colors::Green();
-        //}
         
         if (age >= maxage)
         {
             return Windows::UI::Colors::Black();
         }
 
-        int _age = age > maxage ? maxage : age;
-
-        return vecColors[_age];
-    }
-
-    // this code and associated comments was written by ChatGPT!
-    Windows::UI::Color MainWindow::GetCellColor4(uint16_t age)
-    {
-        float value = static_cast<float>(age);
-
-        // Calculate the red, green, and blue components of the color
-        // based on the value using a linear gradient within the colors of the rainbow
-        uint8_t red = 0;
-        uint8_t green = 0;
-        uint8_t blue =  0;
-        
-        if (value < 166)
-        {
-            // Red to yellow
-            red = static_cast<uint8_t>(255.0f * (value / 166.0));
-            green = static_cast<uint8_t>(255.0f * (value / 166.0));
-            blue = 0;
-        }
-        else if (value < 333)
-        {
-            // Yellow to green
-            red = static_cast<uint8_t>(255.0f * ((333 - value) / 166.0));
-            green = static_cast<uint8_t>(255.0f * (1 - (333 - value) / 166.0));
-            blue = 0;
-        }
-        else if (value < 500)
-        {
-            // Green to blue
-            red = 0;
-            green = static_cast<uint8_t>(255.0f * ((500 - value) / 166.0));
-            blue = static_cast<uint8_t>(255.0f * (1 - (500 - value) / 166.0));
-        }
-        else if (value < 666)
-        {
-            // Blue to indigo
-            red = 0;
-            green = static_cast<uint8_t>(255.0f * ((666 - value) / 166.0));
-            blue = static_cast<uint8_t>(255.0f * (1 - (666 - value) / 166.0));
-        }
-        else if (value < 833)
-        {
-            // Indigo to violet
-            red = static_cast<uint8_t>(255.0f * ((833 - value) / 166.0));
-            green = 0;
-            blue = static_cast<uint8_t>(255.0f * (1 - (833 - value) / 166.0));
-        }
-        else if (value <= 1000)
-        {
-            red = 128;
-            green = 128;
-            blue = 128;
-        }
-        else if (value > 1000)
-        {
-            red = 255;
-            green = 255;
-            blue = 255;
-        }
-        
-        if (age < 1000 && (red + green + blue >= 720))
-        {
-            __debugbreak();
-        }
-        
-        uint8_t min = 20;
-        Windows::UI::Color cellcolor = ColorHelper::FromArgb(255, red < min ? min : red, green < min ? min : green, blue < min ? min : blue);
-        return cellcolor;
-    }
-    
-    Windows::UI::Color MainWindow::GetCellColor(uint16_t age) const
-    {
-        uint8_t colorscale = 0;
-        uint8_t red = 0;
-        uint8_t green = 0;
-        uint8_t blue = 0;
-
-        colorscale = static_cast<uint8_t>((age * 255) / maxage);
-        colorscale = 254 - colorscale;
-
-        if (age <= (maxage * 1/4))
-        {
-            green = colorscale;
-        }
-        else if (age > (maxage * 1/4) && age <= (maxage * 1/2))
-        {
-            blue = colorscale;
-        }
-        else if (age > (maxage * 1/2) && age <= (maxage * 3/4))
-        {
-            red = colorscale;
-        }
-        else if (age > (maxage * 3/4) && age <= maxage)
-        {
-            red = colorscale;
-            green = colorscale;
-            blue = colorscale;
-        }
-        Windows::UI::Color cellcolor = ColorHelper::FromArgb(255, red, green, blue);
-        return cellcolor;
+        return vecColors[age > maxage ? maxage : age];
     }
 
     void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY, float width)
@@ -338,7 +177,8 @@ namespace winrt::ModernLife::implementation
                     {
                         // there seems to be no speed difference between DrawRectangle and DrawRoundedRectangle
                         //ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
-                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell.Age()));
+                        //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
+                        ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
                     }
                     posx += w;
                 }
@@ -557,40 +397,110 @@ namespace winrt::ModernLife::implementation
 		_timer.Interval(std::chrono::milliseconds(1000/_speed));
     }
 
-    Windows::UI::Color MainWindow::HSVtoRGB2(double H, double S, double V)
+    //Windows::UI::Color MainWindow::HSVtoRGB2(double H, double S, double V)
+    //{
+    //    double s = S / 100.0f;
+    //    double v = V / 100.0f;
+    //    double C = s * v;
+    //    double X = static_cast<double>(C * (1.0f - abs(fmod(H / 60.0, 2.0f) - 1.0f)));
+    //    double m = v - C;
+    //    double r = 0.0f;
+    //    double g = 0.0f;
+    //    double b = 0.0f;
+
+    //    if (H >= 0 && H < 60) {
+    //        r = C, g = X, b = 0;
+    //    }
+    //    else if (H >= 60 && H < 120) {
+    //        r = X, g = C, b = 0;
+    //    }
+    //    else if (H >= 120 && H < 180) {
+    //        r = 0, g = C, b = X;
+    //    }
+    //    else if (H >= 180 && H < 240) {
+    //        r = 0, g = X, b = C;
+    //    }
+    //    else if (H >= 240 && H < 300) {
+    //        r = X, g = 0, b = C;
+    //    }
+    //    else {
+    //        r = C, g = 0, b = X;
+    //    }
+    //    uint8_t R = static_cast<uint8_t>((r + m) * 255);
+    //    uint8_t G = static_cast<uint8_t>((g + m) * 255);
+    //    uint8_t B = static_cast<uint8_t>((b + m) * 255);
+    //
+    //    return ColorHelper::FromArgb(255, R, G, B);
+    //}
+
+    Windows::UI::Color MainWindow::HSVtoColor(float h, float s, float v)
     {
-        double s = S / 100.0f;
-        double v = V / 100.0f;
-        double C = s * v;
-        double X = static_cast<double>(C * (1.0f - abs(fmod(H / 60.0, 2.0f) - 1.0f)));
-        double m = v - C;
-        double r = 0.0f;
-        double g = 0.0f;
-        double b = 0.0f;
+        int i = 0;
 
-        if (H >= 0 && H < 60) {
-            r = C, g = X, b = 0;
+        uint8_t r = 0;
+        uint8_t g= 0;
+        uint8_t b= 0;
+
+        float f;
+        float p;
+        float q;
+        float t;
+
+        float dr;
+        float dg;
+        float db;
+
+        if (s == 0)
+        {
+            r = static_cast<uint8_t>(v);
+            return ColorHelper::FromArgb(255, r, r, r);
         }
-        else if (H >= 60 && H < 120) {
-            r = X, g = C, b = 0;
+        
+        h /= 60;
+        i = static_cast<int>(std::floor(h));
+        f = h - i;
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+
+        switch (i)
+        {
+            case 0:
+                dr = v;
+                dg = t;
+                db = p;
+                break;
+            case 1:
+                dr = q;
+                dg = v;
+                db = p;
+                break;
+            case 2:
+                dr = p;
+                dg = v;
+                db = t;
+                break;
+            case 3:
+                dr = p;
+                dg = q;
+                db = v;
+                break;
+            case 4:
+                dr = t;
+                dg = p;
+                db = v;
+                break;
+            default:		// case 5:
+                dr = v;
+                dg = p;
+                db = q;
+                break;
         }
-        else if (H >= 120 && H < 180) {
-            r = 0, g = C, b = X;
-        }
-        else if (H >= 180 && H < 240) {
-            r = 0, g = X, b = C;
-        }
-        else if (H >= 240 && H < 300) {
-            r = X, g = 0, b = C;
-        }
-        else {
-            r = C, g = 0, b = X;
-        }
-        uint8_t R = static_cast<uint8_t>((r + m) * 255);
-        uint8_t G = static_cast<uint8_t>((g + m) * 255);
-        uint8_t B = static_cast<uint8_t>((b + m) * 255);
-    
-        return ColorHelper::FromArgb(255, R, G, B);
+
+        r = static_cast<uint8_t>(dr * 255);
+        g = static_cast<uint8_t>(dg * 255);
+        b = static_cast<uint8_t>(db * 255);
+
+        return ColorHelper::FromArgb(255, r, g, b);
     }
-
 }
