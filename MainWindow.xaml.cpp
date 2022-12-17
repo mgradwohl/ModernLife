@@ -193,20 +193,20 @@ namespace winrt::ModernLife::implementation
             for (int index = 100; index < maxage - 100 + 1; index++)
             {
                 h = ((float)index) / maxage * 360.0f;
-                vecColors[index] = HSVtoRGB2(h, 60.0, 60.0);
+                vecColors[index] = HSVtoRGB2(h, 100.0, 80.0);
             }
             _colorinit = true;
         }
 
-        if (age < 100)
-        {
-            return Windows::UI::Colors::Green();
-        }
-        
-        if (age > maxage - 100)
-        {
-            return Windows::UI::Colors::Black();
-        }
+        //if (age < 100)
+        //{
+        //    return Windows::UI::Colors::Green();
+        //}
+        //
+        //if (age > maxage - 100)
+        //{
+        //    return Windows::UI::Colors::Black();
+        //}
 
         int _age = age > maxage ? maxage : age;
 
@@ -338,7 +338,7 @@ namespace winrt::ModernLife::implementation
                     {
                         // there seems to be no speed difference between DrawRectangle and DrawRoundedRectangle
                         //ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
-                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor4(cell.Age()));
+                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell.Age()));
                     }
                     posx += w;
                 }
