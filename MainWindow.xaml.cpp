@@ -145,13 +145,12 @@ namespace winrt::ModernLife::implementation
             _colorinit = true;
         }
         
-        if (age >= maxage)
+        if (age > maxage)
         {
             return Windows::UI::Colors::Black();
         }
 
-        int _age = age > maxage ? maxage : age;
-        float h = (_age * 360.f) / maxage;
+        float h = (age * 360.f) / maxage;
         return HSVtoColor(h, 0.9f, 0.9f);
     }
 
@@ -398,42 +397,6 @@ namespace winrt::ModernLife::implementation
 
 		_timer.Interval(std::chrono::milliseconds(1000/_speed));
     }
-
-    //Windows::UI::Color MainWindow::HSVtoRGB2(double H, double S, double V)
-    //{
-    //    double s = S / 100.0f;
-    //    double v = V / 100.0f;
-    //    double C = s * v;
-    //    double X = static_cast<double>(C * (1.0f - abs(fmod(H / 60.0, 2.0f) - 1.0f)));
-    //    double m = v - C;
-    //    double r = 0.0f;
-    //    double g = 0.0f;
-    //    double b = 0.0f;
-
-    //    if (H >= 0 && H < 60) {
-    //        r = C, g = X, b = 0;
-    //    }
-    //    else if (H >= 60 && H < 120) {
-    //        r = X, g = C, b = 0;
-    //    }
-    //    else if (H >= 120 && H < 180) {
-    //        r = 0, g = C, b = X;
-    //    }
-    //    else if (H >= 180 && H < 240) {
-    //        r = 0, g = X, b = C;
-    //    }
-    //    else if (H >= 240 && H < 300) {
-    //        r = X, g = 0, b = C;
-    //    }
-    //    else {
-    //        r = C, g = 0, b = X;
-    //    }
-    //    uint8_t R = static_cast<uint8_t>((r + m) * 255);
-    //    uint8_t G = static_cast<uint8_t>((g + m) * 255);
-    //    uint8_t B = static_cast<uint8_t>((b + m) * 255);
-    //
-    //    return ColorHelper::FromArgb(255, R, G, B);
-    //}
 
     Windows::UI::Color MainWindow::HSVtoColor(float h, float s, float v)
     {
