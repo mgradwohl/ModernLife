@@ -19,7 +19,7 @@ using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
 #ifdef _DEBUG
-    constexpr int maxage = 1000;
+    constexpr int maxage = 2000;
     constexpr bool drawgrid = false;
     constexpr bool drawstats = true;
     constexpr bool singlerenderer = false;
@@ -86,7 +86,7 @@ namespace winrt::ModernLife::implementation
         int16_t _boardwidth = 200;
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
-        bool _colorinit = false;
+        bool _colorinit = true;
         std::vector<Windows::UI::Color> vecColors;
         int _speed = 30;
     public:

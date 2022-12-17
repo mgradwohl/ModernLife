@@ -150,7 +150,9 @@ namespace winrt::ModernLife::implementation
             return Windows::UI::Colors::Black();
         }
 
-        return vecColors[age > maxage ? maxage : age];
+        int _age = age > maxage ? maxage : age;
+        float h = (_age * 360.f) / maxage;
+        return HSVtoColor(h, 0.9f, 0.9f);
     }
 
     void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY, float width)
