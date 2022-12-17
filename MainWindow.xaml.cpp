@@ -190,23 +190,23 @@ namespace winrt::ModernLife::implementation
             float h = 0.0f;
 
             vecColors.resize(maxage + 1);
-            for (int index = 100; index < maxage - 100 + 1; index++)
+            for (int index = 0; index <= maxage; index++)
             {
                 h = ((float)index) / maxage * 360.0f;
-                vecColors[index] = HSVtoRGB2(h, 100.0, 80.0);
+                vecColors[index] = HSVtoRGB2(h, 100.0, 100.0);
             }
             _colorinit = true;
         }
 
-        //if (age < 100)
+        //if (age <= 1)
         //{
         //    return Windows::UI::Colors::Green();
         //}
-        //
-        //if (age > maxage - 100)
-        //{
-        //    return Windows::UI::Colors::Black();
-        //}
+        
+        if (age >= maxage)
+        {
+            return Windows::UI::Colors::Black();
+        }
 
         int _age = age > maxage ? maxage : age;
 
