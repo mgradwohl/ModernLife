@@ -14,6 +14,7 @@ namespace winrt::ModernLife::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
+
         ExtendsContentIntoTitleBar(true);
         SetTitleBar(AppTitleBar());
         #ifdef _DEBUG
@@ -24,7 +25,7 @@ namespace winrt::ModernLife::implementation
         winrt::check_bool(windowNative);
         HWND hWnd{ nullptr };
         windowNative->get_WindowHandle(&hWnd);
-        Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);        
+        Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
 
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
@@ -38,6 +39,50 @@ namespace winrt::ModernLife::implementation
         }
 
         StartGameLoop();
+    }
+
+    void MainWindow::InitializeAssets()
+    {
+        // width of each 'tile' in the rendertarget
+        float w = 10.0f;
+
+        // this will be used to iterate through the width and height of the rendertarget *without* using the partial tile
+        uint16_t size = static_cast<uint16_t>(std::sqrt(maxage) + 1);
+
+        // create a square render target that will hold all the tiles this may often times have a partial 'tile' at the end which we won't use
+        float rtsize = w * size;
+
+        // if the back buffer doesn't exist or is the wrong size, create it
+        if (nullptr == _assets)
+        {
+            CanvasDevice device = CanvasDevice::GetSharedDevice();
+            {
+                // TODO this DPI needs to be from the actual device
+                _assets = CanvasRenderTarget(device, rtsize, rtsize, 96);
+            }
+        }
+
+        CanvasDrawingSession ds = _assets.CreateDrawingSession();
+        ds.FillRectangle(0, 0, rtsize, rtsize, Colors::WhiteSmoke());
+
+        float posx = 0.0f;
+        float posy = 0.0f;
+
+        // start filling tiles at age 0
+        uint16_t index = 0;
+        for (uint16_t y = 0; y < size; y++)
+        {
+            for (uint16_t x = 0; x < size; x++)
+            {
+                //ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
+                //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(index));
+                ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(index));
+                posx += w;
+                index++;
+            }
+            posy += w;
+            posx = 0.0f;
+        }
     }
 
     void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
@@ -111,6 +156,9 @@ namespace winrt::ModernLife::implementation
             board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
         }
 
+        // create the assets
+        InitializeAssets();
+
         // add a random population
         auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
         randomizer.wait();
@@ -134,17 +182,6 @@ namespace winrt::ModernLife::implementation
 
     Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
-        if (!_colorinit)
-        {
-            //vecColors.resize(maxage);
-            //for (int index = 0; index < maxage; index++)
-            //{
-            //    float s = static_cast<float>(index) / static_cast<float>(maxage);
-            //    vecColors[index] = HSVtoColor(s * 360.0f, 0.5f, 0.8f);
-            //}
-            //_colorinit = true;
-        }
-        
         if (age > maxage)
         {
             return Windows::UI::Colors::Black();
@@ -166,6 +203,9 @@ namespace winrt::ModernLife::implementation
 		//	}
 		//}
 
+        float srcW = 10.0f;
+        uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
+
         float w = (width / _boardwidth);
 		float posx = 0.0f;
 		float posy = startY * w;
@@ -176,10 +216,16 @@ namespace winrt::ModernLife::implementation
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        // there seems to be no speed difference between DrawRectangle and DrawRoundedRectangle
-                        //ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
-                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
+                        float srcX = cell.Age() % srcStride;
+                        float srcY = cell.Age() / srcStride;
+                        Windows::Foundation::Rect srcRect{ srcW * srcX, srcW * srcY, srcW, srcW};
+                        Windows::Foundation::Rect srcDest{ posx, posy, w, w};
+
+                        //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
                         //ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
+
+                        // this is not actually faster - unexpected
+                        ds.DrawImage(_assets, srcDest, srcRect);
                     }
                     posx += w;
                 }
@@ -402,6 +448,10 @@ namespace winrt::ModernLife::implementation
 
     Windows::UI::Color MainWindow::HSVtoColor(float h, float s, float v)
     {
+        if (h > 360.0f)
+        {
+            __debugbreak();
+        }
         if (s == 0)
         {
             uint8_t x = static_cast<uint8_t>(v);
@@ -409,7 +459,7 @@ namespace winrt::ModernLife::implementation
         }
         
         h /= 60;
-        int i = 0;
+        int i = static_cast<int>(std::floor(h));
         float f = h - i;
         float p = v * (1 - s);
         float q = v * (1 - s * f);
@@ -419,7 +469,6 @@ namespace winrt::ModernLife::implementation
         float dg = 0;
         float db = 0;
 
-        i = static_cast<int>(std::floor(h));
         switch (i)
         {
             case 0:
@@ -447,10 +496,15 @@ namespace winrt::ModernLife::implementation
                 dg = p;
                 db = v;
                 break;
-            default:		// case 5:
+            case 5:
                 dr = v;
                 dg = p;
                 db = q;
+                break;
+            default:
+                dr = v;
+                dg = v;
+                db = v;
                 break;
         }
 

@@ -24,7 +24,7 @@ using namespace Microsoft::Graphics::Canvas::UI::Xaml;
     constexpr bool drawstats = true;
     constexpr bool singlerenderer = false;
 #else
-    constexpr int maxage = 1000;
+    constexpr int maxage = 2000;
     constexpr bool drawgrid = false;
     constexpr bool drawstats = true;
     constexpr bool singlerenderer = false;
@@ -51,6 +51,9 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color GetCellColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
+        void InitializeAssets();
+
+
         void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void OnTick(IInspectable const& sender, IInspectable const& event);
         hstring GetRandPercentText(double_t value);
@@ -72,9 +75,11 @@ namespace winrt::ModernLife::implementation
 
     private:
         CanvasRenderTarget _back{ nullptr };
+        CanvasRenderTarget _assets{ nullptr };
         std::mutex lockbackbuffer;
         std::mutex lockboard;
         Board board{ nullptr };
+        bool _drawassets = false;
 
         DispatcherQueueController _controller{ nullptr };
         Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
@@ -86,7 +91,6 @@ namespace winrt::ModernLife::implementation
         int16_t _boardwidth = 200;
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
-        bool _colorinit = true;
         std::vector<Windows::UI::Color> vecColors;
         int _speed = 30;
     public:
