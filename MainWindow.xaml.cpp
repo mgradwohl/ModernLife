@@ -227,14 +227,14 @@ namespace winrt::ModernLife::implementation
         }
 	}
 
-    void MainWindow::SetupRenderTargets(float size)
+    void MainWindow::SetupRenderTargets()
     {
         CanvasDevice device = CanvasDevice::GetSharedDevice();
 
         {
             std::scoped_lock lock{ lockbackbuffer };
-            _back = CanvasRenderTarget(device, size, size, theCanvas().Dpi());
-            _widthCellDest = (size / _boardwidth);
+            _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
+            _widthCellDest = (_canvasSize / _boardwidth);
         }
         InitializeAssets();
     }
@@ -246,19 +246,8 @@ namespace winrt::ModernLife::implementation
         if (!board.IsDirty())
             return;
 
-        winrt::Windows::Foundation::Size huge = sender.Size();
-        float size = min(huge.Width, bestsize);
-
-        // if the back buffer doesn't exist or is the wrong size, create it
-        // note even though I set the size the sender.Size() comes back slightly larger
-        // so this gets called *way too often*
-        if (nullptr == _back || _back.Size() != sender.Size())
-        {
-            SetupRenderTargets(size);
-        }
-
         CanvasDrawingSession ds = _back.CreateDrawingSession();
-        ds.FillRectangle(0, 0, size, size, Colors::WhiteSmoke());
+        ds.FillRectangle(0, 0, _canvasSize, _canvasSize, Colors::WhiteSmoke());
 
         if (board.GetSize() < 100000)
         {
@@ -336,6 +325,7 @@ namespace winrt::ModernLife::implementation
             _boardwidth = value;
             _timer.Stop();
             m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
+            SetupRenderTargets();
 
             StartGameLoop();
         }
@@ -421,6 +411,12 @@ namespace winrt::ModernLife::implementation
         GoButton().Icon(SymbolIcon(Symbol::Pause));
         GoButton().Label(L"Pause");
         StartGameLoop();
+    }
+
+    void MainWindow::Grid_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
+    {
+        _canvasSize = min(e.NewSize().Width, bestsize);
+        SetupRenderTargets();
     }
 
     hstring MainWindow::GetRandPercentText(double_t value)
@@ -519,3 +515,4 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, r, g, b);
     }
 }
+

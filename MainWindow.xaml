@@ -29,7 +29,7 @@
         <SplitView Grid.Row="1" x:Name="splitView" IsPaneOpen="True" MinWidth="200" OpenPaneLength="200" DisplayMode="Inline" Margin="0,6,6,6" PanePlacement="Right"
                PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="4">
 
-            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="4" >
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="4" SizeChanged="Grid_SizeChanged">
                 <canvas:CanvasControl x:Name="theCanvas" Margin="6,0,6,0" Draw="CanvasControl_Draw" ClearColor="{StaticResource SystemChromeMediumColor}" />
             </Grid>
 

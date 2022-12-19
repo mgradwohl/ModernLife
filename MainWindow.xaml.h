@@ -50,6 +50,11 @@ namespace winrt::ModernLife::implementation
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
         void DrawInto(CanvasDrawingSession& ds, uint16_t sx, uint16_t ex);
+
+        void speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void OnWindowActivate(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
+        void Grid_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
+
         Windows::UI::Color GetCellColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
@@ -62,7 +67,7 @@ namespace winrt::ModernLife::implementation
         hstring GetBoardWidthText(double_t value);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void SetupRenderTargets(float size);
+        void SetupRenderTargets();
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
         {
@@ -88,18 +93,15 @@ namespace winrt::ModernLife::implementation
         Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
         DispatcherQueueTimer _timer{ nullptr };
         winrt::event_token _registrationtoken;
-        bool _tokeninit = false;
-        float _widthCellDest = 0.0f;
+        bool _tokeninit{ false };
+        float _widthCellDest{};
+        float _canvasSize{};
+        int _speed{30};
 
-        int32_t _randompercent = 30;
-        int16_t _boardwidth = 200;
+        int32_t _randompercent{30};
+        int16_t _boardwidth{ 200 };
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
-        std::vector<Windows::UI::Color> vecColors;
-        int _speed = 30;
-    public:
-        void speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void OnWindowActivate(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
     };
 }
 
