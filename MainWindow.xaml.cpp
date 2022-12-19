@@ -43,23 +43,16 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::InitializeAssets()
     {
-        // width of each 'tile' in the rendertarget
-        float w = 10.0f;
-
         // this will be used to iterate through the width and height of the rendertarget *without* using the partial tile
-        uint16_t size = static_cast<uint16_t>(std::sqrt(maxage) + 1);
+        uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
 
         // create a square render target that will hold all the tiles this may often times have a partial 'tile' at the end which we won't use
-        float rtsize = w * size;
+        float rtsize = _widthCellDest * assetStride;
 
         // if the back buffer doesn't exist or is the wrong size, create it
-        if (nullptr == _assets)
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
         {
-            CanvasDevice device = CanvasDevice::GetSharedDevice();
-            {
-                // TODO this DPI needs to be from the actual device
-                _assets = CanvasRenderTarget(device, rtsize, rtsize, 96);
-            }
+            _assets = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
         }
 
         CanvasDrawingSession ds = _assets.CreateDrawingSession();
@@ -70,17 +63,17 @@ namespace winrt::ModernLife::implementation
 
         // start filling tiles at age 0
         uint16_t index = 0;
-        for (uint16_t y = 0; y < size; y++)
+        for (uint16_t y = 0; y < assetStride; y++)
         {
-            for (uint16_t x = 0; x < size; x++)
+            for (uint16_t x = 0; x < assetStride; x++)
             {
                 //ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
                 //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(index));
-                ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(index));
-                posx += w;
+                ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(index));
+                posx += _widthCellDest;
                 index++;
             }
-            posy += w;
+            posy += _widthCellDest;
             posx = 0.0f;
         }
     }
@@ -119,32 +112,34 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
-        // create and start a timer without recreating it when the user changes options
-        if (nullptr == _controller)
         {
-            _controller = DispatcherQueueController::CreateOnDedicatedThread();
+            // create and start a timer without recreating it when the user changes options
+            if (nullptr == _controller)
+            {
+                _controller = DispatcherQueueController::CreateOnDedicatedThread();
+            }
+
+            if (nullptr == _queue)
+            {
+                _queue = _controller.DispatcherQueue();
+            }
+
+            if (nullptr == _timer)
+            {
+                _timer = _queue.CreateTimer();
+            }
+
+            if (! _tokeninit)
+            {
+                _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+                _tokeninit = true;
+            }
+
+            using namespace  std::literals::chrono_literals;
+
+            _timer.Interval(std::chrono::milliseconds(1000/_speed));
+            _timer.IsRepeating(true);
         }
-
-        if (nullptr == _queue)
-        {
-            _queue = _controller.DispatcherQueue();
-        }
-
-        if (nullptr == _timer)
-        {
-            _timer = _queue.CreateTimer();
-        }
-
-        if (! _tokeninit)
-        {
-            _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
-            _tokeninit = true;
-        }
-
-        using namespace  std::literals::chrono_literals;
-
-        _timer.Interval(std::chrono::milliseconds(1000/_speed));
-        _timer.IsRepeating(true);
 
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
@@ -155,9 +150,6 @@ namespace winrt::ModernLife::implementation
             std::scoped_lock lock{ lockboard };
             board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
         }
-
-        // create the assets
-        InitializeAssets();
 
         // add a random population
         auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
@@ -176,6 +168,7 @@ namespace winrt::ModernLife::implementation
         {
             std::scoped_lock lock{ lockbackbuffer };
             args.DrawingSession().DrawImage(_back, 0, 0);
+            //args.DrawingSession().DrawImage(_assets, 0, 0);
         }
         fps.AddFrame();
     }
@@ -191,7 +184,7 @@ namespace winrt::ModernLife::implementation
         return HSVtoColor(h, 0.5f, 0.8f);
     }
 
-    void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY, float width)
+    void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
         //float inc = width / cellcount;
         //if (drawgrid)
@@ -203,12 +196,11 @@ namespace winrt::ModernLife::implementation
 		//	}
 		//}
 
-        float srcW = 10.0f;
+        float srcW = _widthCellDest;
         uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
 
-        float w = (width / _boardwidth);
 		float posx = 0.0f;
-		float posy = startY * w;
+		float posy = startY * _widthCellDest;
         {
             for (uint16_t y = startY; y < endY; y++)
             {
@@ -216,10 +208,10 @@ namespace winrt::ModernLife::implementation
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        float srcX = cell.Age() % srcStride;
-                        float srcY = cell.Age() / srcStride;
+                        float srcX = static_cast<float>(cell.Age() % srcStride);
+                        float srcY = static_cast<float>(cell.Age() / srcStride);
                         Windows::Foundation::Rect srcRect{ srcW * srcX, srcW * srcY, srcW, srcW};
-                        Windows::Foundation::Rect srcDest{ posx, posy, w, w};
+                        Windows::Foundation::Rect srcDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
                         //ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
@@ -227,13 +219,25 @@ namespace winrt::ModernLife::implementation
                         // this is not actually faster - unexpected
                         ds.DrawImage(_assets, srcDest, srcRect);
                     }
-                    posx += w;
+                    posx += _widthCellDest;
                 }
-                posy += w;
+                posy += _widthCellDest;
                 posx = 0.0f;
             }
         }
 	}
+
+    void MainWindow::SetupRenderTargets(float size)
+    {
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
+
+        {
+            std::scoped_lock lock{ lockbackbuffer };
+            _back = CanvasRenderTarget(device, size, size, theCanvas().Dpi());
+            _widthCellDest = (size / _boardwidth);
+        }
+        InitializeAssets();
+    }
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
@@ -242,18 +246,15 @@ namespace winrt::ModernLife::implementation
         if (!board.IsDirty())
             return;
 
-        constexpr int bestsize = 1250;
         winrt::Windows::Foundation::Size huge = sender.Size();
         float size = min(huge.Width, bestsize);
 
         // if the back buffer doesn't exist or is the wrong size, create it
+        // note even though I set the size the sender.Size() comes back slightly larger
+        // so this gets called *way too often*
         if (nullptr == _back || _back.Size() != sender.Size())
         {
-            CanvasDevice device = CanvasDevice::GetSharedDevice();
-            {
-                std::scoped_lock lock{ lockbackbuffer };
-                _back = CanvasRenderTarget(device, size, size, sender.Dpi());
-            }
+            SetupRenderTargets(size);
         }
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
@@ -263,7 +264,7 @@ namespace winrt::ModernLife::implementation
         {
             // render in one thread
             std::scoped_lock lock{ lockboard };
-            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()), _back.Size().Width);
+            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()));
             drawinto0.wait();
         }
         else if (board.GetSize() >= 100000 && board.GetSize() < 200000)
@@ -271,10 +272,10 @@ namespace winrt::ModernLife::implementation
             std::scoped_lock lock{ lockboard };
 
             // render in 4 threads
-            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4), _back.Size().Width);
-            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2), _back.Size().Width);
-            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4), _back.Size().Width);
-            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()), _back.Size().Width);
+            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4));
+            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2));
+            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4));
+            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()));
 
             drawinto1.wait();
             drawinto2.wait();
@@ -286,14 +287,14 @@ namespace winrt::ModernLife::implementation
             {
                 std::scoped_lock lock{ lockboard };
                 // render in 8 threads
-                auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 8), _back.Size().Width);
-                auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 8), static_cast<uint16_t>(board.Height() * 2 / 8), _back.Size().Width);
-                auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 2 / 8), static_cast<uint16_t>(board.Height() * 3 / 8), _back.Size().Width);
-                auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 8), static_cast<uint16_t>(board.Height() * 4 / 8), _back.Size().Width);
-                auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 4 / 8), static_cast<uint16_t>(board.Height() * 5 / 8), _back.Size().Width);
-                auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 5 / 8), static_cast<uint16_t>(board.Height() * 6 / 8), _back.Size().Width);
-                auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 6 / 8), static_cast<uint16_t>(board.Height() * 7 / 8), _back.Size().Width);
-                auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 7 / 8), static_cast<uint16_t>(board.Height()), _back.Size().Width);
+                auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 8));
+                auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 8), static_cast<uint16_t>(board.Height() * 2 / 8));
+                auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 2 / 8), static_cast<uint16_t>(board.Height() * 3 / 8));
+                auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 8), static_cast<uint16_t>(board.Height() * 4 / 8));
+                auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 4 / 8), static_cast<uint16_t>(board.Height() * 5 / 8));
+                auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 5 / 8), static_cast<uint16_t>(board.Height() * 6 / 8));
+                auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 6 / 8), static_cast<uint16_t>(board.Height() * 7 / 8));
+                auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 7 / 8), static_cast<uint16_t>(board.Height()));
 
                 drawinto1.wait();
                 drawinto2.wait();
@@ -305,6 +306,7 @@ namespace winrt::ModernLife::implementation
                 drawinto8.wait();
             }
         }
+        ds.Flush();
     }
 
     int32_t MainWindow::SeedPercent() const
@@ -384,6 +386,7 @@ namespace winrt::ModernLife::implementation
         // draw the values right aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
         args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
+        args.DrawingSession().Flush();
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
@@ -446,6 +449,7 @@ namespace winrt::ModernLife::implementation
 		_timer.Interval(std::chrono::milliseconds(1000/_speed));
     }
 
+    // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB
     Windows::UI::Color MainWindow::HSVtoColor(float h, float s, float v)
     {
         if (h > 360.0f)
