@@ -199,7 +199,10 @@ namespace winrt::ModernLife::implementation
         float srcW = _widthCellDest;
         uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
 
-		float posx = 0.0f;
+
+        auto spriteBatch = ds.CreateSpriteBatch();
+
+        float posx = 0.0f;
 		float posy = startY * _widthCellDest;
         {
             for (uint16_t y = startY; y < endY; y++)
@@ -217,7 +220,7 @@ namespace winrt::ModernLife::implementation
                         //ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
 
                         // this is not actually faster - unexpected
-                        ds.DrawImage(_assets, srcDest, srcRect);
+                        spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
                     }
                     posx += _widthCellDest;
                 }
