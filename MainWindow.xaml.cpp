@@ -199,8 +199,7 @@ namespace winrt::ModernLife::implementation
         float srcW = _widthCellDest;
         uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
 
-
-        auto spriteBatch = ds.CreateSpriteBatch();
+        //auto spriteBatch = ds.CreateSpriteBatch();
 
         float posx = 0.0f;
 		float posy = startY * _widthCellDest;
@@ -217,10 +216,12 @@ namespace winrt::ModernLife::implementation
                         Windows::Foundation::Rect srcDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
-                        //ds.FillRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
+                        ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(cell.Age()));
 
                         // this is not actually faster - unexpected
-                        spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
+                        // and also has some drawing artifacts (black goes to pink and back to black) and missing rounded edges
+                        //spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
+                        //ds.DrawImage(_assets, srcDest, srcRect);
                     }
                     posx += _widthCellDest;
                 }
@@ -298,7 +299,7 @@ namespace winrt::ModernLife::implementation
                 drawinto8.wait();
             }
         }
-        ds.Flush();
+//        ds.Flush();
     }
 
     int32_t MainWindow::SeedPercent() const
@@ -379,7 +380,7 @@ namespace winrt::ModernLife::implementation
         // draw the values right aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
         args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
-        args.DrawingSession().Flush();
+//        args.DrawingSession().Flush();
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
