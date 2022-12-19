@@ -416,7 +416,7 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    void MainWindow::Grid_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
+    void MainWindow::theCanvas_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
         _canvasSize = min(e.NewSize().Width, bestsize);
         SetupRenderTargets();
@@ -518,4 +518,3 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, r, g, b);
     }
 }
-
