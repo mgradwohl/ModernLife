@@ -67,8 +67,6 @@ namespace winrt::ModernLife::implementation
         {
             for (uint16_t x = 0; x < assetStride; x++)
             {
-                //ds.DrawRectangle(posx, posy, w, w, GetCellColor3(cell));
-                //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(index));
                 ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(index));
                 posx += _widthCellDest;
                 index++;
@@ -175,13 +173,14 @@ namespace winrt::ModernLife::implementation
 
     Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
+        // should never see a black cell
         if (age > maxage)
         {
             return Windows::UI::Colors::Black();
         }
 
         float h = (age * 360.f) / maxage;
-        return HSVtoColor(h, 0.5f, 0.8f);
+        return HSVtoColor(h, 0.6f, 0.8f);
     }
 
     void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
@@ -199,8 +198,6 @@ namespace winrt::ModernLife::implementation
         float srcW = _widthCellDest;
         uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
 
-        //auto spriteBatch = ds.CreateSpriteBatch();
-
         float posx = 0.0f;
 		float posy = startY * _widthCellDest;
         {
@@ -210,18 +207,20 @@ namespace winrt::ModernLife::implementation
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        float srcX = static_cast<float>(cell.Age() % srcStride);
-                        float srcY = static_cast<float>(cell.Age() / srcStride);
+                        int age = cell.Age() > maxage ? maxage : cell.Age();
+                        float srcX = static_cast<float>(age % srcStride);
+                        float srcY = static_cast<float>(age / srcStride);
                         Windows::Foundation::Rect srcRect{ srcW * srcX, srcW * srcY, srcW, srcW};
                         Windows::Foundation::Rect srcDest{ posx, posy, _widthCellDest, _widthCellDest};
 
-                        //ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColorHSV(cell.Age()));
-                        ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(cell.Age()));
-
                         // this is not actually faster - unexpected
-                        // and also has some drawing artifacts (black goes to pink and back to black) and missing rounded edges
-                        //spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
-                        //ds.DrawImage(_assets, srcDest, srcRect);
+                        // spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
+
+                        // this is just as fast
+                        ds.DrawImage(_assets, srcDest, srcRect);
+
+                        // good for debugging
+                        // ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
                     }
                     posx += _widthCellDest;
                 }
@@ -253,53 +252,28 @@ namespace winrt::ModernLife::implementation
         CanvasDrawingSession ds = _back.CreateDrawingSession();
         ds.FillRectangle(0, 0, _canvasSize, _canvasSize, Colors::WhiteSmoke());
 
-        if (board.GetSize() < 100000)
+        //if (board.GetSize() < 100000)
         {
             // render in one thread
             std::scoped_lock lock{ lockboard };
             auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()));
             drawinto0.wait();
         }
-        else if (board.GetSize() >= 100000 && board.GetSize() < 200000)
-        {
-            std::scoped_lock lock{ lockboard };
+        //else if (board.GetSize() >= 100000 && board.GetSize() < 200000)
+        //{
+        //    std::scoped_lock lock{ lockboard };
 
-            // render in 4 threads
-            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4));
-            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2));
-            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4));
-            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()));
+        //    // render in 4 threads
+        //    auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4));
+        //    auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2));
+        //    auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4));
+        //    auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()));
 
-            drawinto1.wait();
-            drawinto2.wait();
-            drawinto3.wait();
-            drawinto4.wait();
-        }
-        else
-        {
-            {
-                std::scoped_lock lock{ lockboard };
-                // render in 8 threads
-                auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 8));
-                auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 8), static_cast<uint16_t>(board.Height() * 2 / 8));
-                auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 2 / 8), static_cast<uint16_t>(board.Height() * 3 / 8));
-                auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 8), static_cast<uint16_t>(board.Height() * 4 / 8));
-                auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 4 / 8), static_cast<uint16_t>(board.Height() * 5 / 8));
-                auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 5 / 8), static_cast<uint16_t>(board.Height() * 6 / 8));
-                auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 6 / 8), static_cast<uint16_t>(board.Height() * 7 / 8));
-                auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 7 / 8), static_cast<uint16_t>(board.Height()));
-
-                drawinto1.wait();
-                drawinto2.wait();
-                drawinto3.wait();
-                drawinto4.wait();
-                drawinto5.wait();
-                drawinto6.wait();
-                drawinto7.wait();
-                drawinto8.wait();
-            }
-        }
-//        ds.Flush();
+        //    drawinto1.wait();
+        //    drawinto2.wait();
+        //    drawinto3.wait();
+        //    drawinto4.wait();
+        //}
     }
 
     int32_t MainWindow::SeedPercent() const
@@ -329,8 +303,8 @@ namespace winrt::ModernLife::implementation
             _boardwidth = value;
             _timer.Stop();
             m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
-            SetupRenderTargets();
 
+            SetupRenderTargets();
             StartGameLoop();
         }
     }

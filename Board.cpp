@@ -189,31 +189,8 @@ void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 }
 void Board::ConwayUpdateBoardWithNextState()
 {
-	if (GetSize() < 100000)
-	{
-		auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(0), static_cast<uint16_t>(Height()));
-		update1.wait();
-	}
-	else
-	{
-		auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(0), static_cast<uint16_t>(Height() * 1/8));
-		auto update2 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 1/8), static_cast<uint16_t>(Height() * 2/8));
-		auto update3 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 2/8), static_cast<uint16_t>(Height() * 3/8));
-		auto update4 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 3/8), static_cast<uint16_t>(Height() * 4/8));
-		auto update5 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 4/8), static_cast<uint16_t>(Height() * 5/8));
-		auto update6 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 5/8), static_cast<uint16_t>(Height() * 6/8));
-		auto update7 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 6/8), static_cast<uint16_t>(Height() * 7/8));
-		auto update8 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(Height() * 7/8), static_cast<uint16_t>(Height()));
-		update1.wait();
-		update2.wait();
-		update3.wait();
-		update4.wait();
-		update5.wait();
-		update6.wait();
-		update7.wait();
-		update8.wait();
-
-	}
+	auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(0), static_cast<uint16_t>(Height()));
+	update1.wait();
 }
 
 void Board::ConwayRules(Cell& cell)
