@@ -351,16 +351,16 @@ namespace winrt::ModernLife::implementation
         using namespace Microsoft::UI::Xaml::Controls;
         if (_timer.IsRunning())
         {
+            _timer.Stop();
             GoButton().Label(L"Play");
             GoButton().Icon(SymbolIcon(Symbol::Play));
-            _timer.Stop();
 
         }
         else
         {
+            _timer.Start();
             GoButton().Icon(SymbolIcon(Symbol::Pause));
             GoButton().Label(L"Pause");
-            _timer.Start();
         }
     }
 
