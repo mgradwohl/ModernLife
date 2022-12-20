@@ -244,6 +244,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
+        sender;
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
         if (!board.IsDirty())
@@ -252,28 +253,12 @@ namespace winrt::ModernLife::implementation
         CanvasDrawingSession ds = _back.CreateDrawingSession();
         ds.FillRectangle(0, 0, _canvasSize, _canvasSize, Colors::WhiteSmoke());
 
-        //if (board.GetSize() < 100000)
         {
             // render in one thread
             std::scoped_lock lock{ lockboard };
             auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()));
             drawinto0.wait();
         }
-        //else if (board.GetSize() >= 100000 && board.GetSize() < 200000)
-        //{
-        //    std::scoped_lock lock{ lockboard };
-
-        //    // render in 4 threads
-        //    auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height() * 1 / 4));
-        //    auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 4), static_cast<uint16_t>(board.Height() * 1 / 2));
-        //    auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 1 / 2), static_cast<uint16_t>(board.Height() * 3 / 4));
-        //    auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(board.Height() * 3 / 4), static_cast<uint16_t>(board.Height()));
-
-        //    drawinto1.wait();
-        //    drawinto2.wait();
-        //    drawinto3.wait();
-        //    drawinto4.wait();
-        //}
     }
 
     int32_t MainWindow::SeedPercent() const
@@ -354,7 +339,6 @@ namespace winrt::ModernLife::implementation
         // draw the values right aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
         args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
-//        args.DrawingSession().Flush();
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
@@ -393,6 +377,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvas_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
+        sender;
         _canvasSize = min(e.NewSize().Width, bestsize);
         SetupRenderTargets();
     }
