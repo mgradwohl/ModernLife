@@ -44,7 +44,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::InitializeAssets()
     {
         // this will be used to iterate through the width and height of the rendertarget *without* using the partial tile
-        uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
+        uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
         // create a square render target that will hold all the tiles this may often times have a partial 'tile' at the end which we won't use
         float rtsize = _widthCellDest * assetStride;
@@ -68,6 +68,7 @@ namespace winrt::ModernLife::implementation
             for (uint16_t x = 0; x < assetStride; x++)
             {
                 ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(index));
+                //ds.FillRoundedRectangle(posx +1, posy +1, _widthCellDest -2, _widthCellDest -2, 2, 2, GetCellColorHSV(index));
                 posx += _widthCellDest;
                 index++;
             }
@@ -196,9 +197,9 @@ namespace winrt::ModernLife::implementation
 		//}
 
         float srcW = _widthCellDest;
-        uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage) + 1);
+        uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
-        auto spriteBatch = ds.CreateSpriteBatch();
+        //auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
         
         float posx = 0.0f;
 		float posy = startY * _widthCellDest;
@@ -216,10 +217,10 @@ namespace winrt::ModernLife::implementation
                         Windows::Foundation::Rect srcDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
-                         spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
+                         //spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
 
                         // this is just as fast
-                        //ds.DrawImage(_assets, srcDest, srcRect);
+                        ds.DrawImage(_assets, srcDest, srcRect);
 
                         // good for debugging
                         // ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
@@ -415,12 +416,11 @@ namespace winrt::ModernLife::implementation
     {
         if (h > 360.0f)
         {
-            __debugbreak();
+            return ColorHelper::FromArgb(255, 196, 196, 196);
         }
         if (s == 0)
         {
-            uint8_t x = static_cast<uint8_t>(v);
-            return ColorHelper::FromArgb(255, x, x, x);
+            return ColorHelper::FromArgb(255, 228, 228, 228);
         }
         
         h /= 60;
