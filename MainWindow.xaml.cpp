@@ -58,17 +58,17 @@ namespace winrt::ModernLife::implementation
         CanvasDrawingSession ds = _assets.CreateDrawingSession();
         ds.Antialiasing(CanvasAntialiasing::Antialiased);
         ds.Blend(CanvasBlend::Copy);
-        //ds.Units(CanvasUnits::Pixels);
-
-        ds.FillRectangle(0, 0, rtsize, rtsize, Colors::WhiteSmoke());
+        ds.Clear(Colors::WhiteSmoke());
 
         float posx = 0.0f;
         float posy = 0.0f;
 
         float round = 2.0f;
+        float offset = 0.0f;
         if (_widthCellDest > 20)
         {
             round = 6.0f;
+            offset = 0.5f;
         }
 
         // start filling tiles at age 0
@@ -77,14 +77,14 @@ namespace winrt::ModernLife::implementation
         {
             for (uint16_t x = 0; x < assetStride; x++)
             {
-                ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, round, round, GetCellColorHSV(index));
-                //ds.FillRoundedRectangle(posx +1, posy +1, _widthCellDest -2, _widthCellDest -2, 2, 2, GetCellColorHSV(index));
+                ds.FillRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetCellColorHSV(index));
                 posx += _widthCellDest;
                 index++;
             }
             posy += _widthCellDest;
             posx = 0.0f;
         }
+        ds.Flush();
     }
 
     void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
@@ -178,10 +178,10 @@ namespace winrt::ModernLife::implementation
             std::scoped_lock lock{ lockbackbuffer };
             args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
             args.DrawingSession().Blend(CanvasBlend::Copy);
-            //args.DrawingSession().Units(CanvasUnits::Pixels);
 
-            args.DrawingSession().DrawImage(_back, 0, 0);
+            args.DrawingSession().DrawImage(_back);
             //args.DrawingSession().DrawImage(_assets, 0, 0);
+            args.DrawingSession().Flush();
         }
         fps.AddFrame();
     }
@@ -213,7 +213,7 @@ namespace winrt::ModernLife::implementation
         float srcW = _widthCellDest;
         uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
-        //auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
+        auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
         
         float posx = 0.0f;
 		float posy = startY * _widthCellDest;
@@ -231,13 +231,13 @@ namespace winrt::ModernLife::implementation
                         Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
-                         //spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
+                         spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
 
                         // this is just as fast
-                        ds.DrawImage(_assets, rectDest, rectSrc);
+                        //ds.DrawImage(_assets, rectDest, rectSrc);
 
                         // good for debugging
-                        // ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
+                        //ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
                     }
                     posx += _widthCellDest;
                 }
@@ -253,8 +253,7 @@ namespace winrt::ModernLife::implementation
 
         {
             std::scoped_lock lock{ lockbackbuffer };
-            float dpi{ theCanvas().Dpi() };
-            _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, dpi);
+            _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
             _widthCellDest = (_canvasSize / _boardwidth);
         }
         InitializeAssets();
@@ -271,16 +270,16 @@ namespace winrt::ModernLife::implementation
         CanvasDrawingSession ds = _back.CreateDrawingSession();
         ds.Antialiasing(CanvasAntialiasing::Aliased);
         ds.Blend(CanvasBlend::Copy);
-        //ds.Units(CanvasUnits::Pixels);
-
-        ds.FillRectangle(0, 0, _canvasSize, _canvasSize, Colors::WhiteSmoke());
+        ds.Clear(Colors::WhiteSmoke());
 
         {
-            // render in one thread
+            // render in one thread, lock is scoped to this { } block
             std::scoped_lock lock{ lockboard };
             auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()));
             drawinto0.wait();
         }
+
+        //ds.Flush();
     }
 
     int32_t MainWindow::SeedPercent() const
@@ -435,10 +434,12 @@ namespace winrt::ModernLife::implementation
     {
         if (h > 360.0f)
         {
+            //return Windows::UI::Colors::Black();
             return ColorHelper::FromArgb(255, 196, 196, 196);
         }
         if (s == 0)
         {
+            //return Windows::UI::Colors::Black();
             return ColorHelper::FromArgb(255, 228, 228, 228);
         }
         
