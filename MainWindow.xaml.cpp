@@ -56,6 +56,10 @@ namespace winrt::ModernLife::implementation
         }
 
         CanvasDrawingSession ds = _assets.CreateDrawingSession();
+        ds.Antialiasing(CanvasAntialiasing::Antialiased);
+        ds.Blend(CanvasBlend::Copy);
+        //ds.Units(CanvasUnits::Pixels);
+
         ds.FillRectangle(0, 0, rtsize, rtsize, Colors::WhiteSmoke());
 
         float posx = 0.0f;
@@ -166,6 +170,10 @@ namespace winrt::ModernLife::implementation
         RenderOffscreen(sender);
         {
             std::scoped_lock lock{ lockbackbuffer };
+            args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
+            args.DrawingSession().Blend(CanvasBlend::Copy);
+            //args.DrawingSession().Units(CanvasUnits::Pixels);
+
             args.DrawingSession().DrawImage(_back, 0, 0);
             //args.DrawingSession().DrawImage(_assets, 0, 0);
         }
@@ -213,14 +221,14 @@ namespace winrt::ModernLife::implementation
                         int age = cell.Age() > maxage ? maxage : cell.Age();
                         float srcX = static_cast<float>(age % srcStride);
                         float srcY = static_cast<float>(age / srcStride);
-                        Windows::Foundation::Rect srcRect{ srcW * srcX, srcW * srcY, srcW, srcW};
-                        Windows::Foundation::Rect srcDest{ posx, posy, _widthCellDest, _widthCellDest};
+                        Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
+                        Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
-                         //spriteBatch.DrawFromSpriteSheet(_assets, srcDest, srcRect);
+                         //spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
 
                         // this is just as fast
-                        ds.DrawImage(_assets, srcDest, srcRect);
+                        ds.DrawImage(_assets, rectDest, rectSrc);
 
                         // good for debugging
                         // ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
@@ -239,7 +247,8 @@ namespace winrt::ModernLife::implementation
 
         {
             std::scoped_lock lock{ lockbackbuffer };
-            _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
+            float dpi{ theCanvas().Dpi() };
+            _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, dpi);
             _widthCellDest = (_canvasSize / _boardwidth);
         }
         InitializeAssets();
@@ -254,6 +263,10 @@ namespace winrt::ModernLife::implementation
             return;
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
+        ds.Antialiasing(CanvasAntialiasing::Aliased);
+        ds.Blend(CanvasBlend::Copy);
+        //ds.Units(CanvasUnits::Pixels);
+
         ds.FillRectangle(0, 0, _canvasSize, _canvasSize, Colors::WhiteSmoke());
 
         {
