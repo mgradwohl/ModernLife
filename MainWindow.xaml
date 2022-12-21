@@ -43,6 +43,11 @@
                     <DropDownButton HorizontalAlignment="Center" x:Name="dropdownSpeed" Content="Fast" >
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Click="speedClick" Text="Sloth">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>2</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
                                 <MenuFlyoutItem Click="speedClick" Text="Slowest">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>5</x:Int32>
@@ -66,6 +71,11 @@
                                 <MenuFlyoutItem Click="speedClick" Text="Fastest" >
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>60</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="speedClick" Text="Bonkers" >
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>120</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
                             </MenuFlyout>
