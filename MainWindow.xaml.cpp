@@ -360,6 +360,7 @@ namespace winrt::ModernLife::implementation
         // draw the values right aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
         args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
+        args.DrawingSession().Flush();
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
