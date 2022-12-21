@@ -65,13 +65,19 @@ namespace winrt::ModernLife::implementation
         float posx = 0.0f;
         float posy = 0.0f;
 
+        float round = 2.0f;
+        if (_widthCellDest > 20)
+        {
+            round = 6.0f;
+        }
+
         // start filling tiles at age 0
         uint16_t index = 0;
         for (uint16_t y = 0; y < assetStride; y++)
         {
             for (uint16_t x = 0; x < assetStride; x++)
             {
-                ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(index));
+                ds.FillRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, round, round, GetCellColorHSV(index));
                 //ds.FillRoundedRectangle(posx +1, posy +1, _widthCellDest -2, _widthCellDest -2, 2, 2, GetCellColorHSV(index));
                 posx += _widthCellDest;
                 index++;
