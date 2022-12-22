@@ -9,34 +9,97 @@
     xmlns:local="using:ModernLife"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    
+    Activated="OnWindowActivate">
 
-    <SplitView x:Name="splitView" IsPaneOpen="True" OpenPaneLength="200" Margin="6,6,6,6" DisplayMode="Inline" PanePlacement="Right"
-               PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="2">
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <canvas:CanvasControl x:Name="theCanvas" Draw="CanvasControl_Draw" ClearColor="{StaticResource SystemChromeMediumLowColor}" />
-        </Grid>
-       
-        <SplitView.Pane>
-            <StackPanel Orientation="Vertical" >
-                <TextBlock Text="MODERN LIFE" x:Name="PaneHeader" HorizontalAlignment="Center" Margin="0,12,0,12" Style="{StaticResource BaseTextBlockStyle}"/>
-                <AppBarButton HorizontalAlignment="Center" Icon="Pause" x:Name="GoButton"  Label="Pause" Click="GoButton_Click" />
-                <AppBarButton HorizontalAlignment="Center" Icon="Shuffle" x:Name="RestartButton"  Label="Reshuffle" Click="RestartButton_Click" />
-                <Slider x:Name="sliderPop" Minimum = "0" Maximum = "100" TickFrequency = "5" SmallChange="5" TickPlacement = "Outside"
-                         Value="{x:Bind SeedPercent}" x:DefaultBindMode="TwoWay" Margin="6"/>
-                <TextBlock x:Name="popSliderText" Text="{x:Bind GetSliderText(sliderPop.Value), Mode=OneWay}" HorizontalAlignment="Center" Margin = "6"/>
-                <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,12,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
-                <Grid Margin="20,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="200">
-                    <canvas:CanvasControl x:Name="theCanvasDebug" Draw="theCanvasDebug_Draw" />
-                </Grid>
-                <TextBlock Text="LEARN MORE" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,12,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
-                <TextBlock TextWrapping="WrapWholeWords" HorizontalAlignment="Center">
-                    <Span xml:space="preserve"><Run>YouTube </Run><Hyperlink NavigateUri="https://youtu.be/Kk2MH9O4pXY">John Conway</Hyperlink></Span>
-                </TextBlock>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="AppTitleBar" Height="32">
+            <Image Source="Assets/StoreLogo.png" HorizontalAlignment="Left" Width="16" Height="16" Margin="8,0"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="AppTitleTextBlock" Text="Modern Life" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" Margin="28,2,0,0"/>
+                <TextBlock x:Name="AppTitlePreview" FontSize="10" Text="PREVIEW" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" Margin="12,2,0,0"/>
             </StackPanel>
-        </SplitView.Pane>
-    </SplitView>
+        </Grid>
+        <SplitView Grid.Row="1" x:Name="splitView" IsPaneOpen="True" MinWidth="200" OpenPaneLength="200" DisplayMode="Inline" Margin="0,6,6,6" PanePlacement="Right"
+               PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="4">
+
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="4" >
+                <canvas:CanvasControl x:Name="theCanvas" Margin="6,0,6,0" Draw="CanvasControl_Draw" ClearColor="{StaticResource SystemChromeMediumColor}" SizeChanged="theCanvas_SizeChanged" />
+            </Grid>
+
+            <SplitView.Pane>
+                <StackPanel Orientation="Vertical" >
+                    <TextBlock Text="MODERN LIFE" x:Name="PaneHeader" HorizontalAlignment="Center" Margin="0,12,0,12" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <AppBarButton HorizontalAlignment="Center" Icon="Pause" x:Name="GoButton"  Label="Pause" Click="GoButton_Click" />
+                    <AppBarButton HorizontalAlignment="Center" Icon="Shuffle" x:Name="RestartButton"  Label="Reshuffle" Click="RestartButton_Click" />
+
+                    <TextBlock Text="UPDATE SPEED" Margin="0,36,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <DropDownButton HorizontalAlignment="Center" x:Name="dropdownSpeed" Content="Fast" >
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Click="speedClick" Text="Sloth">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>2</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="speedClick" Text="Slowest">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>5</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="speedClick" Text="Slow">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>10</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="speedClick" Text="Medium" >
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>20</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="speedClick" Text="Fast" >
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>30</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="speedClick" Text="Fastest" >
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>60</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="speedClick" Text="Bonkers" >
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>120</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+
+                    <TextBlock Text="BOARD SIZE" Margin="0,36,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <Slider x:Name="sliderBoardWidth" Margin="12,0,12,0" Minimum = "10" Maximum = "500" TickFrequency = "50" SmallChange="10" TickPlacement = "Outside"
+                         Value="{x:Bind BoardWidth}" x:DefaultBindMode="TwoWay"/>
+                    <TextBlock x:Name="textBoardWidth" Text="{x:Bind GetBoardWidthText(sliderBoardWidth.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <TextBlock Text="BOARD INITIALIZATION" Margin="0,36,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <Slider x:Name="sliderRandPercent" Margin="12,0,12,0" Minimum = "0" Maximum = "100" TickFrequency = "5" SmallChange="5" TickPlacement = "Outside"
+                         Value="{x:Bind SeedPercent}" x:DefaultBindMode="TwoWay"/>
+                    <TextBlock x:Name="textRandPercent" Text="{x:Bind GetRandPercentText(sliderRandPercent.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,36,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="100">
+                        <canvas:CanvasControl x:Name="theCanvasStatsContent" Draw="theCanvasStatsContent_Draw" />
+                    </Grid>
+                    <TextBlock Text="LEARN MORE" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,36,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <TextBlock TextWrapping="WrapWholeWords" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}">
+                    <Span xml:space="preserve"><Run>YouTube </Run><Hyperlink NavigateUri="https://youtu.be/Kk2MH9O4pXY">John Conway</Hyperlink></Span>
+                    </TextBlock>
+                </StackPanel>
+            </SplitView.Pane>
+        </SplitView>
+    </Grid>
 </Window>
-
-
-

@@ -2,7 +2,7 @@
 // as x increases move right, as y increases move down
 #include "pch.h"
 #include "Board.h"
-
+#include <future>
 // optimized to never use std::endl until the full board is done printing
 std::ostream& operator<<(std::ostream& stream, Board& board)
 {
@@ -10,9 +10,9 @@ std::ostream& operator<<(std::ostream& stream, Board& board)
 	// clear the static string of any leftover goo
 	str.clear();
 
-	for (int y = 0; y < board.Height(); y++)
+	for (uint16_t y = 0; y < board.Height(); y++)
 	{
-		for (int x = 0; x < board.Width(); x++)
+		for (uint16_t x = 0; x < board.Width(); x++)
 		{
 			const Cell& cell = board.GetCell(x, y);
 			str += cell.GetEmojiStateString();
@@ -24,7 +24,7 @@ std::ostream& operator<<(std::ostream& stream, Board& board)
 	return stream;
 }
 
-Board::Board(int width, int height)
+Board::Board(uint16_t width, uint16_t height)
 	: _width(width), _height(height), _size(width * height)
 {
 	_board.resize(_size);
@@ -73,13 +73,13 @@ void Board::SetCell(Cell& cell, Cell::State state)
 	}
 }
 
-int Board::CountLiveAndDyingNeighbors(int x, int y)
+uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
-	int xoleft = (x == 0) ? _width - 1 : -1;
-	int xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
-	int yoabove = (y == 0) ? _height - 1 : -1;
-	int yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
+	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
+	uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
+	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
+	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
 	uint8_t count = 0;
 
@@ -99,13 +99,13 @@ int Board::CountLiveAndDyingNeighbors(int x, int y)
 	return count;
 }
 
-int Board::CountLiveNotDyingNeighbors(int x, int y)
+uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
-	int xoleft = (x == 0) ? _width - 1 : -1;
-	int xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
-	int yoabove = (y == 0) ? _height - 1 : -1;
-	int yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
+	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
+	uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
+	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
+	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
 	uint8_t count = 0;
 
@@ -168,23 +168,29 @@ void Board::RandomizeBoard(float alivepct)
 		if (rp <= alivepct)
 		{
 			SetCell(c, Cell::State::Live);
-			c.SetAge(ra);
+			c.SetAge(static_cast<uint16_t>(ra));
 		}
 	}
 	_dirty = 1; // must be dirty, we just randomized it
 }
 
-void Board::ConwayUpdateBoardWithNextState()
+void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 {
-	for (int y = 0; y < Height(); y++)
+	for (uint16_t y = startRow; y < endRow; y++)
 	{
-		for (int x = 0; x < Width(); x++)
+		for (uint16_t x = 0; x < Width(); x++)
 		{
 			Cell& cc = GetCell(x, y);
 			CountLiveAndDyingNeighbors(x, y);
 			ConwayRules(cc);
 		}
 	}
+
+}
+void Board::ConwayUpdateBoardWithNextState()
+{
+	auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(0), static_cast<uint16_t>(Height()));
+	update1.wait();
 }
 
 void Board::ConwayRules(Cell& cell)
@@ -193,7 +199,7 @@ void Board::ConwayRules(Cell& cell)
 	// Any dead cell with three live neighbours becomes a live cell.
 	// All other live cells die in the next generation. Similarly, all other dead cells stay dead.
 
-	static int count = 0;
+	static uint16_t count = 0;
 	count = cell.Neighbors();
 
 	if (cell.IsAlive() && count >= 2 && count <= 3)
@@ -241,7 +247,7 @@ void Board::LifeWithoutDeathRules(Cell& cell) const
 	// every dead cell that has exactly 3 live neighbors becomes alive itself
 	// and every other dead cell remains dead. B3/S012345678
 
-	static int count = 0;
+	static uint16_t count = 0;
 	count = cell.Neighbors();
 
 	if (cell.IsAlive())
@@ -261,7 +267,7 @@ void Board::HighlifeRules(Cell& cell) const
 	// the rule B36 / S23; that is, a cell is born if it has 3 or 6 neighbors
 	//and survives if it has 2 or 3 neighbors.
 
-	static int count = 0;
+	static uint16_t count = 0;
 	count = cell.Neighbors();
 
 	if (cell.IsAlive() && count >= 2 && count <= 3)
@@ -287,7 +293,7 @@ void Board::SeedsRules(Cell& cell) const
 	// but had exactly two neighbors that were on
 	// all other cells turn off. It is described by the rule B2 / S
 
-	static int count = 0;
+	static uint16_t count = 0;
 	count = cell.Neighbors();
 
 	if (cell.IsDead() && count == 2)
@@ -308,7 +314,7 @@ void Board::BriansBrainRules(Cell& cell) const
 	// which is not counted as an "on" cell in the neighbor count, and prevents any cell from
 	// being born there. Cells that were in the dying state go into the off state.
 
-	static int count = 0;
+	static uint16_t count = 0;
 	count = cell.Neighbors();
 
 	if (cell.IsDead() && count == 2)

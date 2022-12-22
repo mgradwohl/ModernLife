@@ -2,24 +2,12 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
-#include<future>
-#include<format>
-
-#include<windows.ui.h>
-#include<windows.ui.xaml.h>
-#include<windows.ui.xaml.media.h>
-#include<winrt/Microsoft.Graphics.Canvas.h>
-#include<winrt/Microsoft.Graphics.Canvas.Text.h>
-
-
+#include "fpscounter.h"
 #include "MainWindow.xaml.h"
 
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace winrt::ModernLife::implementation
 {
@@ -27,7 +15,95 @@ namespace winrt::ModernLife::implementation
     {
         InitializeComponent();
 
+        ExtendsContentIntoTitleBar(true);
+        SetTitleBar(AppTitleBar());
+        #ifdef _DEBUG
+                AppTitlePreview().Text(L"PREVIEW DEBUG");
+        #endif
+    
+        auto windowNative{ this->try_as<::IWindowNative>() };
+        winrt::check_bool(windowNative);
+        HWND hWnd{ nullptr };
+        windowNative->get_WindowHandle(&hWnd);
+        Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
+
+        if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
+        {
+            Windows::Graphics::PointInt32 pos(appWnd.Position());
+            pos.Y = 32;
+            appWnd.Move(pos);
+            appWnd.ResizeClient(Windows::Graphics::SizeInt32{2220, 1920});
+            auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
+            //presenter.IsMaximizable(false);
+            //presenter.IsResizable(false);
+        }
+
         StartGameLoop();
+    }
+
+    void MainWindow::InitializeAssets()
+    {
+        // this will be used to iterate through the width and height of the rendertarget *without* using the partial tile
+        uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
+
+        // create a square render target that will hold all the tiles this may often times have a partial 'tile' at the end which we won't use
+        float rtsize = _widthCellDest * assetStride;
+
+        // if the back buffer doesn't exist or is the wrong size, create it
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
+        {
+            _assets = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
+        }
+
+        CanvasDrawingSession ds = _assets.CreateDrawingSession();
+        ds.Antialiasing(CanvasAntialiasing::Antialiased);
+        ds.Blend(CanvasBlend::Copy);
+        ds.Clear(Colors::WhiteSmoke());
+
+        float posx = 0.0f;
+        float posy = 0.0f;
+
+        float round = 2.0f;
+        float offset = 0.0f;
+        if (_widthCellDest > 20)
+        {
+            round = 6.0f;
+            offset = 0.5f;
+        }
+
+        // start filling tiles at age 0
+        uint16_t index = 0;
+        for (uint16_t y = 0; y < assetStride; y++)
+        {
+            for (uint16_t x = 0; x < assetStride; x++)
+            {
+                ds.FillRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetCellColorHSV(index));
+                posx += _widthCellDest;
+                index++;
+            }
+            posy += _widthCellDest;
+            posx = 0.0f;
+        }
+        ds.Flush();
+    }
+
+    void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
+    {
+        sender;
+        using namespace Microsoft::UI::Xaml::Media;
+
+        if (args.WindowActivationState() == WindowActivationState::Deactivated)
+        {
+            SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
+            AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
+        }
+        else
+        {
+            SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
+            AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
+        }
     }
 
     void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
@@ -45,25 +121,53 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
-        // create the board
-        board = Board{ cellcount, cellcount };
+        {
+            // create and start a timer without recreating it when the user changes options
+            if (nullptr == _controller)
+            {
+                _controller = DispatcherQueueController::CreateOnDedicatedThread();
+            }
 
-        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
-        randomizer.wait();
+            if (nullptr == _queue)
+            {
+                _queue = _controller.DispatcherQueue();
+            }
 
-        // create and start a timer
-        _controller = DispatcherQueueController::CreateOnDedicatedThread();
-        _queue = _controller.DispatcherQueue();
-        _timer = _queue.CreateTimer();
-        using namespace  std::literals::chrono_literals;
-        _timer.Interval(std::chrono::milliseconds{ 16 });
-        _timer.IsRepeating(true);
-        auto registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+            if (nullptr == _timer)
+            {
+                _timer = _queue.CreateTimer();
+            }
+
+            if (! _tokeninit)
+            {
+                _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+                _tokeninit = true;
+            }
+
+            using namespace  std::literals::chrono_literals;
+
+            _timer.Interval(std::chrono::milliseconds(1000/_speed));
+            _timer.IsRepeating(true);
+        }
 
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
         GoButton().Label(L"Play");
 
+        // create the board, lock it in the case that OnTick is updating it
+        {
+            std::scoped_lock lock{ lockboard };
+            board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
+        }
+
+        // add a random population
+        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
+        randomizer.wait();
+
+        // start the FPSCounter
+        fps.Start();
+        
+        // draw the initial population
         theCanvas().Invalidate();
     }
 
@@ -72,95 +176,29 @@ namespace winrt::ModernLife::implementation
         RenderOffscreen(sender);
         {
             std::scoped_lock lock{ lockbackbuffer };
-            args.DrawingSession().DrawImage(_back, 0, 0);
+            args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
+            args.DrawingSession().Blend(CanvasBlend::Copy);
+
+            args.DrawingSession().DrawImage(_back);
+            //args.DrawingSession().DrawImage(_assets, 0, 0);
+            args.DrawingSession().Flush();
         }
+        fps.AddFrame();
     }
 
-    Windows::UI::Color MainWindow::GetCellColor2(const Cell& cell)
+    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
-        if (!_colorinit)
-        {
-            for (int index = 0; index <= maxage + 1; index++)
-            {
-                int a = 255;
-                int r = (index * 255)/maxage;
-                int g = 128;
-                int b = 128;
-                vecColors.emplace_back(ColorHelper::FromArgb(a, r, g, b));
-
-            }
-
-            // setup vector of colors
-            _colorinit = true;
-        }
-        int age = cell.Age() > maxage ? maxage : cell.Age();
-
-        return vecColors[age];
-    }
-
-    Windows::UI::Color MainWindow::GetCellColor3(const Cell& cell)
-    {
-        if (!_colorinit)
-        {
-            float h = 0.0f;
-
-            vecColors.resize(maxage + 1);
-            for (int index = 100; index < maxage - 100 + 1; index++)
-            {
-                h = ((float)index) / maxage * 360.0f;
-                vecColors[index] = HSVtoRGB2(h, 60.0, 60.0);
-            }
-            _colorinit = true;
-        }
-
-        if (cell.Age() < 100)
-        {
-            return Windows::UI::Colors::Green();
-        }
-        
-        if (cell.Age() > maxage - 100)
+        // should never see a black cell
+        if (age > maxage)
         {
             return Windows::UI::Colors::Black();
         }
 
-        int age = cell.Age() > maxage ? maxage : cell.Age();
-
-        return vecColors[age];
+        float h = (age * 360.f) / maxage;
+        return HSVtoColor(h, 0.6f, 0.8f);
     }
 
-    Windows::UI::Color MainWindow::GetCellColor(const Cell& cell) const
-    {
-        uint8_t colorscale = 0;
-        uint8_t red = 0;
-        uint8_t green = 0;
-        uint8_t blue = 0;
-
-        colorscale = (cell.Age() * 255) / maxage;
-        colorscale = 254 - colorscale;
-
-        if (cell.Age() <= (maxage * 1/4))
-        {
-            green = colorscale;
-        }
-        else if (cell.Age() > (maxage * 1/4) && cell.Age() <= (maxage * 1/2))
-        {
-            blue = colorscale;
-        }
-        else if (cell.Age() > (maxage * 1/2) && cell.Age() <= (maxage * 3/4))
-        {
-            red = colorscale;
-        }
-        else if (cell.Age() > (maxage * 3/4) && cell.Age() <= maxage)
-        {
-            red = colorscale;
-            green = colorscale;
-            blue = colorscale;
-        }
-        Windows::UI::Color cellcolor = ColorHelper::FromArgb(255, red, green, blue);
-        return cellcolor;
-    }
-
-    void MainWindow::DrawInto(CanvasDrawingSession& ds, int startY, int endY, float width)
+    void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
         //float inc = width / cellcount;
         //if (drawgrid)
@@ -172,79 +210,76 @@ namespace winrt::ModernLife::implementation
 		//	}
 		//}
 
-        float w = (width / cellcount);
-		float posx = 0.0f;
-		float posy = startY * w;
-        {
-            std::scoped_lock lock{ lockboard };
+        float srcW = _widthCellDest;
+        uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
-            for (int y = startY; y < endY; y++)
+        auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
+        
+        float posx = 0.0f;
+		float posy = startY * _widthCellDest;
+        {
+            for (uint16_t y = startY; y < endY; y++)
             {
-                for (int x = 0; x < board.Width(); x++)
+                for (uint16_t x = 0; x < board.Width(); x++)
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        ds.DrawRoundedRectangle(posx, posy, w, w, 2, 2, GetCellColor3(cell));
+                        int age = cell.Age() > maxage ? maxage : cell.Age();
+                        float srcX = static_cast<float>(age % srcStride);
+                        float srcY = static_cast<float>(age / srcStride);
+                        Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
+                        Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
+
+                        // this is not actually faster - unexpected
+                         spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
+
+                        // this is just as fast
+                        //ds.DrawImage(_assets, rectDest, rectSrc);
+
+                        // good for debugging
+                        //ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
                     }
-                    posx += w;
+                    posx += _widthCellDest;
                 }
-                posy += w;
-                posx = 1.0f;
+                posy += _widthCellDest;
+                posx = 0.0f;
             }
         }
 	}
 
+    void MainWindow::SetupRenderTargets()
+    {
+        CanvasDevice device = CanvasDevice::GetSharedDevice();
+
+        {
+            std::scoped_lock lock{ lockbackbuffer };
+            _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
+            _widthCellDest = (_canvasSize / _boardwidth);
+        }
+        InitializeAssets();
+    }
+
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
+        sender;
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
         if (!board.IsDirty())
             return;
 
-        constexpr int bestsize = cellcount * 8;
-        winrt::Windows::Foundation::Size huge = sender.Size();
-        float width = min(huge.Width, bestsize);
-        float height = (width/cellcount) * board.Height();
-
-        // if the back buffer doesn't exist or is the wrong size, create it
-        if (nullptr == _back || _back.Size() != sender.Size())
-        {
-            CanvasDevice device = CanvasDevice::GetSharedDevice();
-            {
-                std::scoped_lock lock{ lockbackbuffer };
-                _back = CanvasRenderTarget(device, width, height, sender.Dpi());
-            }
-        }
-
         CanvasDrawingSession ds = _back.CreateDrawingSession();
+        ds.Antialiasing(CanvasAntialiasing::Aliased);
+        ds.Blend(CanvasBlend::Copy);
+        ds.Clear(Colors::WhiteSmoke());
 
-        using namespace Microsoft::UI::Xaml::Controls;
-        using namespace Microsoft::UI::Xaml::Media;
-        Brush backBrush{ splitView().PaneBackground() };
-        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
-        Windows::UI::Color colorBack{scbBack.Color()};
-
-        ds.FillRectangle(0, 0, width, height, Colors::WhiteSmoke());
-
-        if (singlerenderer)
         {
-            // render in one thread
-            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, board.Height(), _back.Size().Width);
+            // render in one thread, lock is scoped to this { } block
+            std::scoped_lock lock{ lockboard };
+            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()));
             drawinto0.wait();
         }
-        else
-        {
-            // render in 4 threads
-            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0,                    board.Height() * 1/4, _back.Size().Width);
-            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/4, board.Height() * 1/2, _back.Size().Width);
-            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 1/2, board.Height() * 3/4, _back.Size().Width);
-            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), board.Height() * 3/4, board.Height(),       _back.Size().Width);
 
-            drawinto1.wait();
-            drawinto2.wait();
-            drawinto3.wait();
-            drawinto4.wait();
-        }
+        //ds.Flush();
     }
 
     int32_t MainWindow::SeedPercent() const
@@ -262,6 +297,23 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    int16_t MainWindow::BoardWidth() const
+    {
+        return _boardwidth;
+    }
+
+    void MainWindow::BoardWidth(int16_t value)
+    {
+        if (_boardwidth != value)
+        {
+            _boardwidth = value;
+            _timer.Stop();
+            m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
+
+            SetupRenderTargets();
+            StartGameLoop();
+        }
+    }
     void MainWindow::MyProperty(int32_t /* value */)
     {
         throw hresult_not_implemented();
@@ -272,18 +324,18 @@ namespace winrt::ModernLife::implementation
         throw hresult_not_implemented();
     }
 
-    void MainWindow::theCanvasDebug_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    void MainWindow::theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
         sender;
         
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
+        // copy colors, font details etc from other controls
+        // to make this canvas aligned with styles
         Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
-        canvasFmt.FontSize(PaneHeader().FontSize());
-
-        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
+        canvasFmt.FontSize(static_cast<float>(PaneHeader().FontSize()));
 
         Brush backBrush{ splitView().PaneBackground() };
         Brush textBrush{ PaneHeader().Foreground() };
@@ -296,10 +348,19 @@ namespace winrt::ModernLife::implementation
 
         args.DrawingSession().Clear(colorBack);
 
-        std::wstring str = std::format(L"Generation\t{:6}\r\nAlive\t\t{:6}\r\nTotal Cells\t{:6}", board.Generation(), board.GetLiveCount(), board.GetSize());
+        // create the strings to draw
+        std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells");
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", _speed, fps.FPS(), board.Generation(), board.GetLiveCount(), board.GetSize());
         sender.Invalidate();
+        
+        // draw the text left aligned
+        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
+        args.DrawingSession().DrawText(strTitle, 0, 0, 160, 100, colorText, canvasFmt);
 
-        args.DrawingSession().DrawText(str, 0, 0, 200, 200, colorText, canvasFmt);
+        // draw the values right aligned
+        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
+        args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
+        args.DrawingSession().Flush();
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
@@ -310,16 +371,16 @@ namespace winrt::ModernLife::implementation
         using namespace Microsoft::UI::Xaml::Controls;
         if (_timer.IsRunning())
         {
+            _timer.Stop();
             GoButton().Label(L"Play");
             GoButton().Icon(SymbolIcon(Symbol::Play));
-            _timer.Stop();
 
         }
         else
         {
+            _timer.Start();
             GoButton().Icon(SymbolIcon(Symbol::Pause));
             GoButton().Label(L"Pause");
-            _timer.Start();
         }
     }
 
@@ -336,62 +397,107 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    hstring MainWindow::GetSliderText(int32_t value)
+    void MainWindow::theCanvas_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
-        // only called once when the app starts
-        std::wstring slidertext = std::format(L"{0}% random", value);
-        hstring hslidertext{ slidertext };
-        return hslidertext;
+        sender;
+        _canvasSize = min(e.NewSize().Width, bestsize);
+        SetupRenderTargets();
     }
 
-    void MainWindow::sliderPop_ValueChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
+    hstring MainWindow::GetRandPercentText(double_t value)
     {
-        // old way, this works
-        //std::wstring slidertext = std::format(L"{0}% random", sliderPop().Value());
-
-        //if (nullptr != popSliderText())
-        //{
-        //    popSliderText().Text(slidertext);
-        //}
+        std::wstring text = std::format(L"{0}% random", static_cast<int>(value));
+        hstring htext{ text };
+        return htext;
     }
 
-    Windows::UI::Color MainWindow::HSVtoRGB2(float H, float S, float V)
+    hstring MainWindow::GetBoardWidthText(double_t value)
     {
-        float s = S / 100;
-        float v = V / 100;
-        float C = s * v;
-        float X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
-        float m = v - C;
-        float r = 0;
-        float g = 0;
-        float b = 0;
+        std::wstring text = std::format(L"Width {0} x Height {0}", static_cast<int>(value));
+        hstring htext{ text };
+        return htext;
+    }
 
-        if (H >= 0 && H < 60) {
-            r = C, g = X, b = 0;
+    void MainWindow::speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        e;
+        using namespace Microsoft::UI::Xaml::Controls;
+        MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
+        _speed = item.Tag().as<int>();
+        
+		dropdownSpeed().Content(winrt::box_value(item.Text()));
+
+		_timer.Interval(std::chrono::milliseconds(1000/_speed));
+    }
+
+    // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB
+    Windows::UI::Color MainWindow::HSVtoColor(float h, float s, float v)
+    {
+        if (h > 360.0f)
+        {
+            //return Windows::UI::Colors::Black();
+            return ColorHelper::FromArgb(255, 196, 196, 196);
         }
-        else if (H >= 60 && H < 120) {
-            r = X, g = C, b = 0;
+        if (s == 0)
+        {
+            //return Windows::UI::Colors::Black();
+            return ColorHelper::FromArgb(255, 228, 228, 228);
         }
-        else if (H >= 120 && H < 180) {
-            r = 0, g = C, b = X;
+        
+        h /= 60;
+        int i = static_cast<int>(std::floor(h));
+        float f = h - i;
+        float p = v * (1 - s);
+        float q = v * (1 - s * f);
+        float t = v * (1 - s * (1 - f));
+
+        float dr = 0;
+        float dg = 0;
+        float db = 0;
+
+        switch (i)
+        {
+            case 0:
+                dr = v;
+                dg = t;
+                db = p;
+                break;
+            case 1:
+                dr = q;
+                dg = v;
+                db = p;
+                break;
+            case 2:
+                dr = p;
+                dg = v;
+                db = t;
+                break;
+            case 3:
+                dr = p;
+                dg = q;
+                db = v;
+                break;
+            case 4:
+                dr = t;
+                dg = p;
+                db = v;
+                break;
+            case 5:
+                dr = v;
+                dg = p;
+                db = q;
+                break;
+            default:
+                dr = v;
+                dg = v;
+                db = v;
+                break;
         }
-        else if (H >= 180 && H < 240) {
-            r = 0, g = X, b = C;
-        }
-        else if (H >= 240 && H < 300) {
-            r = X, g = 0, b = C;
-        }
-        else {
-            r = C, g = 0, b = X;
-        }
-        int R = (r + m) * 255;
-        int G = (g + m) * 255;
-        int B = (b + m) * 255;
-    
-        return ColorHelper::FromArgb(255, R, G, B);
+
+        uint8_t r = static_cast<uint8_t>(dr * 255);
+        uint8_t g = static_cast<uint8_t>(dg * 255);
+        uint8_t b = static_cast<uint8_t>(db * 255);
+
+        return ColorHelper::FromArgb(255, r, g, b);
     }
 }
-
-
-
-

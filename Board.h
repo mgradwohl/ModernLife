@@ -8,18 +8,18 @@ class Board
 private:
     // if I allocated this on the heap, I could get the size right with resize
     std::vector<Cell> _board;
-    int _width = 0;
-    int _height = 0;
-    int _size = 0;
-    int _generation = 0;
+    uint16_t _width = 0;
+    uint16_t _height = 0;
+    uint32_t _size = 0;
+    uint32_t _generation = 0;
 
-    int _numDead = 0;
-    int _numLive = 0;
-    int _numBorn = 0;
-    int _numOld = 0;
-    int _numDying = 0;
-    int _OldAge = -1;
-    int _dirty = 0;
+    uint32_t _numDead = 0;
+    uint32_t _numLive = 0;
+    uint32_t _numBorn = 0;
+    uint32_t _numOld = 0;
+    uint32_t _numDying = 0;
+    uint32_t _OldAge = static_cast<uint16_t>(- 1);
+    uint32_t _dirty = 0;
 
 public:
     explicit Board(std::nullptr_t) {};
@@ -27,44 +27,44 @@ public:
 
     ~Board() = default;
 
-    Board(int width, int height);
+    Board(uint16_t width, uint16_t height);
 
-    void SetOldAge(int age)
+    void SetOldAge(uint32_t age)
     {
         _OldAge = age;
     }
 
-    int GetOldAge() const
+    uint32_t GetOldAge() const
     {
         return _OldAge;
     }
 
-    int GetSize() const
+    uint32_t GetSize() const
     {
         return _size;
     }
 
-    int GetDeadCount() const
+    uint32_t GetDeadCount() const
     {
         return _numDead;
     }
 
-    int GetLiveCount() const
+    uint32_t GetLiveCount() const
     {
         return _numLive;
     }
 
-    int GetBornCount() const
+    uint32_t GetBornCount() const
     {
         return _numBorn;
     }
 
-    int GetOldCount() const
+    uint32_t GetOldCount() const
     {
         return _numOld;
     }
 
-    int GetDyingCount() const
+    uint32_t GetDyingCount() const
     {
         return _numDying;
     }
@@ -84,26 +84,27 @@ public:
         return _dirty;
     }
 
-    int Generation() const
+    uint32_t Generation() const
     {
         return _generation;
     }
 
-    int Width() const
+    uint32_t Width() const
     {
         return _width;
     }
 
-    int Height() const
+    uint32_t Height() const
     {
         return _height;
     }
 
     void SetCell(Cell& cell, Cell::State state);
 
-    const Cell& GetCell(int x, int y) const
+    const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        if (x * y > _size)
+        uint32_t check = x * y;
+        if (check > _size)
         {
             exit(-1);
         }
@@ -111,18 +112,19 @@ public:
         return _board[x + (y * _width)];
     }
 
-    Cell& GetCell(int x, int y)
+    Cell& GetCell(uint16_t x, uint16_t y)
     {
-        if (x * y > _size)
+        uint32_t check = x * y;
+        if (check > _size)
         {
             exit(-1);
         }
         return _board[x + (y * _width)];
     }
 
-    int CountLiveAndDyingNeighbors(int x, int y);
+    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
 
-    int CountLiveNotDyingNeighbors(int x, int y);
+    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
 
     void ApplyNextStateToBoard();
 
@@ -132,9 +134,9 @@ public:
     // but using auto is magic
     void UpdateBoardWithNextState(auto F)
     {
-        for (int y = 0; y < Height(); y++)
+        for (uint16_t y = 0; y < Height(); y++)
         {
-            for (int x = 0; x < Width(); x++)
+            for (uint16_t x = 0; x < Width(); x++)
             {
                 Cell& cc = GetCell(x, y);
                 CountLiveAndDyingNeighbors(x, y);
@@ -144,6 +146,7 @@ public:
         }
     }
 
+    void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
     void ConwayUpdateBoardWithNextState();
 
     void ConwayRules(Cell& cell);
