@@ -52,7 +52,7 @@ public:
 private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> _start;
 	std::chrono::time_point<std::chrono::high_resolution_clock> _end;
-	uint32_t _frames = 0;
-	uint32_t _framebaseline = 0;
-	double _fps = 0;
+	uint32_t _frames{ 0 };
+	uint32_t _framebaseline{ 0 };
+	double _fps{ 0 };
 };
