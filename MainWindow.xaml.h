@@ -90,7 +90,7 @@ namespace winrt::ModernLife::implementation
         bool _drawassets = false;
 
         DispatcherQueueController _controller{ nullptr };
-        Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
+        Dispatching::DispatcherQueue _queue{ nullptr };
         DispatcherQueueTimer _timer{ nullptr };
         winrt::event_token _registrationtoken;
         bool _tokeninit{ false };
