@@ -7,6 +7,7 @@
 
 #include "Board.h"
 #include "fpscounter.h"
+#include "TimerHelper.h"
 
 using namespace winrt;
 using namespace Microsoft::UI;
@@ -62,7 +63,8 @@ namespace winrt::ModernLife::implementation
 
 
         void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
-        void OnTick(IInspectable const& sender, IInspectable const& event);
+        void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&);
+        //void OnTick(IInspectable const& sender, IInspectable const& event);
         hstring GetRandPercentText(double_t value);
         hstring GetBoardWidthText(double_t value);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -79,7 +81,8 @@ namespace winrt::ModernLife::implementation
             m_propertyChanged.remove(token);
         }
 
-        FPScounter fps;
+        FPScounter fps{ nullptr };
+        TimerHelper timer{ nullptr };
 
     private:
         CanvasRenderTarget _back{ nullptr };
@@ -89,11 +92,6 @@ namespace winrt::ModernLife::implementation
         Board board{ nullptr };
         bool _drawassets = false;
 
-        DispatcherQueueController _controller{ nullptr };
-        Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
-        DispatcherQueueTimer _timer{ nullptr };
-        winrt::event_token _registrationtoken;
-        bool _tokeninit{ false };
         float _widthCellDest{};
         float _canvasSize{};
         int _speed{30};

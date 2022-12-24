@@ -2,12 +2,14 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
-#include "fpscounter.h"
 #include "MainWindow.xaml.h"
 
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
+
+#include "TimerHelper.h"
+#include <winrt/Windows.Foundation.h>
 
 namespace winrt::ModernLife::implementation
 {
@@ -38,6 +40,7 @@ namespace winrt::ModernLife::implementation
             //presenter.IsResizable(false);
         }
 
+        timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
         StartGameLoop();
     }
 
@@ -106,11 +109,9 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
+    void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&)
+    //void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
     {
-        sender;
-        event;
-
         {
             std::scoped_lock lock{ lockboard };
             board.ConwayUpdateBoardWithNextState();
@@ -121,34 +122,6 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
-        {
-            // create and start a timer without recreating it when the user changes options
-            if (nullptr == _controller)
-            {
-                _controller = DispatcherQueueController::CreateOnDedicatedThread();
-            }
-
-            if (nullptr == _queue)
-            {
-                _queue = _controller.DispatcherQueue();
-            }
-
-            if (nullptr == _timer)
-            {
-                _timer = _queue.CreateTimer();
-            }
-
-            if (! _tokeninit)
-            {
-                _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
-                _tokeninit = true;
-            }
-
-            using namespace  std::literals::chrono_literals;
-
-            _timer.Interval(std::chrono::milliseconds(1000/_speed));
-            _timer.IsRepeating(true);
-        }
 
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
@@ -307,7 +280,7 @@ namespace winrt::ModernLife::implementation
         if (_boardwidth != value)
         {
             _boardwidth = value;
-            _timer.Stop();
+            timer.Stop();
             m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
 
             SetupRenderTargets();
@@ -369,16 +342,16 @@ namespace winrt::ModernLife::implementation
         sender;
 
         using namespace Microsoft::UI::Xaml::Controls;
-        if (_timer.IsRunning())
+        if (timer.IsRunning())
         {
-            _timer.Stop();
+            timer.Stop();
             GoButton().Label(L"Play");
             GoButton().Icon(SymbolIcon(Symbol::Play));
 
         }
         else
         {
-            _timer.Start();
+            timer.Start();
             GoButton().Icon(SymbolIcon(Symbol::Pause));
             GoButton().Label(L"Pause");
         }
@@ -391,7 +364,7 @@ namespace winrt::ModernLife::implementation
 
         using namespace Microsoft::UI::Xaml::Controls;
 
-        _timer.Stop();
+        timer.Stop();
         GoButton().Icon(SymbolIcon(Symbol::Pause));
         GoButton().Label(L"Pause");
         StartGameLoop();
@@ -427,7 +400,7 @@ namespace winrt::ModernLife::implementation
         
 		dropdownSpeed().Content(winrt::box_value(item.Text()));
 
-		_timer.Interval(std::chrono::milliseconds(1000/_speed));
+		timer.FPS(_speed);
     }
 
     // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB

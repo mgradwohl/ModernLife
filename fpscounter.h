@@ -4,8 +4,8 @@
 class FPScounter
 {
 public:
+	explicit FPScounter(std::nullptr_t) {};
 	FPScounter(FPScounter& b) = delete;
-
 	~FPScounter() = default;
 	
 	FPScounter()
