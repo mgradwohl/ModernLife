@@ -62,7 +62,8 @@ namespace winrt::ModernLife::implementation
 
 
         void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
-        void OnTick(IInspectable const& sender, IInspectable const& event);
+        void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&);
+        //void OnTick(IInspectable const& sender, IInspectable const& event);
         hstring GetRandPercentText(double_t value);
         hstring GetBoardWidthText(double_t value);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);

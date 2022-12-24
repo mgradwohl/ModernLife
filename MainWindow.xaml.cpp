@@ -38,6 +38,33 @@ namespace winrt::ModernLife::implementation
             //presenter.IsResizable(false);
         }
 
+        // create and start a timer without recreating it when the user changes options
+        if (nullptr == _controller)
+        {
+            _controller = DispatcherQueueController::CreateOnDedicatedThread();
+        }
+
+        if (nullptr == _queue)
+        {
+            _queue = _controller.DispatcherQueue();
+        }
+
+        if (nullptr == _timer)
+        {
+            _timer = _queue.CreateTimer();
+        }
+
+        if (! _tokeninit)
+        {
+            _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
+            _tokeninit = true;
+        }
+
+        using namespace  std::literals::chrono_literals;
+
+        _timer.Interval(std::chrono::milliseconds(1000/_speed));
+        _timer.IsRepeating(true);
+
         StartGameLoop();
     }
 
@@ -111,10 +138,11 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
+    void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&)
+    //void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
     {
-        sender;
-        event;
+        //sender;
+        //event;
 
         {
             std::scoped_lock lock{ lockboard };
@@ -126,35 +154,6 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
-        {
-            // create and start a timer without recreating it when the user changes options
-            if (nullptr == _controller)
-            {
-                _controller = DispatcherQueueController::CreateOnDedicatedThread();
-            }
-
-            if (nullptr == _queue)
-            {
-                _queue = _controller.DispatcherQueue();
-            }
-
-            if (nullptr == _timer)
-            {
-                _timer = _queue.CreateTimer();
-            }
-
-            if (! _tokeninit)
-            {
-                _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
-                _tokeninit = true;
-            }
-
-            using namespace  std::literals::chrono_literals;
-
-            _timer.Interval(std::chrono::milliseconds(1000/_speed));
-            _timer.IsRepeating(true);
-        }
-
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
         GoButton().Label(L"Play");
