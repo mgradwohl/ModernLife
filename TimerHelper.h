@@ -11,7 +11,12 @@ public:
     explicit TimerHelper(std::nullptr_t) {};
     //TimerHelper(TimerHelper& t) = delete;
 
-    TimerHelper(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable&> const& handler, int fps, bool repeating)
+    // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
+
+    // everything below succeeds (verified with debugger)
+    // however I'm not sure I'm registering the handler correctly
+    // it does NOT get called
+    TimerHelper(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler, int fps, bool repeating)
     {
         if (!_initialized)
         {
