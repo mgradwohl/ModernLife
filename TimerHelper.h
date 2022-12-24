@@ -16,6 +16,8 @@ public:
     // everything below succeeds (verified with debugger)
     // however I'm not sure I'm registering the handler correctly
     // it does NOT get called
+    // Register
+    //event_token Tick(TypedEventHandler<DispatcherQueueTimer, IInspectable const&> const& handler) const;
     TimerHelper(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler, int fps, bool repeating)
     {
         if (!_initialized)
