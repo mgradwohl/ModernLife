@@ -102,6 +102,8 @@ namespace winrt::ModernLife::implementation
         int16_t _boardwidth{ 200 };
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
+    public:
+        void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args);
     };
 }
 

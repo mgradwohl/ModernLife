@@ -41,6 +41,11 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
+    void winrt::ModernLife::implementation::MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args)
+    {
+        _timer.Tick(_registrationtoken);
+    }
+
     void MainWindow::InitializeAssets()
     {
         // this will be used to iterate through the width and height of the rendertarget *without* using the partial tile
@@ -501,3 +506,5 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, r, g, b);
     }
 }
+
+
