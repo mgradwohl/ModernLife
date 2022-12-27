@@ -138,7 +138,7 @@ namespace winrt::ModernLife::implementation
         randomizer.wait();
 
         // start the FPSCounter
-        fps.Start();
+        FPScounter fps = FPSCounter();
         
         // draw the initial population
         theCanvas().Invalidate();

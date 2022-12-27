@@ -10,11 +10,6 @@ public:
 	
 	FPScounter()
 	{
-		Start();
-	}
-	
-	void Start()
-	{
 		_start = std::chrono::high_resolution_clock::now();
 		_end = std::chrono::high_resolution_clock::now();
 
@@ -22,7 +17,7 @@ public:
 		_framebaseline = 0;
 		_fps = 0;
 	}
-
+	
 	double FPS()
 	{
 		return _fps;
