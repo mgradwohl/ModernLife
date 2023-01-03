@@ -52,7 +52,7 @@ public:
 
     const char* GetStateString() const;
 
-    const std::string& GetEmojiStateString() const;
+    const std::wstring& GetEmojiStateString() const;
 
     //void KillOldCell();
 };

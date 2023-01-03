@@ -4,9 +4,9 @@
 #include "Board.h"
 #include <future>
 // optimized to never use std::endl until the full board is done printing
-std::ostream& operator<<(std::ostream& stream, Board& board)
+std::wostream& operator<<(std::wostream& stream, Board& board)
 {
-	static std::string str(((board.Width() + 2) * board.Height()) + 1, ' ');
+	static std::wstring str(((board.Width() + 2) * board.Height()) + 1, ' ');
 	// clear the static string of any leftover goo
 	str.clear();
 
@@ -17,10 +17,10 @@ std::ostream& operator<<(std::ostream& stream, Board& board)
 			const Cell& cell = board.GetCell(x, y);
 			str += cell.GetEmojiStateString();
 		}
-		str += "\r\n";
+		str += L"\r\n";
 	}
 
-	printf((const char*)str.c_str());
+	wprintf((const wchar_t*)str.c_str());
 	return stream;
 }
 
@@ -32,7 +32,7 @@ Board::Board(uint16_t width, uint16_t height)
 
 void Board::PrintBoard()
 {
-	std::cout << (*this) << std::endl;
+	std::wcout << (*this) << std::endl;
 }
 
 void Board::SetCell(Cell& cell, Cell::State state)

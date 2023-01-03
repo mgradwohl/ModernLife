@@ -56,14 +56,14 @@ const char* Cell::GetStateString() const
 	}
 }
 
-const std::string& Cell::GetEmojiStateString() const
+const std::wstring& Cell::GetEmojiStateString() const
 {
-	static std::string sDead("🖤");
-	static std::string sLive("😀");
-	static std::string sBorn("💕");
-	static std::string sOld("🤡");
-	static std::string sDying("🤢");
-	static std::string sUnknown("⁉️");
+	static std::wstring sDead(L"🖤");
+	static std::wstring sLive(L"😀");
+	static std::wstring sBorn(L"💕");
+	static std::wstring sOld(L"🤡");
+	static std::wstring sDying(L"🤢");
+	static std::wstring sUnknown(L"⁉️");
 
 	switch (_state)
 	{
