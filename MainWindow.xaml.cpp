@@ -70,6 +70,9 @@ namespace winrt::ModernLife::implementation
 
     void winrt::ModernLife::implementation::MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args)
     {
+        sender;
+        args;
+
         _timer.Tick(_registrationtoken);
     }
 
@@ -121,7 +124,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
     {
-        sender;
+        unused(sender);
+
         using namespace Microsoft::UI::Xaml::Media;
 
         if (args.WindowActivationState() == WindowActivationState::Deactivated)
