@@ -75,10 +75,10 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::InitializeAssets()
     {
-        // this will be used to iterate through the width and height of the rendertarget *without* using the partial tile
+        // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
         uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
-        // create a square render target that will hold all the tiles this may often times have a partial 'tile' at the end which we won't use
+        // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         float rtsize = _widthCellDest * assetStride;
 
         // if the back buffer doesn't exist or is the wrong size, create it

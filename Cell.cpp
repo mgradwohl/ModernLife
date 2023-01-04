@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "cell.h"
+#include "Cell.h"
 
 void Cell::SetState(State state)
 {
