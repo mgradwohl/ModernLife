@@ -13,14 +13,19 @@ namespace winrt::ModernLife::implementation
 {
     MainWindow::MainWindow()
     {
-        InitializeComponent();
+        //InitializeComponent(); https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
 
+    }
+
+    void MainWindow::InitializeComponent()
+    {
+        MainWindowT::InitializeComponent();
         ExtendsContentIntoTitleBar(true);
         SetTitleBar(AppTitleBar());
-        #ifdef _DEBUG
-                AppTitlePreview().Text(L"PREVIEW DEBUG");
-        #endif
-    
+#ifdef _DEBUG
+        AppTitlePreview().Text(L"PREVIEW DEBUG");
+#endif
+
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         HWND hWnd{ nullptr };
@@ -32,7 +37,7 @@ namespace winrt::ModernLife::implementation
             Windows::Graphics::PointInt32 pos(appWnd.Position());
             pos.Y = 32;
             appWnd.Move(pos);
-            appWnd.ResizeClient(Windows::Graphics::SizeInt32{2220, 1920});
+            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ 2220, 1920 });
             auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
             //presenter.IsMaximizable(false);
             //presenter.IsResizable(false);
@@ -54,7 +59,7 @@ namespace winrt::ModernLife::implementation
             _timer = _queue.CreateTimer();
         }
 
-        if (! _tokeninit)
+        if (!_tokeninit)
         {
             _registrationtoken = _timer.Tick({ this, &MainWindow::OnTick });
             _tokeninit = true;
@@ -62,7 +67,7 @@ namespace winrt::ModernLife::implementation
 
         using namespace  std::literals::chrono_literals;
 
-        _timer.Interval(std::chrono::milliseconds(1000/_speed));
+        _timer.Interval(std::chrono::milliseconds(1000 / _speed));
         _timer.IsRepeating(true);
 
         StartGameLoop();
@@ -124,7 +129,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
     {
-        unused(sender);
+        sender;
 
         using namespace Microsoft::UI::Xaml::Media;
 

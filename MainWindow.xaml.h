@@ -38,6 +38,7 @@ namespace winrt::ModernLife::implementation
     {
     public:
         MainWindow();
+        void InitializeComponent();
         void StartGameLoop();
 
         int32_t MyProperty();
