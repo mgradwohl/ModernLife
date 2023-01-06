@@ -7,17 +7,31 @@
 class TimerHelper
 {
 public:
-	//TimerHelper() = delete;
     explicit TimerHelper(std::nullptr_t) {};
-    //TimerHelper(TimerHelper& t) = delete;
 
     // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
 
-    // everything below succeeds (verified with debugger)
-    // however I'm not sure I'm registering the handler correctly
-    // it does NOT get called
-    // Register
-    //event_token Tick(TypedEventHandler<DispatcherQueueTimer, IInspectable const&> const& handler) const;
+    TimerHelper(int fps, bool repeating)
+    {
+        if (!_initialized)
+        {
+            _controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
+            _queue = _controller.DispatcherQueue();
+            _timer = _queue.CreateTimer();
+
+            using namespace  std::literals::chrono_literals;
+            _timer.Interval(std::chrono::milliseconds(1000 / fps));
+            _timer.IsRepeating(repeating);
+            _initialized = true;
+        }
+    }
+    
+    void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
+    {
+        _eventtoken = _timer.Tick(handler);
+    }
+
+    // does not work
     TimerHelper(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler, int fps, bool repeating)
     {
         if (!_initialized)
@@ -42,10 +56,16 @@ public:
         _timer.Tick(_eventtoken);
     }
 
+	winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer& GetTimer()
+	{
+		return _timer;
+	}
+    
     void Stop()
     {
         _timer.Stop();
     }
+
 
     void Start()
     {
@@ -55,6 +75,16 @@ public:
     bool IsRunning()
     {
         return _timer.IsRunning();
+    }
+
+    void Repeating(bool repeating)
+    {
+        _timer.IsRepeating(repeating);
+    }
+
+    bool Repeating()
+    {
+        return _timer.IsRepeating();
     }
 
     void FPS(int fps)
@@ -70,6 +100,6 @@ private:
     winrt::Microsoft::UI::Dispatching::DispatcherQueueController _controller{ nullptr };
     winrt::Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
     winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer _timer{ nullptr };
-    winrt::event_token _eventtoken;
+    winrt::event_token _eventtoken = 0;
     bool _initialized{ false };
 };

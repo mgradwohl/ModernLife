@@ -9,6 +9,7 @@
 #endif
 
 #include "TimerHelper.h"
+#include "FPSCounter.h"
 #include <winrt/Windows.Foundation.h>
 
 namespace winrt::ModernLife::implementation
@@ -16,7 +17,6 @@ namespace winrt::ModernLife::implementation
     MainWindow::MainWindow()
     {
         //InitializeComponent(); https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
-
     }
 
     void MainWindow::InitializeComponent()
@@ -45,23 +45,11 @@ namespace winrt::ModernLife::implementation
             //presenter.IsResizable(false);
         }
 
-        // create and start a timer without recreating it when the user changes options
-        if (nullptr == _controller)
-        {
-            _controller = DispatcherQueueController::CreateOnDedicatedThread();
-        }
-
-        if (nullptr == _queue)
-        {
-            _queue = _controller.DispatcherQueue();
-        }
-
-        if (nullptr == _timer)
-        {
-            _timer = _queue.CreateTimer();
-        }
-
-        timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
+        //timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
+        //winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer t = timer.GetTimer();
+        //t.Tick({ this, &MainWindow::OnTick });
+        
+        timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
     }
 
@@ -69,8 +57,6 @@ namespace winrt::ModernLife::implementation
     {
         sender;
         args;
-
-        _timer.Tick(_registrationtoken);
     }
 
     void MainWindow::InitializeAssets()
@@ -170,7 +156,7 @@ namespace winrt::ModernLife::implementation
         randomizer.wait();
 
         // start the FPSCounter
-        FPScounter fps = FPSCounter();
+        fps = FPScounter();
         
         // draw the initial population
         theCanvas().Invalidate();

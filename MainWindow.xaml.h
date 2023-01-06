@@ -83,7 +83,7 @@ namespace winrt::ModernLife::implementation
         }
 
         FPScounter fps{ nullptr };
-        TimerHelper timer{ nullptr };
+		TimerHelper timer{ 60, true };
 
     private:
         CanvasRenderTarget _back{ nullptr };
