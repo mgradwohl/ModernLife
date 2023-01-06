@@ -15,14 +15,19 @@ namespace winrt::ModernLife::implementation
 {
     MainWindow::MainWindow()
     {
-        InitializeComponent();
+        //InitializeComponent(); https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
 
+    }
+
+    void MainWindow::InitializeComponent()
+    {
+        MainWindowT::InitializeComponent();
         ExtendsContentIntoTitleBar(true);
         SetTitleBar(AppTitleBar());
-        #ifdef _DEBUG
-                AppTitlePreview().Text(L"PREVIEW DEBUG");
-        #endif
-    
+#ifdef _DEBUG
+        AppTitlePreview().Text(L"PREVIEW DEBUG");
+#endif
+
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         HWND hWnd{ nullptr };
@@ -34,22 +39,46 @@ namespace winrt::ModernLife::implementation
             Windows::Graphics::PointInt32 pos(appWnd.Position());
             pos.Y = 32;
             appWnd.Move(pos);
-            appWnd.ResizeClient(Windows::Graphics::SizeInt32{2220, 1920});
+            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ 2220, 1920 });
             auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
             //presenter.IsMaximizable(false);
             //presenter.IsResizable(false);
+        }
+
+        // create and start a timer without recreating it when the user changes options
+        if (nullptr == _controller)
+        {
+            _controller = DispatcherQueueController::CreateOnDedicatedThread();
+        }
+
+        if (nullptr == _queue)
+        {
+            _queue = _controller.DispatcherQueue();
+        }
+
+        if (nullptr == _timer)
+        {
+            _timer = _queue.CreateTimer();
         }
 
         timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
         StartGameLoop();
     }
 
+    void winrt::ModernLife::implementation::MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args)
+    {
+        sender;
+        args;
+
+        _timer.Tick(_registrationtoken);
+    }
+
     void MainWindow::InitializeAssets()
     {
-        // this will be used to iterate through the width and height of the rendertarget *without* using the partial tile
+        // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
         uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
-        // create a square render target that will hold all the tiles this may often times have a partial 'tile' at the end which we won't use
+        // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         float rtsize = _widthCellDest * assetStride;
 
         // if the back buffer doesn't exist or is the wrong size, create it
@@ -93,6 +122,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
     {
         sender;
+
         using namespace Microsoft::UI::Xaml::Media;
 
         if (args.WindowActivationState() == WindowActivationState::Deactivated)
@@ -112,6 +142,9 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&)
     //void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
     {
+        //sender;
+        //event;
+
         {
             std::scoped_lock lock{ lockboard };
             board.ConwayUpdateBoardWithNextState();
@@ -122,7 +155,6 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
-
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
         GoButton().Label(L"Play");
@@ -474,3 +506,5 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, r, g, b);
     }
 }
+
+

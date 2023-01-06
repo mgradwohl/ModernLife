@@ -23,7 +23,13 @@ using namespace ModernLife::implementation;
 /// </summary>
 App::App()
 {
-    InitializeComponent();
+    // make sure Windows and C++ runtime are set for utf8
+    auto UTF8 = std::locale("en_US.UTF-8");
+    std::locale::global(UTF8);
+    std::cout.imbue(UTF8);
+    setlocale(LC_ALL, "en_us.utf8");
+    
+    //InitializeComponent(); https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
     UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e)
