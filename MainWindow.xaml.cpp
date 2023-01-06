@@ -45,9 +45,8 @@ namespace winrt::ModernLife::implementation
             //presenter.IsResizable(false);
         }
 
+        // doesn't work see TimerHelper.h
         //timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
-        //winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer t = timer.GetTimer();
-        //t.Tick({ this, &MainWindow::OnTick });
         
         timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
@@ -126,7 +125,6 @@ namespace winrt::ModernLife::implementation
     }
 
     void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&)
-    //void MainWindow::OnTick(IInspectable const& sender, IInspectable const& event)
     {
         //sender;
         //event;
@@ -141,11 +139,13 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
+        // prep the play button
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
         GoButton().Label(L"Play");
 
         // create the board, lock it in the case that OnTick is updating it
+        // we lock it because changing board parameters will call StartGameLoop()
         {
             std::scoped_lock lock{ lockboard };
             board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
@@ -170,7 +170,10 @@ namespace winrt::ModernLife::implementation
             args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
             args.DrawingSession().Blend(CanvasBlend::Copy);
 
+            // comment out the following to see the sprite sheet
             args.DrawingSession().DrawImage(_back);
+            
+            // uncomment the following line to see the sprite sheet
             //args.DrawingSession().DrawImage(_assets, 0, 0);
             args.DrawingSession().Flush();
         }
@@ -222,12 +225,12 @@ namespace winrt::ModernLife::implementation
                         Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
-                         spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
+                        //spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
 
                         // this is just as fast
-                        //ds.DrawImage(_assets, rectDest, rectSrc);
+                        ds.DrawImage(_assets, rectDest, rectSrc);
 
-                        // good for debugging
+                        // good for debugging or perf comparisons
                         //ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
                     }
                     posx += _widthCellDest;
@@ -270,7 +273,7 @@ namespace winrt::ModernLife::implementation
             drawinto0.wait();
         }
 
-        //ds.Flush();
+        ds.Flush();
     }
 
     int32_t MainWindow::SeedPercent() const
@@ -341,8 +344,7 @@ namespace winrt::ModernLife::implementation
 
         // create the strings to draw
         std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells");
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", _speed, fps.FPS(), board.Generation(), board.GetLiveCount(), board.GetSize());
-        sender.Invalidate();
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", timer.FPS(), fps.FPS(), board.Generation(), board.GetLiveCount(), board.GetSize());
         
         // draw the text left aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
@@ -352,6 +354,8 @@ namespace winrt::ModernLife::implementation
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
         args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
         args.DrawingSession().Flush();
+
+        sender.Invalidate();
     }
 
     void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
@@ -414,11 +418,10 @@ namespace winrt::ModernLife::implementation
         e;
         using namespace Microsoft::UI::Xaml::Controls;
         MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
-        _speed = item.Tag().as<int>();
         
 		dropdownSpeed().Content(winrt::box_value(item.Text()));
 
-		timer.FPS(_speed);
+		timer.FPS(item.Tag().as<int>());
     }
 
     // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB

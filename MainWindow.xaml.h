@@ -83,7 +83,7 @@ namespace winrt::ModernLife::implementation
         }
 
         FPScounter fps{ nullptr };
-		TimerHelper timer{ 60, true };
+		TimerHelper timer{ 30, true };
 
     private:
         CanvasRenderTarget _back{ nullptr };
@@ -95,7 +95,6 @@ namespace winrt::ModernLife::implementation
 
         float _widthCellDest{};
         float _canvasSize{};
-        int _speed{30};
 
         int32_t _randompercent{30};
         int16_t _boardwidth{ 200 };
