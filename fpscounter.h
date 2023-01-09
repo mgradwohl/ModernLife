@@ -33,7 +33,7 @@ public:
 			auto start = std::chrono::time_point_cast<std::chrono::milliseconds>(_start).time_since_epoch().count();
 			auto end = std::chrono::time_point_cast<std::chrono::milliseconds>(_end).time_since_epoch().count();
 			auto span = end - start;
-			double dspan = span * 0.001;
+			const double dspan = span * 0.001;
 
 			if (span != 0)
 			{

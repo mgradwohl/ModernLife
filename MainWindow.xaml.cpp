@@ -32,7 +32,7 @@ namespace winrt::ModernLife::implementation
         winrt::check_bool(windowNative);
         HWND hWnd{ nullptr };
         windowNative->get_WindowHandle(&hWnd);
-        Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
+        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
 
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
@@ -52,7 +52,7 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    void winrt::ModernLife::implementation::MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args)
+    void MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args)
     {
         sender;
         args;
@@ -61,10 +61,10 @@ namespace winrt::ModernLife::implementation
     void MainWindow::InitializeAssets()
     {
         // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
-        uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
+        const uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
-        float rtsize = _widthCellDest * assetStride;
+        const float rtsize = _widthCellDest * assetStride;
 
         // if the back buffer doesn't exist or is the wrong size, create it
         CanvasDevice device = CanvasDevice::GetSharedDevice();
@@ -188,11 +188,11 @@ namespace winrt::ModernLife::implementation
             return Windows::UI::Colors::Black();
         }
 
-        float h = (age * 360.f) / maxage;
+        const float h = (age * 360.f) / maxage;
         return HSVtoColor(h, 0.6f, 0.8f);
     }
 
-    void MainWindow::DrawInto(CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
+    void MainWindow::DrawInto(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
         //float inc = width / cellcount;
         //if (drawgrid)
@@ -204,8 +204,8 @@ namespace winrt::ModernLife::implementation
 		//	}
 		//}
 
-        float srcW = _widthCellDest;
-        uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
+        const float srcW = _widthCellDest;
+        const uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
         auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
         
@@ -218,11 +218,11 @@ namespace winrt::ModernLife::implementation
                 {
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
-                        int age = cell.Age() > maxage ? maxage : cell.Age();
-                        float srcX = static_cast<float>(age % srcStride);
-                        float srcY = static_cast<float>(age / srcStride);
-                        Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
-                        Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
+                        const int age = cell.Age() > maxage ? maxage : cell.Age();
+                        const float srcX = static_cast<float>(age % srcStride);
+                        const float srcY = static_cast<float>(age / srcStride);
+                        const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
+                        const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
                         //spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
@@ -276,7 +276,7 @@ namespace winrt::ModernLife::implementation
         ds.Flush();
     }
 
-    int32_t MainWindow::SeedPercent() const
+    int32_t MainWindow::SeedPercent() const noexcept
     {
         return _randompercent;
     }
@@ -291,7 +291,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    int16_t MainWindow::BoardWidth() const
+    int16_t MainWindow::BoardWidth() const noexcept
     {
         return _boardwidth;
     }
@@ -337,8 +337,8 @@ namespace winrt::ModernLife::implementation
         SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
         SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
 
-        Windows::UI::Color colorBack{scbBack.Color()};
-        Windows::UI::Color colorText{scbText.Color()};
+        const Windows::UI::Color colorBack{scbBack.Color()};
+        const Windows::UI::Color colorText{scbText.Color()};
 
         args.DrawingSession().Clear(colorBack);
 
@@ -439,11 +439,11 @@ namespace winrt::ModernLife::implementation
         }
         
         h /= 60;
-        int i = static_cast<int>(std::floor(h));
-        float f = h - i;
-        float p = v * (1 - s);
-        float q = v * (1 - s * f);
-        float t = v * (1 - s * (1 - f));
+        const int i = static_cast<int>(std::floor(h));
+        const float f = h - i;
+        const float p = v * (1 - s);
+        const float q = v * (1 - s * f);
+        const float t = v * (1 - s * (1 - f));
 
         float dr = 0;
         float dg = 0;
@@ -488,9 +488,9 @@ namespace winrt::ModernLife::implementation
                 break;
         }
 
-        uint8_t r = static_cast<uint8_t>(dr * 255);
-        uint8_t g = static_cast<uint8_t>(dg * 255);
-        uint8_t b = static_cast<uint8_t>(db * 255);
+        const uint8_t r = static_cast<uint8_t>(dr * 255);
+        const uint8_t g = static_cast<uint8_t>(dg * 255);
+        const uint8_t b = static_cast<uint8_t>(db * 255);
 
         return ColorHelper::FromArgb(255, r, g, b);
     }

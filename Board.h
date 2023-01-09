@@ -22,54 +22,54 @@ private:
     uint32_t _dirty = 0;
 
 public:
-    explicit Board(std::nullptr_t) {};
+    explicit Board(std::nullptr_t) noexcept {};
     Board(Board& b) = delete;
 
     ~Board() = default;
 
     Board(uint16_t width, uint16_t height);
 
-    void SetOldAge(uint32_t age)
+    void SetOldAge(uint32_t age) noexcept
     {
         _OldAge = age;
     }
 
-    uint32_t GetOldAge() const
+    uint32_t GetOldAge() const noexcept
     {
         return _OldAge;
     }
 
-    uint32_t GetSize() const
+    uint32_t GetSize() const noexcept
     {
         return _size;
     }
 
-    uint32_t GetDeadCount() const
+    uint32_t GetDeadCount() const noexcept
     {
         return _numDead;
     }
 
-    uint32_t GetLiveCount() const
+    uint32_t GetLiveCount() const noexcept
     {
         return _numLive;
     }
 
-    uint32_t GetBornCount() const
+    uint32_t GetBornCount() const noexcept
     {
         return _numBorn;
     }
 
-    uint32_t GetOldCount() const
+    uint32_t GetOldCount() const noexcept
     {
         return _numOld;
     }
 
-    uint32_t GetDyingCount() const
+    uint32_t GetDyingCount() const noexcept
     {
         return _numDying;
     }
 
-    void ResetCounts()
+    void ResetCounts() noexcept
     {
         _numDead = 0;
         _numLive = 0;
@@ -79,12 +79,12 @@ public:
         _dirty = 0;
     }
 
-    bool IsDirty() const
+    bool IsDirty() const noexcept
     {
         return _dirty;
     }
 
-    uint32_t Generation() const
+    uint32_t Generation() const noexcept
     {
         return _generation;
     }
@@ -103,7 +103,7 @@ public:
 
     const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        uint32_t check = x * y;
+        const uint32_t check = x * y;
         if (check > _size)
         {
             exit(-1);
@@ -114,7 +114,7 @@ public:
 
     Cell& GetCell(uint16_t x, uint16_t y)
     {
-        uint32_t check = x * y;
+        const uint32_t check = x * y;
         if (check > _size)
         {
             exit(-1);

@@ -44,14 +44,14 @@ namespace winrt::ModernLife::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
-        int32_t SeedPercent() const;
+        int32_t SeedPercent() const noexcept;
         void SeedPercent(int32_t value);
-        int16_t BoardWidth() const;
+        int16_t BoardWidth() const noexcept;
         void BoardWidth(int16_t value);
 
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
-        void DrawInto(CanvasDrawingSession& ds, uint16_t sx, uint16_t ex);
+        void DrawInto(const CanvasDrawingSession& ds, uint16_t sx, uint16_t ex);
 
         void speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void OnWindowActivate(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);

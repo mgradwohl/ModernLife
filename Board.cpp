@@ -76,10 +76,10 @@ void Board::SetCell(Cell& cell, Cell::State state)
 uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
-	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
-	uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
-	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
-	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
+	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
+	const uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
+	const uint16_t yoabove = (y == 0) ? _height - 1 : -1;
+	const uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
 	uint8_t count = 0;
 
@@ -102,10 +102,10 @@ uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
-	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
-	uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
-	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
-	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
+	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
+	const uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
+	const uint16_t yoabove = (y == 0) ? _height - 1 : -1;
+	const uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
 	uint8_t count = 0;
 
