@@ -158,7 +158,7 @@ void Board::RandomizeBoard(float alivepct)
 	std::uniform_real_distribution<> pdis(0.0, 1.0);
 	std::uniform_int_distribution<> adis(0, 1000);
 
-	for (auto& c : _board)
+	for (auto& cell : _board)
 	{
 		static int ra;
 		static double rp;
@@ -167,8 +167,8 @@ void Board::RandomizeBoard(float alivepct)
 
 		if (rp <= alivepct)
 		{
-			SetCell(c, Cell::State::Live);
-			c.SetAge(static_cast<uint16_t>(ra));
+			SetCell(cell, Cell::State::Live);
+			cell.SetAge(static_cast<uint16_t>(ra));
 		}
 	}
 	_dirty = 1; // must be dirty, we just randomized it

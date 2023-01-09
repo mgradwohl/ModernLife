@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Cell.h"
+#include <vector>
 
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
@@ -89,19 +90,19 @@ public:
         return _generation;
     }
 
-    uint32_t Width() const
+    uint32_t Width() const noexcept
     {
         return _width;
     }
 
-    uint32_t Height() const
+    uint32_t Height() const noexcept
     {
         return _height;
     }
 
     void SetCell(Cell& cell, Cell::State state);
 
-    const Cell& GetCell(uint16_t x, uint16_t y) const
+    const Cell& GetCell(uint16_t x, uint16_t y) const noexcept
     {
         const uint32_t check = x * y;
         if (check > _size)
