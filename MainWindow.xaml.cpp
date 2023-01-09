@@ -52,7 +52,7 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    void MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args)
+    void MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
         sender;
         args;

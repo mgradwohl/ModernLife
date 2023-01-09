@@ -101,7 +101,7 @@ namespace winrt::ModernLife::implementation
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
     public:
-        void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args);
+        void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
     };
 }
 

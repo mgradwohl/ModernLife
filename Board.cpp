@@ -20,7 +20,7 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 		str += L"\r\n";
 	}
 
-	wprintf((const wchar_t*)str.c_str());
+	wprintf(static_cast<const wchar_t*>(str.c_str()));
 	return stream;
 }
 
@@ -35,7 +35,7 @@ void Board::PrintBoard()
 	std::wcout << (*this) << std::endl;
 }
 
-void Board::SetCell(Cell& cell, Cell::State state)
+void Board::SetCell(Cell& cell, Cell::State state) noexcept
 {
 	cell.SetState(state);
 
@@ -193,7 +193,7 @@ void Board::ConwayUpdateBoardWithNextState()
 	update1.wait();
 }
 
-void Board::ConwayRules(Cell& cell)
+void Board::ConwayRules(Cell& cell) const noexcept
 {
 	// Any live cell with two or three live neighbours survives.
 	// Any dead cell with three live neighbours becomes a live cell.
@@ -216,7 +216,7 @@ void Board::ConwayRules(Cell& cell)
 	}
 }
 
-void Board::DayAndNightRules(Cell& cell) const
+void Board::DayAndNightRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Day_and_Night_(cellular_automaton)
 	// rule notation B3678/S34678, meaning that a dead cell becomes live (is born)
@@ -240,7 +240,7 @@ void Board::DayAndNightRules(Cell& cell) const
 	}
 }
 
-void Board::LifeWithoutDeathRules(Cell& cell) const
+void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Life_without_Death
 	// every cell that was alive in the previous pattern remains alive,
@@ -261,7 +261,7 @@ void Board::LifeWithoutDeathRules(Cell& cell) const
 	}
 }
 
-void Board::HighlifeRules(Cell& cell) const
+void Board::HighlifeRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Highlife_(cellular_automaton)
 	// the rule B36 / S23; that is, a cell is born if it has 3 or 6 neighbors
@@ -286,7 +286,7 @@ void Board::HighlifeRules(Cell& cell) const
 	}
 }
 
-void Board::SeedsRules(Cell& cell) const
+void Board::SeedsRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Seeds_(cellular_automaton)
 	// In each time step, a cell turns on or is "born" if it was off or "dead"
@@ -306,7 +306,7 @@ void Board::SeedsRules(Cell& cell) const
 	}
 }
 
-void Board::BriansBrainRules(Cell& cell) const
+void Board::BriansBrainRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Brian%27s_Brain
 	// In each time step, a cell turns on if it was off but had exactly two neighbors that were on,

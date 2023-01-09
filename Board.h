@@ -100,7 +100,7 @@ public:
         return _height;
     }
 
-    void SetCell(Cell& cell, Cell::State state);
+    void SetCell(Cell& cell, Cell::State state) noexcept;
 
     const Cell& GetCell(uint16_t x, uint16_t y) const noexcept
     {
@@ -113,7 +113,7 @@ public:
         return _board[x + (y * _width)];
     }
 
-    Cell& GetCell(uint16_t x, uint16_t y)
+    Cell& GetCell(uint16_t x, uint16_t y) noexcept
     {
         const uint32_t check = x * y;
         if (check > _size)
@@ -150,17 +150,17 @@ public:
     void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
     void ConwayUpdateBoardWithNextState();
 
-    void ConwayRules(Cell& cell);
+    void ConwayRules(Cell& cell) const noexcept;
 
-    void DayAndNightRules(Cell& cell) const;
+    void DayAndNightRules(Cell& cell) const noexcept;
 
-    void LifeWithoutDeathRules(Cell& cell) const;
+    void LifeWithoutDeathRules(Cell& cell) const noexcept;
 
-    void HighlifeRules(Cell& cell) const;
+    void HighlifeRules(Cell& cell) const noexcept;
 
-    void SeedsRules(Cell& cell) const;
+    void SeedsRules(Cell& cell) const noexcept;
 
-    void BriansBrainRules(Cell& cell) const;
+    void BriansBrainRules(Cell& cell) const noexcept;
  
     void PrintBoard();
 };

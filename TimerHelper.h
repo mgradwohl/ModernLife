@@ -51,7 +51,7 @@ public:
     ~TimerHelper()
     {
         // release anything that needs to be released
-        _timer.Stop();
+        //_timer.Stop();
         _timer.Tick(_eventtoken);
     }
     
