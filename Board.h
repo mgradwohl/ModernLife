@@ -19,7 +19,7 @@ private:
     uint32_t _numBorn = 0;
     uint32_t _numOld = 0;
     uint32_t _numDying = 0;
-    uint32_t _OldAge = static_cast<uint16_t>(- 1);
+    uint32_t _OldAge = static_cast<uint16_t>( -1);
     uint32_t _dirty = 0;
 
 public:
@@ -139,9 +139,9 @@ public:
         {
             for (uint16_t x = 0; x < Width(); x++)
             {
-                Cell& cc = GetCell(x, y);
+                Cell& cell = GetCell(x, y);
                 CountLiveAndDyingNeighbors(x, y);
-                F(cc);
+                F(cell);
                 //cc.KillOldCell();
             }
         }

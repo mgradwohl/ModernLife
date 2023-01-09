@@ -1,8 +1,10 @@
-﻿// for visualization purposes (0,0) is the top left.
-// as x increases move right, as y increases move down
-#include "pch.h"
+﻿#include "pch.h"
 #include "Board.h"
 #include <future>
+
+// for visualization purposes (0,0) is the top left.
+// as x increases move right, as y increases move down
+
 // optimized to never use std::endl until the full board is done printing
 std::wostream& operator<<(std::wostream& stream, Board& board)
 {
@@ -180,9 +182,9 @@ void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 	{
 		for (uint16_t x = 0; x < Width(); x++)
 		{
-			Cell& cc = GetCell(x, y);
+			Cell& cell = GetCell(x, y);
 			CountLiveAndDyingNeighbors(x, y);
-			ConwayRules(cc);
+			ConwayRules(cell);
 		}
 	}
 
