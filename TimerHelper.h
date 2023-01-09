@@ -26,11 +26,6 @@ public:
         FPS(fps);
     }
     
-    void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
-    {
-        _eventtoken = _timer.Tick(handler);
-    }
-
     // does not work
     //TimerHelper(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler, int fps, bool repeating)
     //{
@@ -55,6 +50,11 @@ public:
         _timer.Tick(_eventtoken);
     }
     
+    void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
+    {
+        _eventtoken = _timer.Tick(handler);
+    }
+
     void Stop()
     {
         _timer.Stop();
