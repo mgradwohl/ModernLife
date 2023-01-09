@@ -20,7 +20,7 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 		str += L"\r\n";
 	}
 
-	wprintf(static_cast<const wchar_t*>(str.c_str()));
+	wprintf(str.c_str());
 	return stream;
 }
 
@@ -73,7 +73,7 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	}
 }
 
-uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -99,7 +99,7 @@ uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	return count;
 }
 
-uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y) noexcept
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -124,7 +124,7 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 	return count;
 }
 
-void Board::ApplyNextStateToBoard()
+void Board::ApplyNextStateToBoard() noexcept
 {
 	_generation++;
 	ResetCounts();

@@ -123,11 +123,11 @@ public:
         return _board[x + (y * _width)];
     }
 
-    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
+    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept;
 
-    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
+    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y) noexcept;
 
-    void ApplyNextStateToBoard();
+    void ApplyNextStateToBoard() noexcept;
 
     void RandomizeBoard(float alivepct);
 
