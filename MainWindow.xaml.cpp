@@ -9,7 +9,7 @@
 #endif
 
 #include "TimerHelper.h"
-#include "FPSCounter.h"
+#include "fpscounter.h"
 #include <winrt/Windows.Foundation.h>
 
 namespace winrt::ModernLife::implementation
