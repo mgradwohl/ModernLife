@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "Cell.h"
 
-void Cell::SetState(State state)
+void Cell::SetState(State state) noexcept
 {
 	_state = state;
 	if (state == Cell::State::Born)
@@ -10,7 +10,7 @@ void Cell::SetState(State state)
 	}
 }
 
-bool Cell::IsAlive() const
+bool Cell::IsAlive() const noexcept
 {
 	if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
 	{
@@ -19,7 +19,7 @@ bool Cell::IsAlive() const
 	return false;
 }
 
-bool Cell::IsAliveNotDying() const
+bool Cell::IsAliveNotDying() const noexcept
 {
 	if (_state == Cell::State::Live)
 	{
@@ -28,7 +28,7 @@ bool Cell::IsAliveNotDying() const
 	return false;
 }
 
-bool Cell::IsDead() const
+bool Cell::IsDead() const noexcept
 {
 	if (_state == Cell::State::Dead || _state == Cell::State::Born)
 	{
@@ -37,7 +37,7 @@ bool Cell::IsDead() const
 	return false;
 }
 
-const char* Cell::GetStateString() const
+const char* Cell::GetStateString() const noexcept
 {
 	switch (_state)
 	{

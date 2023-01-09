@@ -8,7 +8,7 @@ class TimerHelper
 {
 public:
     TimerHelper() = delete;
-    explicit TimerHelper(std::nullptr_t) {};
+    explicit TimerHelper(std::nullptr_t) noexcept {};
 
     // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
 
@@ -46,7 +46,7 @@ public:
     ~TimerHelper()
     {
         // release anything that needs to be released
-        _timer.Stop();
+        //_timer.Stop();
         _timer.Tick(_eventtoken);
     }
     
@@ -80,7 +80,7 @@ public:
         return _timer.IsRepeating();
     }
 
-    int FPS()
+    int FPS() noexcept
     {
 		return _fps;
     }

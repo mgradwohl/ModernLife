@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Cell.h"
+#include <vector>
 
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
@@ -18,58 +19,58 @@ private:
     uint32_t _numBorn = 0;
     uint32_t _numOld = 0;
     uint32_t _numDying = 0;
-    uint32_t _OldAge = static_cast<uint16_t>(- 1);
+    uint32_t _OldAge = static_cast<uint16_t>( -1);
     uint32_t _dirty = 0;
 
 public:
-    explicit Board(std::nullptr_t) {};
+    explicit Board(std::nullptr_t) noexcept {};
     Board(Board& b) = delete;
 
     ~Board() = default;
 
     Board(uint16_t width, uint16_t height);
 
-    void SetOldAge(uint32_t age)
+    void SetOldAge(uint32_t age) noexcept
     {
         _OldAge = age;
     }
 
-    uint32_t GetOldAge() const
+    uint32_t GetOldAge() const noexcept
     {
         return _OldAge;
     }
 
-    uint32_t GetSize() const
+    uint32_t GetSize() const noexcept
     {
         return _size;
     }
 
-    uint32_t GetDeadCount() const
+    uint32_t GetDeadCount() const noexcept
     {
         return _numDead;
     }
 
-    uint32_t GetLiveCount() const
+    uint32_t GetLiveCount() const noexcept
     {
         return _numLive;
     }
 
-    uint32_t GetBornCount() const
+    uint32_t GetBornCount() const noexcept
     {
         return _numBorn;
     }
 
-    uint32_t GetOldCount() const
+    uint32_t GetOldCount() const noexcept
     {
         return _numOld;
     }
 
-    uint32_t GetDyingCount() const
+    uint32_t GetDyingCount() const noexcept
     {
         return _numDying;
     }
 
-    void ResetCounts()
+    void ResetCounts() noexcept
     {
         _numDead = 0;
         _numLive = 0;
@@ -79,31 +80,31 @@ public:
         _dirty = 0;
     }
 
-    bool IsDirty() const
+    bool IsDirty() const noexcept
     {
         return _dirty;
     }
 
-    uint32_t Generation() const
+    uint32_t Generation() const noexcept
     {
         return _generation;
     }
 
-    uint32_t Width() const
+    uint32_t Width() const noexcept
     {
         return _width;
     }
 
-    uint32_t Height() const
+    uint32_t Height() const noexcept
     {
         return _height;
     }
 
-    void SetCell(Cell& cell, Cell::State state);
+    void SetCell(Cell& cell, Cell::State state) noexcept;
 
-    const Cell& GetCell(uint16_t x, uint16_t y) const
+    const Cell& GetCell(uint16_t x, uint16_t y) const noexcept
     {
-        uint32_t check = x * y;
+        const uint32_t check = x * y;
         if (check > _size)
         {
             exit(-1);
@@ -112,9 +113,9 @@ public:
         return _board[x + (y * _width)];
     }
 
-    Cell& GetCell(uint16_t x, uint16_t y)
+    Cell& GetCell(uint16_t x, uint16_t y) noexcept
     {
-        uint32_t check = x * y;
+        const uint32_t check = x * y;
         if (check > _size)
         {
             exit(-1);
@@ -122,11 +123,11 @@ public:
         return _board[x + (y * _width)];
     }
 
-    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
+    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept;
 
-    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
+    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y) noexcept;
 
-    void ApplyNextStateToBoard();
+    void ApplyNextStateToBoard() noexcept;
 
     void RandomizeBoard(float alivepct);
 
@@ -138,9 +139,9 @@ public:
         {
             for (uint16_t x = 0; x < Width(); x++)
             {
-                Cell& cc = GetCell(x, y);
+                Cell& cell = GetCell(x, y);
                 CountLiveAndDyingNeighbors(x, y);
-                F(cc);
+                F(cell);
                 //cc.KillOldCell();
             }
         }
@@ -149,17 +150,17 @@ public:
     void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
     void ConwayUpdateBoardWithNextState();
 
-    void ConwayRules(Cell& cell);
+    void ConwayRules(Cell& cell) const noexcept;
 
-    void DayAndNightRules(Cell& cell) const;
+    void DayAndNightRules(Cell& cell) const noexcept;
 
-    void LifeWithoutDeathRules(Cell& cell) const;
+    void LifeWithoutDeathRules(Cell& cell) const noexcept;
 
-    void HighlifeRules(Cell& cell) const;
+    void HighlifeRules(Cell& cell) const noexcept;
 
-    void SeedsRules(Cell& cell) const;
+    void SeedsRules(Cell& cell) const noexcept;
 
-    void BriansBrainRules(Cell& cell) const;
+    void BriansBrainRules(Cell& cell) const noexcept;
  
     void PrintBoard();
 };

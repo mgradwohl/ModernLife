@@ -4,11 +4,11 @@
 class FPScounter
 {
 public:
-	explicit FPScounter(std::nullptr_t) {};
+	explicit FPScounter(std::nullptr_t) noexcept {};
 	FPScounter(FPScounter& b) = delete;
 	~FPScounter() = default;
 	
-	FPScounter()
+	FPScounter() noexcept
 	{
 		_start = std::chrono::high_resolution_clock::now();
 		_end = std::chrono::high_resolution_clock::now();
@@ -18,12 +18,12 @@ public:
 		_fps = 0;
 	}
 	
-	double FPS()
+	double FPS() noexcept
 	{
 		return _fps;
 	}
 
-	void AddFrame()
+	void AddFrame() noexcept
 	{
 		_frames++;
 		
@@ -33,7 +33,7 @@ public:
 			auto start = std::chrono::time_point_cast<std::chrono::milliseconds>(_start).time_since_epoch().count();
 			auto end = std::chrono::time_point_cast<std::chrono::milliseconds>(_end).time_since_epoch().count();
 			auto span = end - start;
-			double dspan = span * 0.001;
+			const double dspan = span * 0.001;
 
 			if (span != 0)
 			{

@@ -1,8 +1,10 @@
-﻿// for visualization purposes (0,0) is the top left.
-// as x increases move right, as y increases move down
-#include "pch.h"
+﻿#include "pch.h"
 #include "Board.h"
 #include <future>
+
+// for visualization purposes (0,0) is the top left.
+// as x increases move right, as y increases move down
+
 // optimized to never use std::endl until the full board is done printing
 std::wostream& operator<<(std::wostream& stream, Board& board)
 {
@@ -20,7 +22,7 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 		str += L"\r\n";
 	}
 
-	wprintf((const wchar_t*)str.c_str());
+	wprintf(str.c_str());
 	return stream;
 }
 
@@ -35,7 +37,7 @@ void Board::PrintBoard()
 	std::wcout << (*this) << std::endl;
 }
 
-void Board::SetCell(Cell& cell, Cell::State state)
+void Board::SetCell(Cell& cell, Cell::State state) noexcept
 {
 	cell.SetState(state);
 
@@ -73,13 +75,13 @@ void Board::SetCell(Cell& cell, Cell::State state)
 	}
 }
 
-uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept
 {
 	// calculate offsets that wrap
-	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
-	uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
-	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
-	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
+	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
+	const uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
+	const uint16_t yoabove = (y == 0) ? _height - 1 : -1;
+	const uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
 	uint8_t count = 0;
 
@@ -99,13 +101,13 @@ uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	return count;
 }
 
-uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y) noexcept
 {
 	// calculate offsets that wrap
-	uint16_t xoleft = (x == 0) ? _width - 1 : -1;
-	uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
-	uint16_t yoabove = (y == 0) ? _height - 1 : -1;
-	uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
+	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
+	const uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
+	const uint16_t yoabove = (y == 0) ? _height - 1 : -1;
+	const uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
 	uint8_t count = 0;
 
@@ -124,7 +126,7 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 	return count;
 }
 
-void Board::ApplyNextStateToBoard()
+void Board::ApplyNextStateToBoard() noexcept
 {
 	_generation++;
 	ResetCounts();
@@ -158,7 +160,7 @@ void Board::RandomizeBoard(float alivepct)
 	std::uniform_real_distribution<> pdis(0.0, 1.0);
 	std::uniform_int_distribution<> adis(0, 1000);
 
-	for (auto& c : _board)
+	for (auto& cell : _board)
 	{
 		static int ra;
 		static double rp;
@@ -167,8 +169,8 @@ void Board::RandomizeBoard(float alivepct)
 
 		if (rp <= alivepct)
 		{
-			SetCell(c, Cell::State::Live);
-			c.SetAge(static_cast<uint16_t>(ra));
+			SetCell(cell, Cell::State::Live);
+			cell.SetAge(static_cast<uint16_t>(ra));
 		}
 	}
 	_dirty = 1; // must be dirty, we just randomized it
@@ -180,9 +182,9 @@ void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 	{
 		for (uint16_t x = 0; x < Width(); x++)
 		{
-			Cell& cc = GetCell(x, y);
+			Cell& cell = GetCell(x, y);
 			CountLiveAndDyingNeighbors(x, y);
-			ConwayRules(cc);
+			ConwayRules(cell);
 		}
 	}
 
@@ -193,7 +195,7 @@ void Board::ConwayUpdateBoardWithNextState()
 	update1.wait();
 }
 
-void Board::ConwayRules(Cell& cell)
+void Board::ConwayRules(Cell& cell) const noexcept
 {
 	// Any live cell with two or three live neighbours survives.
 	// Any dead cell with three live neighbours becomes a live cell.
@@ -216,7 +218,7 @@ void Board::ConwayRules(Cell& cell)
 	}
 }
 
-void Board::DayAndNightRules(Cell& cell) const
+void Board::DayAndNightRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Day_and_Night_(cellular_automaton)
 	// rule notation B3678/S34678, meaning that a dead cell becomes live (is born)
@@ -240,7 +242,7 @@ void Board::DayAndNightRules(Cell& cell) const
 	}
 }
 
-void Board::LifeWithoutDeathRules(Cell& cell) const
+void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Life_without_Death
 	// every cell that was alive in the previous pattern remains alive,
@@ -261,7 +263,7 @@ void Board::LifeWithoutDeathRules(Cell& cell) const
 	}
 }
 
-void Board::HighlifeRules(Cell& cell) const
+void Board::HighlifeRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Highlife_(cellular_automaton)
 	// the rule B36 / S23; that is, a cell is born if it has 3 or 6 neighbors
@@ -286,7 +288,7 @@ void Board::HighlifeRules(Cell& cell) const
 	}
 }
 
-void Board::SeedsRules(Cell& cell) const
+void Board::SeedsRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Seeds_(cellular_automaton)
 	// In each time step, a cell turns on or is "born" if it was off or "dead"
@@ -306,7 +308,7 @@ void Board::SeedsRules(Cell& cell) const
 	}
 }
 
-void Board::BriansBrainRules(Cell& cell) const
+void Board::BriansBrainRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Brian%27s_Brain
 	// In each time step, a cell turns on if it was off but had exactly two neighbors that were on,
