@@ -9,18 +9,18 @@ class Board
 private:
     // if I allocated this on the heap, I could get the size right with resize
     std::vector<Cell> _board;
-    uint16_t _width = 0;
-    uint16_t _height = 0;
-    uint32_t _size = 0;
-    uint32_t _generation = 0;
+    uint16_t _width{ 0 };
+    uint16_t _height{ 0 };
+    uint32_t _size{ 0 };
+    uint32_t _generation{ 0 };
 
-    uint32_t _numDead = 0;
-    uint32_t _numLive = 0;
-    uint32_t _numBorn = 0;
-    uint32_t _numOld = 0;
-    uint32_t _numDying = 0;
-    uint32_t _OldAge = static_cast<uint16_t>( -1);
-    uint32_t _dirty = 0;
+    uint32_t _numDead{ 0 };
+    uint32_t _numLive{ 0 };
+    uint32_t _numBorn{ 0 };
+    uint32_t _numOld{ 0 };
+    uint32_t _numDying{ 0 };
+    uint32_t _OldAge{ 0xFFFFFFFF };
+    uint32_t _dirty{ 0 };
 
 public:
     explicit Board(std::nullptr_t) noexcept {};
@@ -147,7 +147,7 @@ public:
         }
     }
 
-    void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
+    void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow) noexcept;
     void ConwayUpdateBoardWithNextState();
 
     void ConwayRules(Cell& cell) const noexcept;

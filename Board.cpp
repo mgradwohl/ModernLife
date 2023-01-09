@@ -130,7 +130,7 @@ void Board::ApplyNextStateToBoard() noexcept
 {
 	_generation++;
 	ResetCounts();
-
+	// TODO check size of board before iterating over board
 	for (auto& cell : _board)
 	{
 		if (cell.GetState() == Cell::State::Born)
@@ -158,8 +158,9 @@ void Board::RandomizeBoard(float alivepct)
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> pdis(0.0, 1.0);
-	std::uniform_int_distribution<> adis(0, 1000);
+	std::uniform_int_distribution<unsigned short> adis(0, 1000);
 
+	// TODO check size of board before iterating over board
 	for (auto& cell : _board)
 	{
 		static int ra;
@@ -170,13 +171,13 @@ void Board::RandomizeBoard(float alivepct)
 		if (rp <= alivepct)
 		{
 			SetCell(cell, Cell::State::Live);
-			cell.SetAge(static_cast<uint16_t>(ra));
+			cell.SetAge(ra);
 		}
 	}
 	_dirty = 1; // must be dirty, we just randomized it
 }
 
-void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
+void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow) noexcept
 {
 	for (uint16_t y = startRow; y < endRow; y++)
 	{
