@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Cell.h"
 #include <vector>
+#include <stdexcept>
 
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
@@ -102,30 +103,31 @@ public:
 
     void SetCell(Cell& cell, Cell::State state) noexcept;
 
-    const Cell& GetCell(uint16_t x, uint16_t y) const noexcept
+    const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        const uint32_t check = x * y;
-        if (check > _size)
+        if (x >= _width || y >= _height)
         {
-            exit(-1);
+            throw std::out_of_range("Invalid indices provided");
         }
 
         return _board[x + (y * _width)];
     }
 
-    Cell& GetCell(uint16_t x, uint16_t y) noexcept
+    Cell& GetCell(uint16_t x, uint16_t y)
     {
-        const uint32_t check = x * y;
-        if (check > _size)
+        if (x >= _width || y >= _height)
         {
-            exit(-1);
+            throw std::out_of_range("Invalid indices provided");
         }
+
         return _board[x + (y * _width)];
     }
 
-    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept;
+    uint8_t FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
+    
+    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
 
-    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y) noexcept;
+    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
 
     void ApplyNextStateToBoard() noexcept;
 
@@ -147,10 +149,12 @@ public:
         }
     }
 
-    void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow) noexcept;
+    void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
     void ConwayUpdateBoardWithNextState();
 
     void ConwayRules(Cell& cell) const noexcept;
+
+    void FastConwayRules(Cell& cell) const noexcept;
 
     void DayAndNightRules(Cell& cell) const noexcept;
 

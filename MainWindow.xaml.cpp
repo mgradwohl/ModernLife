@@ -77,11 +77,11 @@ namespace winrt::ModernLife::implementation
         ds.Blend(CanvasBlend::Copy);
         ds.Clear(Colors::WhiteSmoke());
 
-        float posx = 0.0f;
-        float posy = 0.0f;
+        float posx{ 0.0f };
+        float posy{ 0.0f };
 
-        float round = 2.0f;
-        float offset = 0.0f;
+        float round{ 2.0f };
+        float offset{ 0.0f };
         if (_widthCellDest > 20)
         {
             round = 6.0f;
@@ -188,7 +188,7 @@ namespace winrt::ModernLife::implementation
             return Windows::UI::Colors::Black();
         }
 
-        const float h = (age * 360.f) / maxage;
+        const float h{ (age * 360.f) / maxage };
         return HSVtoColor(h, 0.6f, 0.8f);
     }
 
@@ -204,13 +204,13 @@ namespace winrt::ModernLife::implementation
 		//	}
 		//}
 
-        const float srcW = _widthCellDest;
-        const uint16_t srcStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
+        const float srcW{ _widthCellDest };
+        const uint16_t srcStride{ static_cast<uint16_t>(std::sqrt(maxage) + 1) };
 
         auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
         
-        float posx = 0.0f;
-		float posy = startY * _widthCellDest;
+        float posx{ 0.0f };
+        float posy{ startY * _widthCellDest };
         {
             for (uint16_t y = startY; y < endY; y++)
             {
@@ -437,60 +437,60 @@ namespace winrt::ModernLife::implementation
             //return Windows::UI::Colors::Black();
             return ColorHelper::FromArgb(255, 228, 228, 228);
         }
-        
-        h /= 60;
-        const int i = static_cast<int>(std::floor(h));
-        const float f = h - i;
-        const float p = v * (1 - s);
-        const float q = v * (1 - s * f);
-        const float t = v * (1 - s * (1 - f));
 
-        float dr = 0;
-        float dg = 0;
-        float db = 0;
+        h /= 60;
+        const int i{ static_cast<int>(std::floor(h)) };
+        const float f{ h - i };
+        const float p{ v * (1 - s) };
+        const float q{ v * (1 - s * f) };
+        const float t{ v * (1 - s * (1 - f)) };
+
+        float dr{ 0 };
+        float dg{ 0 };
+        float db{ 0 };
 
         switch (i)
         {
-            case 0:
-                dr = v;
-                dg = t;
-                db = p;
-                break;
-            case 1:
-                dr = q;
-                dg = v;
-                db = p;
-                break;
-            case 2:
-                dr = p;
-                dg = v;
-                db = t;
-                break;
-            case 3:
-                dr = p;
-                dg = q;
-                db = v;
-                break;
-            case 4:
-                dr = t;
-                dg = p;
-                db = v;
-                break;
-            case 5:
-                dr = v;
-                dg = p;
-                db = q;
-                break;
-            default:
-                dr = v;
-                dg = v;
-                db = v;
-                break;
+        case 0:
+            dr = v;
+            dg = t;
+            db = p;
+            break;
+        case 1:
+            dr = q;
+            dg = v;
+            db = p;
+            break;
+        case 2:
+            dr = p;
+            dg = v;
+            db = t;
+            break;
+        case 3:
+            dr = p;
+            dg = q;
+            db = v;
+            break;
+        case 4:
+            dr = t;
+            dg = p;
+            db = v;
+            break;
+        case 5:
+            dr = v;
+            dg = p;
+            db = q;
+            break;
+        default:
+            dr = v;
+            dg = v;
+            db = v;
+            break;
         }
 
-        const uint8_t r = static_cast<uint8_t>(dr * 255);
-        const uint8_t g = static_cast<uint8_t>(dg * 255);
-        const uint8_t b = static_cast<uint8_t>(db * 255);
+        const uint8_t r{ static_cast<uint8_t>(dr * 255) };
+        const uint8_t g{ static_cast<uint8_t>(dg * 255) };
+        const uint8_t b{ static_cast<uint8_t>(db * 255)};
 
         return ColorHelper::FromArgb(255, r, g, b);
     }

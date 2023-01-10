@@ -48,7 +48,7 @@
                                         <x:Int32>2</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Click="speedClick" Text="Slowest">
+                                <MenuFlyoutItem Click="speedClick" Text="Slower">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>5</x:Int32>
                                     </MenuFlyoutItem.Tag>
@@ -68,7 +68,7 @@
                                         <x:Int32>30</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Click="speedClick" Text="Fastest" >
+                                <MenuFlyoutItem Click="speedClick" Text="Faster" >
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>60</x:Int32>
                                     </MenuFlyoutItem.Tag>

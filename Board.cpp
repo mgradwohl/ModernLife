@@ -75,7 +75,28 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	}
 }
 
-uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept
+uint8_t Board::FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
+{
+	static const std::vector<int16_t> dx { -1,  0,  1, -1, 1, -1, 0, 1 };
+	static const std::vector<int16_t> dy { -1, -1, -1,  0, 0,  1, 1, 1 };
+
+	uint8_t count{ 0 };
+
+	for (int i = 0; i < dx.size(); ++i)
+	{
+		const uint16_t xx = (x + dx[i] + _width) % _width;
+		const uint16_t yy = (y + dy[i] + _height) % _height;
+		if (GetCell(xx, yy).IsAlive())
+		{
+			count++;
+		}
+	}
+
+	GetCell(x, y).SetNeighbors(count);
+	return count;
+}
+
+uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -83,7 +104,7 @@ uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept
 	const uint16_t yoabove = (y == 0) ? _height - 1 : -1;
 	const uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
-	uint8_t count = 0;
+	uint8_t count{ 0 };
 
 	if (GetCell(x + xoleft, y + yobelow).IsAlive()) count++;
 	if (GetCell(x, y + yobelow).IsAlive()) count++;
@@ -101,7 +122,7 @@ uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y) noexcept
 	return count;
 }
 
-uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y) noexcept
+uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -109,7 +130,7 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y) noexcept
 	const uint16_t yoabove = (y == 0) ? _height - 1 : -1;
 	const uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
 
-	uint8_t count = 0;
+	uint8_t count{ 0 };
 
 	if (GetCell(x + xoleft, y + yobelow).IsAliveNotDying()) count++;
 	if (GetCell(x, y + yobelow).IsAliveNotDying()) count++;
@@ -177,19 +198,19 @@ void Board::RandomizeBoard(float alivepct)
 	_dirty = 1; // must be dirty, we just randomized it
 }
 
-void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow) noexcept
+void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 {
 	for (uint16_t y = startRow; y < endRow; y++)
 	{
 		for (uint16_t x = 0; x < Width(); x++)
 		{
 			Cell& cell = GetCell(x, y);
-			CountLiveAndDyingNeighbors(x, y);
+			FastCountLiveAndDyingNeighbors(x, y);
 			ConwayRules(cell);
 		}
 	}
-
 }
+
 void Board::ConwayUpdateBoardWithNextState()
 {
 	auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, static_cast<uint16_t>(0), static_cast<uint16_t>(Height()));
@@ -202,7 +223,7 @@ void Board::ConwayRules(Cell& cell) const noexcept
 	// Any dead cell with three live neighbours becomes a live cell.
 	// All other live cells die in the next generation. Similarly, all other dead cells stay dead.
 
-	static uint16_t count = 0;
+	static uint16_t count{ 0 };
 	count = cell.Neighbors();
 
 	if (cell.IsAlive() && count >= 2 && count <= 3)
@@ -219,6 +240,18 @@ void Board::ConwayRules(Cell& cell) const noexcept
 	}
 }
 
+void Board::FastConwayRules(Cell& cell) const noexcept
+{
+	const uint16_t count = cell.Neighbors();
+
+	cell.SetState(
+		cell.IsAlive() && count >= 2 && count <= 3 ? Cell::State::Live :
+		cell.IsDead() && count == 3 ? Cell::State::Born :
+		cell.IsAlive() ? Cell::State::Dying :
+		Cell::State::Dead
+	);
+}
+
 void Board::DayAndNightRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Day_and_Night_(cellular_automaton)
@@ -226,7 +259,7 @@ void Board::DayAndNightRules(Cell& cell) const noexcept
 	// if it has 3, 6, 7, or 8 live neighbors, and a live cell remains alive (survives)
 	// if it has 3, 4, 6, 7, or 8 live neighbors,
 
-	static int count = 0;
+	static int count{ 0 };
 	count = cell.Neighbors();
 
 	if (cell.IsAlive() && ((count >= 3) && (count != 5)))
@@ -250,7 +283,7 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 	// every dead cell that has exactly 3 live neighbors becomes alive itself
 	// and every other dead cell remains dead. B3/S012345678
 
-	static uint16_t count = 0;
+	static uint16_t count = { 0 };
 	count = cell.Neighbors();
 
 	if (cell.IsAlive())
@@ -270,7 +303,7 @@ void Board::HighlifeRules(Cell& cell) const noexcept
 	// the rule B36 / S23; that is, a cell is born if it has 3 or 6 neighbors
 	//and survives if it has 2 or 3 neighbors.
 
-	static uint16_t count = 0;
+	static uint16_t count{ 0 };
 	count = cell.Neighbors();
 
 	if (cell.IsAlive() && count >= 2 && count <= 3)
@@ -296,7 +329,7 @@ void Board::SeedsRules(Cell& cell) const noexcept
 	// but had exactly two neighbors that were on
 	// all other cells turn off. It is described by the rule B2 / S
 
-	static uint16_t count = 0;
+	static uint16_t count{ 0 };
 	count = cell.Neighbors();
 
 	if (cell.IsDead() && count == 2)
@@ -317,7 +350,7 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	// which is not counted as an "on" cell in the neighbor count, and prevents any cell from
 	// being born there. Cells that were in the dying state go into the off state.
 
-	static uint16_t count = 0;
+	static uint16_t count{ 0 };
 	count = cell.Neighbors();
 
 	if (cell.IsDead() && count == 2)
