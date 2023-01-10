@@ -105,7 +105,7 @@ public:
 
     const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        if (x >= _width || y >= _height)
+        if (x > _width || y > _height)
         {
             throw std::out_of_range("Invalid indices provided");
         }
@@ -115,7 +115,7 @@ public:
 
     Cell& GetCell(uint16_t x, uint16_t y)
     {
-        if (x >= _width || y >= _height)
+        if (x > _width || y > _height)
         {
             throw std::out_of_range("Invalid indices provided");
         }
