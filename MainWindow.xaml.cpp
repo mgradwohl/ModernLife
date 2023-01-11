@@ -36,7 +36,7 @@ namespace winrt::ModernLife::implementation
 
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
-            Windows::Graphics::PointInt32 pos(appWnd.Position());
+            Windows::Graphics::PointInt32 pos{ appWnd.Position() };
             pos.Y = 32;
             appWnd.Move(pos);
             appWnd.ResizeClient(Windows::Graphics::SizeInt32{ 2220, 1920 });
@@ -78,7 +78,7 @@ namespace winrt::ModernLife::implementation
         float posy{ 0.0f };
 
         float round{ 2.0f };
-        float offset{ 0.0f };
+        float offset{ 0.25f };
         if (_widthCellDest > 20)
         {
             round = 6.0f;
@@ -92,6 +92,7 @@ namespace winrt::ModernLife::implementation
             for (uint16_t x = 0; x < assetStride; x++)
             {
                 ds.FillRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetCellColorHSV(index));
+                ds.DrawRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetOutlineColorHSV(index), 1.0f);
                 posx += _widthCellDest;
                 index++;
             }
@@ -187,6 +188,18 @@ namespace winrt::ModernLife::implementation
 
         const float h{ (age * 360.f) / maxage };
         return HSVtoColor(h, 0.6f, 0.8f);
+    }
+
+    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
+    {
+        // should never see a black cell
+        if (age > maxage)
+        {
+            return Windows::UI::Colors::Black();
+        }
+
+        const float h{ (age * 360.f) / maxage };
+        return HSVtoColor(h, 0.8f, 0.9f);
     }
 
     void MainWindow::DrawInto(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)

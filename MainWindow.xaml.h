@@ -58,6 +58,7 @@ namespace winrt::ModernLife::implementation
         void theCanvas_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
 
         Windows::UI::Color GetCellColorHSV(uint16_t age);
+        Windows::UI::Color GetOutlineColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
         void InitializeAssets(CanvasDevice& device);
