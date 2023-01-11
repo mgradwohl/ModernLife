@@ -58,7 +58,7 @@ namespace winrt::ModernLife::implementation
         args;
     }
 
-    void MainWindow::InitializeAssets()
+    void MainWindow::InitializeAssets(CanvasDevice& device)
     {
         // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
         const uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
@@ -67,10 +67,7 @@ namespace winrt::ModernLife::implementation
         const float rtsize = _widthCellDest * assetStride;
 
         // if the back buffer doesn't exist or is the wrong size, create it
-        CanvasDevice device = CanvasDevice::GetSharedDevice();
-        {
-            _assets = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
-        }
+        _assets = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
 
         CanvasDrawingSession ds = _assets.CreateDrawingSession();
         ds.Antialiasing(CanvasAntialiasing::Antialiased);
@@ -250,7 +247,7 @@ namespace winrt::ModernLife::implementation
             _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
             _widthCellDest = (_canvasSize / _boardwidth);
         }
-        InitializeAssets();
+        InitializeAssets(device);
     }
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
@@ -394,6 +391,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvas_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
+        
         sender;
         _canvasSize = min(e.NewSize().Width, bestsize);
         SetupRenderTargets();

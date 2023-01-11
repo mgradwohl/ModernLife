@@ -60,7 +60,7 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color GetCellColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
-        void InitializeAssets();
+        void InitializeAssets(CanvasDevice& device);
 
 
         void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
