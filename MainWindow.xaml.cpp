@@ -8,9 +8,9 @@
 #include "MainWindow.g.cpp"
 #endif
 
+#include <winrt/Windows.Foundation.h>
 #include "TimerHelper.h"
 #include "fpscounter.h"
-#include <winrt/Windows.Foundation.h>
 
 namespace winrt::ModernLife::implementation
 {
@@ -265,8 +265,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
     {
-        sender;
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
+        sender;
 
         if (!board.IsDirty())
             return;
@@ -317,15 +317,6 @@ namespace winrt::ModernLife::implementation
             SetupRenderTargets();
             StartGameLoop();
         }
-    }
-    void MainWindow::MyProperty(int32_t /* value */)
-    {
-        throw hresult_not_implemented();
-    }
-
-    int32_t MainWindow::MyProperty()
-    {
-        throw hresult_not_implemented();
     }
 
     void MainWindow::theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)

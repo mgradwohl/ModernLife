@@ -7,7 +7,6 @@ namespace ModernLife
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
         MainWindow();
-        Int32 MyProperty;
         Int32 SeedPercent;
         Int16 BoardWidth;
         String GetRandPercentText(Double value);

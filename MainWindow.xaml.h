@@ -42,8 +42,6 @@ namespace winrt::ModernLife::implementation
         void InitializeComponent();
         void StartGameLoop();
 
-        int32_t MyProperty();
-        void MyProperty(int32_t value);
         int32_t SeedPercent() const noexcept;
         void SeedPercent(int32_t value);
         int16_t BoardWidth() const noexcept;

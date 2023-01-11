@@ -1,8 +1,6 @@
 #pragma once
-#include <winrt/Windows.Foundation.h>
+
 #include <winrt/Microsoft.UI.Dispatching.h>
-#include <winrt/Windows.UI.Xaml.h>
-#include <winrt/Windows.Foundation.Collections.h>
 
 class TimerHelper
 {
