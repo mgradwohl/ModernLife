@@ -20,6 +20,7 @@
 #include <future>
 #include <format>
 
+#include "gsl/include/gsl"
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>

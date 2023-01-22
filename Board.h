@@ -26,10 +26,8 @@ private:
 public:
     explicit Board(std::nullptr_t) noexcept {};
     Board(Board& b) = delete;
-
-    ~Board() = default;
-
     Board(uint16_t width, uint16_t height);
+    ~Board() = default;
 
     void SetOldAge(uint32_t age) noexcept
     {

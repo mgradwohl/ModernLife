@@ -84,6 +84,12 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -120,6 +126,8 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">stdcpp20</LanguageStandard>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Speed</FavorSizeOrSpeed>
+      <LanguageStandard_C Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -242,6 +250,21 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="gsl\include\algorithm" />
+    <None Include="gsl\include\assert" />
+    <None Include="gsl\include\byte" />
+    <None Include="gsl\include\gsl" />
+    <None Include="gsl\include\gsl_algorithm" />
+    <None Include="gsl\include\gsl_assert" />
+    <None Include="gsl\include\gsl_byte" />
+    <None Include="gsl\include\gsl_narrow" />
+    <None Include="gsl\include\gsl_util" />
+    <None Include="gsl\include\narrow" />
+    <None Include="gsl\include\pointers" />
+    <None Include="gsl\include\span" />
+    <None Include="gsl\include\span_ext" />
+    <None Include="gsl\include\string_span" />
+    <None Include="gsl\include\util" />
     <None Include="packages.config" />
   </ItemGroup>
   <!--

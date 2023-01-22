@@ -194,6 +194,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="gsl\include\algorithm" />
+    <None Include="gsl\include\assert" />
+    <None Include="gsl\include\byte" />
+    <None Include="gsl\include\gsl" />
+    <None Include="gsl\include\gsl_algorithm" />
+    <None Include="gsl\include\gsl_assert" />
+    <None Include="gsl\include\gsl_byte" />
+    <None Include="gsl\include\gsl_narrow" />
+    <None Include="gsl\include\gsl_util" />
+    <None Include="gsl\include\narrow" />
+    <None Include="gsl\include\pointers" />
+    <None Include="gsl\include\span" />
+    <None Include="gsl\include\span_ext" />
+    <None Include="gsl\include\string_span" />
+    <None Include="gsl\include\util" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />

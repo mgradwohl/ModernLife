@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Board.h"
+#include "gsl/include/gsl"
 #include <future>
 
 // for visualization purposes (0,0) is the top left.
@@ -84,8 +85,8 @@ uint8_t Board::FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 
 	for (int i = 0; i < dx.size(); ++i)
 	{
-		const uint16_t xx = (x + dx[i] + _width) % _width;
-		const uint16_t yy = (y + dy[i] + _height) % _height;
+		const uint16_t xx = (x + gsl::at(dx,i) + _width) % _width;
+		const uint16_t yy = (y + gsl::at(dy,i) + _height) % _height;
 		if (GetCell(xx, yy).IsAlive())
 		{
 			count++;
@@ -152,7 +153,7 @@ void Board::ApplyNextStateToBoard() noexcept
 	_generation++;
 	ResetCounts();
 	// TODO check size of board before iterating over board
-	for (auto& cell : _board)
+	for (Cell& cell : _board)
 	{
 		if (cell.GetState() == Cell::State::Born)
 		{
@@ -182,7 +183,7 @@ void Board::RandomizeBoard(float alivepct)
 	std::uniform_int_distribution<unsigned short> adis(0, 1000);
 
 	// TODO check size of board before iterating over board
-	for (auto& cell : _board)
+	for (Cell& cell : _board)
 	{
 		static int ra;
 		static double rp;
@@ -247,8 +248,7 @@ void Board::FastConwayRules(Cell& cell) const noexcept
 	cell.SetState(
 		cell.IsAlive() && count >= 2 && count <= 3 ? Cell::State::Live :
 		cell.IsDead() && count == 3 ? Cell::State::Born :
-		cell.IsAlive() ? Cell::State::Dying :
-		Cell::State::Dead
+		cell.IsAlive() ? Cell::State::Dying : Cell::State::Dead
 	);
 }
 
