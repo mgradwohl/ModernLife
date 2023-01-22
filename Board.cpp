@@ -193,7 +193,7 @@ void Board::RandomizeBoard(float alivepct)
 		if (rp <= alivepct)
 		{
 			SetCell(cell, Cell::State::Live);
-			cell.SetAge(static_cast<uint16_t>(ra));
+			cell.SetAge(gsl::narrow_cast<uint16_t>(ra));
 		}
 	}
 	_dirty = 1; // must be dirty, we just randomized it

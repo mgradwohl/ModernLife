@@ -58,10 +58,10 @@ namespace winrt::ModernLife::implementation
         args;
     }
 
-    void MainWindow::InitializeAssets(CanvasDevice& device)
+    void MainWindow::InitializeAssets(const CanvasDevice& device)
     {
         // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
-        const uint16_t assetStride = static_cast<uint16_t>(std::sqrt(maxage)) + 1;
+        const uint16_t assetStride = gsl::narrow_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         const float rtsize = _widthCellDest * assetStride;
@@ -146,7 +146,7 @@ namespace winrt::ModernLife::implementation
         // we lock it because changing board parameters will call StartGameLoop()
         {
             std::scoped_lock lock{ lockboard };
-            board = Board{ static_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
+            board = Board{ gsl::narrow_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
         }
 
         // add a random population
@@ -215,7 +215,7 @@ namespace winrt::ModernLife::implementation
 		//}
 
         const float srcW{ _widthCellDest };
-        const uint16_t srcStride{ static_cast<uint16_t>(std::sqrt(maxage) + 1) };
+        const uint16_t srcStride{ gsl::narrow_cast<uint16_t>(std::sqrt(maxage) + 1) };
 
         auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
         
@@ -490,9 +490,9 @@ namespace winrt::ModernLife::implementation
             break;
         }
 
-        const uint8_t r{ static_cast<uint8_t>(dr * 255) };
-        const uint8_t g{ static_cast<uint8_t>(dg * 255) };
-        const uint8_t b{ static_cast<uint8_t>(db * 255)};
+        const uint8_t r{ gsl::narrow_cast<uint8_t>(dr * 255) };
+        const uint8_t g{ gsl::narrow_cast<uint8_t>(dg * 255) };
+        const uint8_t b{ gsl::narrow_cast<uint8_t>(db * 255)};
 
         return ColorHelper::FromArgb(255, r, g, b);
     }

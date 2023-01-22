@@ -108,7 +108,7 @@ public:
             throw std::out_of_range("Invalid indices provided");
         }
 
-        return _board[x + (y * _width)];
+        return gsl::at(_board, x + (y * _width));
     }
 
     Cell& GetCell(uint16_t x, uint16_t y)
@@ -118,7 +118,7 @@ public:
             throw std::out_of_range("Invalid indices provided");
         }
 
-        return _board[x + (y * _width)];
+        return gsl::at(_board, x + (y * _width));
     }
 
     uint8_t FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y);

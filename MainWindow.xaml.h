@@ -59,7 +59,7 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color GetOutlineColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
-        void InitializeAssets(CanvasDevice& device);
+        void InitializeAssets(const CanvasDevice& device);
 
 
         void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
