@@ -83,7 +83,7 @@ uint8_t Board::FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 
 	uint8_t count{ 0 };
 
-	for (int i = 0; i < dx.size(); ++i)
+	for (size_t i = 0; i < dx.size(); ++i)
 	{
 		const uint16_t xx = (x + gsl::at(dx,i) + _width) % _width;
 		const uint16_t yy = (y + gsl::at(dy,i) + _height) % _height;

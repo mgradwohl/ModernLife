@@ -279,16 +279,19 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
     <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
+    <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">
-    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
-    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
+    <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

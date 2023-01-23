@@ -14,7 +14,7 @@
 
 namespace winrt::ModernLife::implementation
 {
-    MainWindow::MainWindow()
+    MainWindow::MainWindow() noexcept
     {
         //InitializeComponent(); https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
     }
@@ -146,7 +146,7 @@ namespace winrt::ModernLife::implementation
         // we lock it because changing board parameters will call StartGameLoop()
         {
             std::scoped_lock lock{ lockboard };
-            board = Board{ gsl::narrow_cast<uint16_t>(_boardwidth), static_cast<uint16_t>(_boardwidth) };
+            board = Board{ gsl::narrow_cast<uint16_t>(_boardwidth), gsl::narrow_cast<uint16_t>(_boardwidth) };
         }
 
         // add a random population
@@ -403,14 +403,14 @@ namespace winrt::ModernLife::implementation
 
     hstring MainWindow::GetRandPercentText(double_t value)
     {
-        std::wstring text = std::format(L"{0}% random", static_cast<int>(value));
+        std::wstring text = std::format(L"{0}% random", gsl::narrow_cast<int>(value));
         hstring htext{ text };
         return htext;
     }
 
     hstring MainWindow::GetBoardWidthText(double_t value)
     {
-        std::wstring text = std::format(L"Width {0} x Height {0}", static_cast<int>(value));
+        std::wstring text = std::format(L"Width {0} x Height {0}", gsl::narrow_cast<int>(value));
         hstring htext{ text };
         return htext;
     }

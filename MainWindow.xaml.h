@@ -38,7 +38,7 @@ namespace winrt::ModernLife::implementation
     struct MainWindow : MainWindowT<MainWindow>
     {
     public:
-        MainWindow();
+        MainWindow() noexcept;
         void InitializeComponent();
         void StartGameLoop();
 
