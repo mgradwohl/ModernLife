@@ -79,6 +79,7 @@ namespace winrt::ModernLife::implementation
     private:
         CanvasRenderTarget _back{ nullptr };
         CanvasRenderTarget _assets{ nullptr };
+        CanvasSpriteBatch _spriteBatch{ nullptr };
         std::mutex lockbackbuffer;
         std::mutex lockboard;
         Board board{ nullptr };

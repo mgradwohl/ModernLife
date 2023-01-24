@@ -168,8 +168,11 @@ namespace winrt::ModernLife::implementation
             args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
             args.DrawingSession().Blend(CanvasBlend::Copy);
 
+			Windows::Foundation::Rect sourceRect{ 0.0f, 0.0f, _back.Size().Width, _back.Size().Height };
+            Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _canvasSize, _canvasSize};
+
             // comment out the following to see the sprite sheet
-            args.DrawingSession().DrawImage(_back);
+            args.DrawingSession().DrawImage(_back, destRect, sourceRect);
             
             // uncomment the following line to see the sprite sheet
             //args.DrawingSession().DrawImage(_assets, 0, 0);
@@ -248,8 +251,8 @@ namespace winrt::ModernLife::implementation
 
         {
             std::scoped_lock lock{ lockbackbuffer };
-            _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
-            //_back = CanvasRenderTarget(device, bestbackbuffersize, bestbackbuffersize, theCanvas().Dpi());
+            //_back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
+            _back = CanvasRenderTarget(device, bestbackbuffersize, bestbackbuffersize, theCanvas().Dpi());
             _widthCellDest = (bestbackbuffersize / _boardwidth);
         }
         InitializeAssets(device);
@@ -268,6 +271,8 @@ namespace winrt::ModernLife::implementation
         ds.Antialiasing(CanvasAntialiasing::Aliased);
         ds.Blend(CanvasBlend::Copy);
         ds.Clear(Colors::WhiteSmoke());
+
+        //_spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::None, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
 
         {
             std::scoped_lock lock{ lockboard };
@@ -292,6 +297,7 @@ namespace winrt::ModernLife::implementation
             drawinto8.wait();
         }
 
+		//_spriteBatch.Close();
         ds.Flush();
         ds.Close();
     }
