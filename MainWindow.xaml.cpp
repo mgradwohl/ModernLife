@@ -229,8 +229,8 @@ namespace winrt::ModernLife::implementation
                     if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
                     {
                         const int age = cell.Age() > maxage ? maxage : cell.Age();
-                        const float srcX = static_cast<float>(age % srcStride);
-                        const float srcY = static_cast<float>(age / srcStride);
+                        const float srcX = gsl::narrow_cast<float>(age % srcStride);
+                        const float srcY = gsl::narrow_cast<float>(age / srcStride);
                         const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
