@@ -398,6 +398,7 @@ namespace winrt::ModernLife::implementation
     {
         e;
         sender;
+        // this locks the canvas size, but can we resize and if it's huge, can we zoom?
         _canvasSize = bestcanvassize;
         SetupRenderTargets();
     }
