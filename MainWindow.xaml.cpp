@@ -39,10 +39,8 @@ namespace winrt::ModernLife::implementation
             Windows::Graphics::PointInt32 pos{ appWnd.Position() };
             pos.Y = 32;
             appWnd.Move(pos);
-            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ 2220, 1920 });
+            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ bestcanvassize + 240, bestcanvassize + 40 });
             auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
-            //presenter.IsMaximizable(false);
-            //presenter.IsResizable(false);
         }
 
         // doesn't work see TimerHelper.h
@@ -65,8 +63,6 @@ namespace winrt::ModernLife::implementation
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         const float rtsize = _widthCellDest * assetStride;
-
-        // if the sprite sheet doesn't exist or is the wrong size, create it
         _assets = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
 
         CanvasDrawingSession ds = _assets.CreateDrawingSession();
@@ -164,15 +160,17 @@ namespace winrt::ModernLife::implementation
     {
         RenderOffscreen(sender);
         {
+            // we lock the back buffer so that RenderOffscreen is not changing it while we draw it
             std::scoped_lock lock{ lockbackbuffer };
             args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
             args.DrawingSession().Blend(CanvasBlend::Copy);
 
-			Windows::Foundation::Rect sourceRect{ 0.0f, 0.0f, _back.Size().Width, _back.Size().Height };
+			//Windows::Foundation::Rect sourceRect{ 0.0f, 0.0f, _back.Size().Width, _back.Size().Height };
             Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _canvasSize, _canvasSize};
 
+            // draw the backbuffer to the control - they are likely different sizes
             // comment out the following to see the sprite sheet
-            args.DrawingSession().DrawImage(_back, destRect, sourceRect);
+            args.DrawingSession().DrawImage(_back, destRect);
             
             // uncomment the following line to see the sprite sheet
             //args.DrawingSession().DrawImage(_assets, 0, 0);
@@ -227,14 +225,7 @@ namespace winrt::ModernLife::implementation
                         const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
-                        // this is not actually faster - unexpected
                         spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
-
-                        // this is just as fast
-                        //ds.DrawImage(_assets, rectDest, rectSrc);
-
-                        // good for debugging or perf comparisons
-                        //ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
                     }
                     posx += _widthCellDest;
                 }
@@ -250,8 +241,8 @@ namespace winrt::ModernLife::implementation
         CanvasDevice device = CanvasDevice::GetSharedDevice();
 
         {
+			// lock the backbuffer because the it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
             std::scoped_lock lock{ lockbackbuffer };
-            //_back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
             _back = CanvasRenderTarget(device, bestbackbuffersize, bestbackbuffersize, theCanvas().Dpi());
             _widthCellDest = (bestbackbuffersize / _boardwidth);
         }
@@ -263,21 +254,16 @@ namespace winrt::ModernLife::implementation
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
         sender;
 
-        if (!board.IsDirty())
-            return;
-
         CanvasDrawingSession ds = _back.CreateDrawingSession();
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Aliased);
         ds.Blend(CanvasBlend::Copy);
         ds.Clear(Colors::WhiteSmoke());
 
-        //_spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::None, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
 
         {
             std::scoped_lock lock{ lockboard };
-            // render in 8 threads
-            // see https://github.com/Microsoft/Win2D/issues/570
+            // render in 8 threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
             auto drawinto1 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                      gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8));
             auto drawinto2 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8));
             auto drawinto3 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8));
@@ -297,7 +283,6 @@ namespace winrt::ModernLife::implementation
             drawinto8.wait();
         }
 
-		//_spriteBatch.Close();
         ds.Flush();
         ds.Close();
     }
@@ -411,9 +396,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvas_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
-        
+        e;
         sender;
-        //_canvasSize = min(e.NewSize().Width, bestcanvassize);
         _canvasSize = bestcanvassize;
         SetupRenderTargets();
     }
@@ -514,5 +498,3 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, r, g, b);
     }
 }
-
-

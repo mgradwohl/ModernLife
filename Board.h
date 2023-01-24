@@ -21,7 +21,6 @@ private:
     uint32_t _numOld{ 0 };
     uint32_t _numDying{ 0 };
     uint32_t _OldAge{ 0xFFFFFFFF };
-    uint32_t _dirty{ 0 };
 
 public:
     explicit Board(std::nullptr_t) noexcept {};
@@ -76,12 +75,6 @@ public:
         _numBorn = 0;
         _numDying = 0;
         _numOld = 0;
-        _dirty = 0;
-    }
-
-    bool IsDirty() const noexcept
-    {
-        return _dirty;
     }
 
     uint32_t Generation() const noexcept

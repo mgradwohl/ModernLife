@@ -159,14 +159,12 @@ void Board::ApplyNextStateToBoard() noexcept
 		{
 			SetCell(cell, Cell::State::Live);
 			cell.SetAge(0);
-			_dirty++;
 			continue;
 		}
 
 		if (cell.GetState() == Cell::State::Dying)
 		{
 			SetCell(cell, Cell::State::Dead);
-			_dirty++;
 			continue;
 		}
 
@@ -196,7 +194,6 @@ void Board::RandomizeBoard(float alivepct)
 			cell.SetAge(gsl::narrow_cast<uint16_t>(ra));
 		}
 	}
-	_dirty = 1; // must be dirty, we just randomized it
 }
 
 void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
@@ -260,9 +257,9 @@ void Board::FastConwayRules(Cell& cell) const noexcept
 	const uint16_t count = cell.Neighbors();
 
 	cell.SetState(
-		cell.IsAlive() && count >= 2 && count <= 3 ? Cell::State::Live :
-		cell.IsDead() && count == 3 ? Cell::State::Born :
-		cell.IsAlive() ? Cell::State::Dying : Cell::State::Dead
+		cell.IsAlive() && count >= 2 && count <= 3 ? Cell::State::Live
+		: cell.IsDead() && count == 3 ? Cell::State::Born
+		: cell.IsAlive() ? Cell::State::Dying : Cell::State::Dead
 	);
 }
 
