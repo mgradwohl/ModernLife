@@ -204,21 +204,9 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::DrawInto(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
-        //float inc = width / cellcount;
-        //if (drawgrid)
-		//{
-		//	for (int i = 0; i <= cellcount; i++)
-		//	{
-		//		ds.DrawLine(0, i * inc, height, i * inc, Colors::DarkSlateGray());
-		//		ds.DrawLine(i * inc, 0, i * inc, width, Colors::DarkSlateGray());
-		//	}
-		//}
-
         const float srcW{ _widthCellDest };
         const uint16_t srcStride{ gsl::narrow_cast<uint16_t>(std::sqrt(maxage) + 1) };
-
-        auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::None, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
-        
+      
         float posx{ 0.0f };
         float posy{ startY * _widthCellDest };
         {
@@ -235,10 +223,10 @@ namespace winrt::ModernLife::implementation
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
-                        spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
+                        //sb.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
 
                         // this is just as fast
-                        //ds.DrawImage(_assets, rectDest, rectSrc);
+                        ds.DrawImage(_assets, rectDest, rectSrc);
 
                         // good for debugging or perf comparisons
                         //ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
@@ -249,7 +237,6 @@ namespace winrt::ModernLife::implementation
                 posx = 0.0f;
             }
         }
-        spriteBatch.Close();
 	}
 
     void MainWindow::SetupRenderTargets()
