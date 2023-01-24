@@ -206,7 +206,9 @@ namespace winrt::ModernLife::implementation
 	{
         const float srcW{ _widthCellDest };
         const uint16_t srcStride{ gsl::narrow_cast<uint16_t>(std::sqrt(maxage) + 1) };
-      
+
+        CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::None, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
+
         float posx{ 0.0f };
         float posy{ startY * _widthCellDest };
         {
@@ -223,10 +225,10 @@ namespace winrt::ModernLife::implementation
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
-                        //sb.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
+                        spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
 
                         // this is just as fast
-                        ds.DrawImage(_assets, rectDest, rectSrc);
+                        //ds.DrawImage(_assets, rectDest, rectSrc);
 
                         // good for debugging or perf comparisons
                         //ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
@@ -237,6 +239,7 @@ namespace winrt::ModernLife::implementation
                 posx = 0.0f;
             }
         }
+        spriteBatch.Close();
 	}
 
     void MainWindow::SetupRenderTargets()
