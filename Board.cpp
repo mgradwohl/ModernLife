@@ -206,22 +206,22 @@ void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 		for (uint16_t x = 0; x < Width(); x++)
 		{
 			Cell& cell = GetCell(x, y);
-			FastCountLiveAndDyingNeighbors(x, y);
-			ConwayRules(cell);
+			CountLiveAndDyingNeighbors(x, y);
+			FastConwayRules(cell);
 		}
 	}
 }
 
 void Board::ConwayUpdateBoardWithNextState()
 {
-		auto update1 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(0),                gsl::narrow_cast<uint16_t>(Height() * 1 / 8));
-		auto update2 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 1 / 8), gsl::narrow_cast<uint16_t>(Height() * 2 / 8));
-		auto update3 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 2 / 8), gsl::narrow_cast<uint16_t>(Height() * 3 / 8));
-		auto update4 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 3 / 8), gsl::narrow_cast<uint16_t>(Height() * 4 / 8));
-		auto update5 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 4 / 8), gsl::narrow_cast<uint16_t>(Height() * 5 / 8));
-		auto update6 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 5 / 8), gsl::narrow_cast<uint16_t>(Height() * 6 / 8));
-		auto update7 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 6 / 8), gsl::narrow_cast<uint16_t>(Height() * 7 / 8));
-		auto update8 = std::async(&Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 7 / 8), gsl::narrow_cast<uint16_t>(Height()));
+		auto update1 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(0),                gsl::narrow_cast<uint16_t>(Height() * 1 / 8));
+		auto update2 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 1 / 8), gsl::narrow_cast<uint16_t>(Height() * 2 / 8));
+		auto update3 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 2 / 8), gsl::narrow_cast<uint16_t>(Height() * 3 / 8));
+		auto update4 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 3 / 8), gsl::narrow_cast<uint16_t>(Height() * 4 / 8));
+		auto update5 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 4 / 8), gsl::narrow_cast<uint16_t>(Height() * 5 / 8));
+		auto update6 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 5 / 8), gsl::narrow_cast<uint16_t>(Height() * 6 / 8));
+		auto update7 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 6 / 8), gsl::narrow_cast<uint16_t>(Height() * 7 / 8));
+		auto update8 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 7 / 8), gsl::narrow_cast<uint16_t>(Height()));
 		update1.wait();
 		update2.wait();
 		update3.wait();

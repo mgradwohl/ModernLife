@@ -101,23 +101,13 @@ public:
 
     void SetCell(Cell& cell, Cell::State state) noexcept;
 
-    const Cell& GetCell(uint16_t x, uint16_t y) const
+    inline const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        if (x > _width || y > _height)
-        {
-            throw std::out_of_range("Invalid indices provided");
-        }
-
         return gsl::at(_board, x + (y * _width));
     }
 
-    Cell& GetCell(uint16_t x, uint16_t y)
+    inline Cell& GetCell(uint16_t x, uint16_t y)
     {
-        if (x > _width || y > _height)
-        {
-            throw std::out_of_range("Invalid indices provided");
-        }
-
         return gsl::at(_board, x + (y * _width));
     }
 

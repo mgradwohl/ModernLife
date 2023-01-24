@@ -99,6 +99,7 @@ namespace winrt::ModernLife::implementation
             posx = 0.0f;
         }
         ds.Flush();
+        ds.Close();
     }
 
     void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
@@ -216,7 +217,7 @@ namespace winrt::ModernLife::implementation
         const float srcW{ _widthCellDest };
         const uint16_t srcStride{ gsl::narrow_cast<uint16_t>(std::sqrt(maxage) + 1) };
 
-        auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::Linear, CanvasSpriteOptions::ClampToSourceRect);
+        auto spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::None, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
         
         float posx{ 0.0f };
         float posy{ startY * _widthCellDest };
@@ -281,14 +282,15 @@ namespace winrt::ModernLife::implementation
         {
             std::scoped_lock lock{ lockboard };
             // render in 8 threads
-            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                      gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8));
-            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8));
-            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8));
-            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8));
-            auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8));
-            auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8));
-            auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8));
-            auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(board.Height()));
+            // see https://github.com/Microsoft/Win2D/issues/570
+            auto drawinto1 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                      gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8));
+            auto drawinto2 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8));
+            auto drawinto3 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8));
+            auto drawinto4 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8));
+            auto drawinto5 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8));
+            auto drawinto6 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8));
+            auto drawinto7 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8));
+            auto drawinto8 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(board.Height()));
 
             drawinto1.wait();
             drawinto2.wait();
@@ -301,6 +303,7 @@ namespace winrt::ModernLife::implementation
         }
 
         ds.Flush();
+        ds.Close();
     }
 
     int32_t MainWindow::SeedPercent() const noexcept
