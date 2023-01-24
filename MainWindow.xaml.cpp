@@ -66,13 +66,12 @@ namespace winrt::ModernLife::implementation
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         const float rtsize = _widthCellDest * assetStride;
 
-        // if the back buffer doesn't exist or is the wrong size, create it
+        // if the sprite sheet doesn't exist or is the wrong size, create it
         _assets = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
 
         CanvasDrawingSession ds = _assets.CreateDrawingSession();
-        ds.Antialiasing(CanvasAntialiasing::Antialiased);
-        ds.Blend(CanvasBlend::Copy);
         ds.Clear(Colors::WhiteSmoke());
+        ds.Antialiasing(CanvasAntialiasing::Antialiased);
 
         float posx{ 0.0f };
         float posy{ 0.0f };
@@ -258,7 +257,8 @@ namespace winrt::ModernLife::implementation
         {
             std::scoped_lock lock{ lockbackbuffer };
             _back = CanvasRenderTarget(device, _canvasSize, _canvasSize, theCanvas().Dpi());
-            _widthCellDest = (_canvasSize / _boardwidth);
+            //_back = CanvasRenderTarget(device, bestbackbuffersize, bestbackbuffersize, theCanvas().Dpi());
+            _widthCellDest = (bestbackbuffersize / _boardwidth);
         }
         InitializeAssets(device);
     }
@@ -272,6 +272,7 @@ namespace winrt::ModernLife::implementation
             return;
 
         CanvasDrawingSession ds = _back.CreateDrawingSession();
+        ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Aliased);
         ds.Blend(CanvasBlend::Copy);
         ds.Clear(Colors::WhiteSmoke());
@@ -279,7 +280,7 @@ namespace winrt::ModernLife::implementation
         {
             // render in one thread, lock is scoped to this { } block
             std::scoped_lock lock{ lockboard };
-            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), static_cast<uint16_t>(0), static_cast<uint16_t>(board.Height()));
+            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, gsl::narrow_cast<uint16_t>(board.Height()));
             drawinto0.wait();
         }
 
@@ -397,7 +398,8 @@ namespace winrt::ModernLife::implementation
     {
         
         sender;
-        _canvasSize = min(e.NewSize().Width, bestsize);
+        //_canvasSize = min(e.NewSize().Width, bestcanvassize);
+        _canvasSize = bestcanvassize;
         SetupRenderTargets();
     }
 
