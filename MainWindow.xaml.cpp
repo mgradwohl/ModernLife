@@ -166,7 +166,7 @@ namespace winrt::ModernLife::implementation
             args.DrawingSession().Blend(CanvasBlend::Copy);
 
 			//Windows::Foundation::Rect sourceRect{ 0.0f, 0.0f, _back.Size().Width, _back.Size().Height };
-            Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _canvasSize, _canvasSize};
+            const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _canvasSize, _canvasSize};
 
             // draw the backbuffer to the control - they are likely different sizes
             // comment out the following to see the sprite sheet

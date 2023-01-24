@@ -1,14 +1,14 @@
 #pragma once
 
+// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
+
 #include <winrt/Microsoft.UI.Dispatching.h>
 
 class TimerHelper
 {
 public:
-    TimerHelper() = delete;
+    TimerHelper() = default;
     explicit TimerHelper(std::nullptr_t) noexcept {};
-
-    // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
 
     TimerHelper(int fps, bool repeating)
     {
