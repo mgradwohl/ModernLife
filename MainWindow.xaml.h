@@ -19,20 +19,11 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-#ifdef _DEBUG
     constexpr float bestbackbuffersize = 2500.0f;
-    constexpr int bestcanvassize = 1250;
+    constexpr int bestcanvassize = 1000;
     constexpr int maxage = 2000;
     constexpr bool drawgrid = false;
     constexpr bool drawstats = true;
-#else
-    constexpr float bestbackbuffersize = 2500.0f;
-    constexpr int bestbackbuffersize = 2500;
-    constexpr int bestcanvassize = 1250;
-    constexpr int maxage = 2000;
-    constexpr bool drawgrid = false;
-    constexpr bool drawstats = true;
-#endif
 
 namespace winrt::ModernLife::implementation
 {

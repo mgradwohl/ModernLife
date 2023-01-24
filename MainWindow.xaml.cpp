@@ -234,10 +234,10 @@ namespace winrt::ModernLife::implementation
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
                         // this is not actually faster - unexpected
-                        //spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
+                        spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
 
                         // this is just as fast
-                        ds.DrawImage(_assets, rectDest, rectSrc);
+                        //ds.DrawImage(_assets, rectDest, rectSrc);
 
                         // good for debugging or perf comparisons
                         //ds.DrawRoundedRectangle(posx, posy, _widthCellDest, _widthCellDest, 2, 2, GetCellColorHSV(age));
@@ -248,6 +248,7 @@ namespace winrt::ModernLife::implementation
                 posx = 0.0f;
             }
         }
+        spriteBatch.Close();
 	}
 
     void MainWindow::SetupRenderTargets()
@@ -278,10 +279,25 @@ namespace winrt::ModernLife::implementation
         ds.Clear(Colors::WhiteSmoke());
 
         {
-            // render in one thread, lock is scoped to this { } block
             std::scoped_lock lock{ lockboard };
-            auto drawinto0 = std::async(&MainWindow::DrawInto, this, std::ref(ds), 0, gsl::narrow_cast<uint16_t>(board.Height()));
-            drawinto0.wait();
+            // render in 8 threads
+            auto drawinto1 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                      gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8));
+            auto drawinto2 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8));
+            auto drawinto3 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8));
+            auto drawinto4 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8));
+            auto drawinto5 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8));
+            auto drawinto6 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8));
+            auto drawinto7 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8));
+            auto drawinto8 = std::async(&MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(board.Height()));
+
+            drawinto1.wait();
+            drawinto2.wait();
+            drawinto3.wait();
+            drawinto4.wait();
+            drawinto5.wait();
+            drawinto6.wait();
+            drawinto7.wait();
+            drawinto8.wait();
         }
 
         ds.Flush();
@@ -331,7 +347,7 @@ namespace winrt::ModernLife::implementation
         // to make this canvas aligned with styles
         Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
-        canvasFmt.FontSize(static_cast<float>(PaneHeader().FontSize()));
+        canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
 
         Brush backBrush{ splitView().PaneBackground() };
         Brush textBrush{ PaneHeader().Foreground() };
@@ -443,7 +459,7 @@ namespace winrt::ModernLife::implementation
         }
 
         h /= 60;
-        const int i{ static_cast<int>(std::floor(h)) };
+        const int i{ gsl::narrow_cast<int>(std::floor(h)) };
         const float f{ h - i };
         const float p{ v * (1 - s) };
         const float q{ v * (1 - s * f) };
