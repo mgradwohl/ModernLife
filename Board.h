@@ -8,7 +8,6 @@
 class Board
 {
 private:
-    // if I allocated this on the heap, I could get the size right with resize
     std::vector<Cell> _board;
     uint16_t _width{ 0 };
     uint16_t _height{ 0 };

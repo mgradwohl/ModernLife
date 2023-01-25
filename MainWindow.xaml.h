@@ -19,7 +19,7 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr float bestbackbuffersize = 2500.0f;
+constexpr float bestbackbuffersize = 3000.0f;
 constexpr int bestcanvassize = 1000;
 constexpr int maxage = 2000;
 constexpr bool drawgrid = false;
@@ -41,7 +41,7 @@ namespace winrt::ModernLife::implementation
 
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
-        void DrawInto(const CanvasDrawingSession& ds, uint16_t sx, uint16_t ex);
+        void DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t sx, uint16_t ex);
 
         void speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void OnWindowActivate(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
@@ -51,7 +51,7 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color GetOutlineColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
-        void InitializeAssets(const CanvasDevice& device);
+        void BuildSpriteSheet(const CanvasDevice& device);
 
 
         void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
@@ -77,13 +77,11 @@ namespace winrt::ModernLife::implementation
 		TimerHelper timer{ 30, true };
 
     private:
-        CanvasRenderTarget _back{ nullptr };
-        CanvasRenderTarget _assets{ nullptr };
-        CanvasSpriteBatch _spriteBatch{ nullptr };
+        CanvasRenderTarget _backbuffer{ nullptr };
+        CanvasRenderTarget _spritesheet{ nullptr };
         std::mutex lockbackbuffer;
         std::mutex lockboard;
-        Board board{ nullptr };
-        bool _drawassets = false;
+        Board _board{ nullptr };
 
         float _widthCellDest{};
         float _canvasSize{};

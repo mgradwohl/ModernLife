@@ -56,16 +56,16 @@ namespace winrt::ModernLife::implementation
         args;
     }
 
-    void MainWindow::InitializeAssets(const CanvasDevice& device)
+    void MainWindow::BuildSpriteSheet(const CanvasDevice& device)
     {
         // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
         const uint16_t assetStride = gsl::narrow_cast<uint16_t>(std::sqrt(maxage)) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         const float rtsize = _widthCellDest * assetStride;
-        _assets = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
+        _spritesheet = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
 
-        CanvasDrawingSession ds = _assets.CreateDrawingSession();
+        CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Antialiased);
 
@@ -73,11 +73,11 @@ namespace winrt::ModernLife::implementation
         float posy{ 0.0f };
 
         float round{ 2.0f };
-        float offset{ 0.25f };
+        float offset{ 1.0f };
         if (_widthCellDest > 20)
         {
             round = 6.0f;
-            offset = 0.5f;
+            offset = 1.5f;
         }
 
         // start filling tiles at age 0
@@ -125,8 +125,8 @@ namespace winrt::ModernLife::implementation
 
         {
             std::scoped_lock lock{ lockboard };
-            board.ConwayUpdateBoardWithNextState();
-            board.ApplyNextStateToBoard();
+            _board.ConwayUpdateBoardWithNextState();
+            _board.ApplyNextStateToBoard();
         }
         theCanvas().Invalidate();
     }
@@ -142,11 +142,11 @@ namespace winrt::ModernLife::implementation
         // we lock it because changing board parameters will call StartGameLoop()
         {
             std::scoped_lock lock{ lockboard };
-            board = Board{ gsl::narrow_cast<uint16_t>(_boardwidth), gsl::narrow_cast<uint16_t>(_boardwidth) };
+            _board = Board{ gsl::narrow_cast<uint16_t>(_boardwidth), gsl::narrow_cast<uint16_t>(_boardwidth) };
         }
 
         // add a random population
-        auto randomizer = std::async(&Board::RandomizeBoard, &board, _randompercent / 100.0f);
+        auto randomizer = std::async(&Board::RandomizeBoard, &_board, _randompercent / 100.0f);
         randomizer.wait();
 
         // start the FPSCounter
@@ -170,7 +170,7 @@ namespace winrt::ModernLife::implementation
 
             // draw the backbuffer to the control - they are likely different sizes
             // comment out the following to see the sprite sheet
-            args.DrawingSession().DrawImage(_back, destRect);
+            args.DrawingSession().DrawImage(_backbuffer, destRect);
             
             // uncomment the following line to see the sprite sheet
             //args.DrawingSession().DrawImage(_assets, 0, 0);
@@ -203,7 +203,7 @@ namespace winrt::ModernLife::implementation
         return HSVtoColor(h, 0.8f, 0.9f);
     }
 
-    void MainWindow::DrawInto(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
+    void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
         const float srcW{ _widthCellDest };
         const uint16_t srcStride{ gsl::narrow_cast<uint16_t>(std::sqrt(maxage) + 1) };
@@ -215,9 +215,9 @@ namespace winrt::ModernLife::implementation
         {
             for (uint16_t y = startY; y < endY; y++)
             {
-                for (uint16_t x = 0; x < board.Width(); x++)
+                for (uint16_t x = 0; x < _board.Width(); x++)
                 {
-                    if (const Cell& cell = board.GetCell(x, y); cell.IsAlive())
+                    if (const Cell& cell = _board.GetCell(x, y); cell.IsAlive())
                     {
                         const int age = cell.Age() > maxage ? maxage : cell.Age();
                         const float srcX = gsl::narrow_cast<float>(age % srcStride);
@@ -225,7 +225,7 @@ namespace winrt::ModernLife::implementation
                         const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
-                        spriteBatch.DrawFromSpriteSheet(_assets, rectDest, rectSrc);
+                        spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, rectSrc);
                     }
                     posx += _widthCellDest;
                 }
@@ -243,10 +243,10 @@ namespace winrt::ModernLife::implementation
         {
 			// lock the backbuffer because the it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
             std::scoped_lock lock{ lockbackbuffer };
-            _back = CanvasRenderTarget(device, bestbackbuffersize, bestbackbuffersize, theCanvas().Dpi());
+            _backbuffer = CanvasRenderTarget(device, bestbackbuffersize, bestbackbuffersize, theCanvas().Dpi());
             _widthCellDest = (bestbackbuffersize / _boardwidth);
         }
-        InitializeAssets(device);
+        BuildSpriteSheet(device);
     }
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
@@ -254,7 +254,7 @@ namespace winrt::ModernLife::implementation
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
         sender;
 
-        CanvasDrawingSession ds = _back.CreateDrawingSession();
+        CanvasDrawingSession ds = _backbuffer.CreateDrawingSession();
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Aliased);
         ds.Blend(CanvasBlend::Copy);
@@ -263,15 +263,15 @@ namespace winrt::ModernLife::implementation
 
         {
             std::scoped_lock lock{ lockboard };
-            // render in 8 threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
-            auto drawinto1 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                      gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8));
-            auto drawinto2 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8));
-            auto drawinto3 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8));
-            auto drawinto4 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8));
-            auto drawinto5 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8));
-            auto drawinto6 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8));
-            auto drawinto7 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8));
-            auto drawinto8 = std::async(std::launch::async, &MainWindow::DrawInto, this, std::ref(ds), gsl::narrow_cast<uint16_t>(board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(board.Height()));
+            // render in threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
+            auto drawinto1 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                      gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8));
+            auto drawinto2 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8));
+            auto drawinto3 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8));
+            auto drawinto4 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8));
+            auto drawinto5 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8));
+            auto drawinto6 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8));
+            auto drawinto7 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8));
+            auto drawinto8 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(_board.Height()));
 
             drawinto1.wait();
             drawinto2.wait();
@@ -346,7 +346,7 @@ namespace winrt::ModernLife::implementation
 
         // create the strings to draw
         std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells");
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", timer.FPS(), fps.FPS(), board.Generation(), board.GetLiveCount(), board.GetSize());
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize());
         
         // draw the text left aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
