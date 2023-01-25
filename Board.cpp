@@ -196,29 +196,43 @@ void Board::RandomizeBoard(float alivepct)
 	}
 }
 
-void Board::ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
+void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset)
 {
+	using RuleMethod = void (Board::*)(Cell&) const noexcept;
+	RuleMethod f_rules = &Board::FastConwayRules;
+
+	switch (ruleset)
+	{
+		case 1:	f_rules = &Board::FastConwayRules; break;
+		case 2:	f_rules = &Board::DayAndNightRules; break;
+		case 3:	f_rules = &Board::LifeWithoutDeathRules; break;
+		case 4:	f_rules = &Board::BriansBrainRules; break;
+		case 5:	f_rules = &Board::SeedsRules; break;
+		case 6:	f_rules = &Board::HighlifeRules; break;
+		default: f_rules = &Board::ConwayRules; break;
+	}
+
 	for (uint16_t y = startRow; y < endRow; y++)
 	{
 		for (uint16_t x = 0; x < Width(); x++)
 		{
 			Cell& cell = GetCell(x, y);
 			CountLiveAndDyingNeighbors(x, y);
-			FastConwayRules(cell);
+			std::invoke(f_rules, this, cell);
 		}
 	}
 }
 
-void Board::ConwayUpdateBoardWithNextState()
+void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 {
-		auto update1 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(0),                gsl::narrow_cast<uint16_t>(Height() * 1 / 8));
-		auto update2 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 1 / 8), gsl::narrow_cast<uint16_t>(Height() * 2 / 8));
-		auto update3 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 2 / 8), gsl::narrow_cast<uint16_t>(Height() * 3 / 8));
-		auto update4 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 3 / 8), gsl::narrow_cast<uint16_t>(Height() * 4 / 8));
-		auto update5 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 4 / 8), gsl::narrow_cast<uint16_t>(Height() * 5 / 8));
-		auto update6 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 5 / 8), gsl::narrow_cast<uint16_t>(Height() * 6 / 8));
-		auto update7 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 6 / 8), gsl::narrow_cast<uint16_t>(Height() * 7 / 8));
-		auto update8 = std::async(std::launch::async, &Board::ConwayUpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 7 / 8), gsl::narrow_cast<uint16_t>(Height()));
+		auto update1 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(0),                gsl::narrow_cast<uint16_t>(Height() * 1 / 8), ruleset);
+		auto update2 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 1 / 8), gsl::narrow_cast<uint16_t>(Height() * 2 / 8), ruleset);
+		auto update3 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 2 / 8), gsl::narrow_cast<uint16_t>(Height() * 3 / 8), ruleset);
+		auto update4 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 3 / 8), gsl::narrow_cast<uint16_t>(Height() * 4 / 8), ruleset);
+		auto update5 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 4 / 8), gsl::narrow_cast<uint16_t>(Height() * 5 / 8), ruleset);
+		auto update6 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 5 / 8), gsl::narrow_cast<uint16_t>(Height() * 6 / 8), ruleset);
+		auto update7 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 6 / 8), gsl::narrow_cast<uint16_t>(Height() * 7 / 8), ruleset);
+		auto update8 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 7 / 8), gsl::narrow_cast<uint16_t>(Height())        , ruleset);
 		update1.wait();
 		update2.wait();
 		update3.wait();
@@ -235,8 +249,7 @@ void Board::ConwayRules(Cell& cell) const noexcept
 	// Any dead cell with three live neighbours becomes a live cell.
 	// All other live cells die in the next generation. Similarly, all other dead cells stay dead.
 
-	static uint16_t count{ 0 };
-	count = cell.Neighbors();
+	const uint16_t count = cell.Neighbors();
 
 	if (cell.IsAlive() && count >= 2 && count <= 3)
 	{
@@ -266,12 +279,11 @@ void Board::FastConwayRules(Cell& cell) const noexcept
 void Board::DayAndNightRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Day_and_Night_(cellular_automaton)
-	// rule notation B3678/S34678, meaning that a dead cell becomes live (is born)
-	// if it has 3, 6, 7, or 8 live neighbors, and a live cell remains alive (survives)
-	// if it has 3, 4, 6, 7, or 8 live neighbors,
+	// rule notation B3678/S34678, meaning that
+	// a dead cell becomes live (is born) if it has 3, 6, 7, or 8 live neighbors
+	// live cell remains alive (survives) if it has 3, 4, 6, 7, or 8 live neighbors,
 
-	static int count{ 0 };
-	count = cell.Neighbors();
+	const uint16_t count = cell.Neighbors();
 
 	if (cell.IsAlive() && ((count >= 3) && (count != 5)))
 	{
@@ -294,8 +306,7 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 	// every dead cell that has exactly 3 live neighbors becomes alive itself
 	// and every other dead cell remains dead. B3/S012345678
 
-	static uint16_t count = { 0 };
-	count = cell.Neighbors();
+	const uint16_t count = cell.Neighbors();
 
 	if (cell.IsAlive())
 	{
@@ -311,13 +322,13 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 void Board::HighlifeRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Highlife_(cellular_automaton)
-	// the rule B36 / S23; that is, a cell is born if it has 3 or 6 neighbors
-	//and survives if it has 2 or 3 neighbors.
+	// the rule B36 / S23; that is, a cell is
+	// born if it has 3 or 6 neighbors
+	// and survives if it has 2 or 3 neighbors.
 
-	static uint16_t count{ 0 };
-	count = cell.Neighbors();
+	const uint16_t count = cell.Neighbors();
 
-	if (cell.IsAlive() && count >= 2 && count <= 3)
+	if (cell.IsAlive() && ((count == 2) || (count == 3)))
 	{
 		cell.SetState(Cell::State::Live);
 	}
@@ -340,8 +351,7 @@ void Board::SeedsRules(Cell& cell) const noexcept
 	// but had exactly two neighbors that were on
 	// all other cells turn off. It is described by the rule B2 / S
 
-	static uint16_t count{ 0 };
-	count = cell.Neighbors();
+	const uint16_t count = cell.Neighbors();
 
 	if (cell.IsDead() && count == 2)
 	{
@@ -361,8 +371,7 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	// which is not counted as an "on" cell in the neighbor count, and prevents any cell from
 	// being born there. Cells that were in the dying state go into the off state.
 
-	static uint16_t count{ 0 };
-	count = cell.Neighbors();
+	const uint16_t count = cell.Neighbors();
 
 	if (cell.IsDead() && count == 2)
 	{
@@ -373,9 +382,9 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	{
 		cell.SetState(Cell::State::Dying);
 	}
-	else
-	if (cell.GetState() == Cell::State::Dying)
-	{
-		cell.SetState(Cell::State::Dead);
-	}
+	//else
+	//if (cell.GetState() == Cell::State::Dying)
+	//{
+	//	cell.SetState(Cell::State::Dead);
+	//}
 }

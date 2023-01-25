@@ -115,22 +115,22 @@ public:
 
     // This form does not work: void UpdateBoard(std::function<void(Cell& cell)>& F)
     // but using auto is magic
-    void UpdateBoardWithNextState(auto F)
-    {
-        for (uint16_t y = 0; y < Height(); y++)
-        {
-            for (uint16_t x = 0; x < Width(); x++)
-            {
-                Cell& cell = GetCell(x, y);
-                CountLiveAndDyingNeighbors(x, y);
-                F(cell);
-                //cc.KillOldCell();
-            }
-        }
-    }
+    //void UpdateBoardWithNextState(auto F)
+    //{
+    //    for (uint16_t y = 0; y < Height(); y++)
+    //    {
+    //        for (uint16_t x = 0; x < Width(); x++)
+    //        {
+    //            Cell& cell = GetCell(x, y);
+    //            CountLiveAndDyingNeighbors(x, y);
+    //            F(cell);
+    //            //cc.KillOldCell();
+    //        }
+    //    }
+    //}
 
-    void ConwayUpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
-    void ConwayUpdateBoardWithNextState();
+    void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
+	void FastUpdateBoardWithNextState(int32_t ruleset);
 
     void ConwayRules(Cell& cell) const noexcept;
 

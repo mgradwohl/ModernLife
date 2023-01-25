@@ -131,7 +131,7 @@ namespace winrt::ModernLife::implementation
 
         {
             std::scoped_lock lock{ lockboard };
-            _board.ConwayUpdateBoardWithNextState();
+            _board.FastUpdateBoardWithNextState(_ruleset);
             _board.ApplyNextStateToBoard();
         }
         theCanvas().Invalidate();
@@ -408,6 +408,17 @@ namespace winrt::ModernLife::implementation
 		timer.FPS(item.Tag().as<int>());
     }
 
+    void MainWindow::ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        e;
+        using namespace Microsoft::UI::Xaml::Controls;
+        MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
+
+        dropdownRules().Content(winrt::box_value(item.Text()));
+
+        _ruleset = item.Tag().as<int>();
+    }
+
     Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
         // should never see a black cell
@@ -503,3 +514,4 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, r, g, b);
     }
 }
+

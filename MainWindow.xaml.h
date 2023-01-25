@@ -60,6 +60,8 @@ namespace winrt::ModernLife::implementation
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SetupRenderTargets();
+        void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
+        void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
         {
@@ -85,11 +87,10 @@ namespace winrt::ModernLife::implementation
         float _canvasSize{};
 
         int32_t _randompercent{30};
+        int32_t _ruleset{ 1 };
         int16_t _boardwidth{ 200 };
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
-    public:
-        void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
     };
 }
 

@@ -39,6 +39,45 @@
                     <AppBarButton HorizontalAlignment="Center" Icon="Pause" x:Name="GoButton"  Label="Pause" Click="GoButton_Click" />
                     <AppBarButton HorizontalAlignment="Center" Icon="Shuffle" x:Name="RestartButton"  Label="Reshuffle" Click="RestartButton_Click" />
 
+                    <TextBlock Text="RULESET" Margin="0,36,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <DropDownButton HorizontalAlignment="Center" x:Name="dropdownRules" Content="Conway's" >
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Click="ruleClick" Text="Conway's">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>1</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="ruleClick" Text="Day and Night">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>2</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="ruleClick" Text="Life Without Death">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>3</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="ruleClick" Text="Brian's Brain">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>4</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="ruleClick" Text="Seeds">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>5</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="ruleClick" Text="Highlife">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>6</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+
                     <TextBlock Text="UPDATE SPEED" Margin="0,36,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
                     <DropDownButton HorizontalAlignment="Center" x:Name="dropdownSpeed" Content="Fast" >
                         <DropDownButton.Flyout>
