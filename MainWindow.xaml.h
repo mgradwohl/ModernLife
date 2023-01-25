@@ -22,8 +22,6 @@ using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 constexpr float bestbackbuffersize = 3000.0f;
 constexpr int bestcanvassize = 1000;
 constexpr int maxage = 2000;
-constexpr bool drawgrid = false;
-constexpr bool drawstats = true;
 
 namespace winrt::ModernLife::implementation
 {
@@ -54,7 +52,7 @@ namespace winrt::ModernLife::implementation
         void BuildSpriteSheet(const CanvasDevice& device);
 
 
-        void theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        void theCanvasStatsContent_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&);
         //void OnTick(IInspectable const& sender, IInspectable const& event);
         hstring GetRandPercentText(double_t value);

@@ -77,7 +77,7 @@ namespace winrt::ModernLife::implementation
         if (_widthCellDest > 20)
         {
             round = 6.0f;
-            offset = 1.5f;
+            offset = 2.0f;
         }
 
         // start filling tiles at age 0
@@ -179,30 +179,6 @@ namespace winrt::ModernLife::implementation
         fps.AddFrame();
     }
 
-    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
-    {
-        // should never see a black cell
-        if (age > maxage)
-        {
-            return Windows::UI::Colors::Black();
-        }
-
-        const float h{ (age * 360.f) / maxage };
-        return HSVtoColor(h, 0.6f, 0.8f);
-    }
-
-    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
-    {
-        // should never see a black cell
-        if (age > maxage)
-        {
-            return Windows::UI::Colors::Black();
-        }
-
-        const float h{ (age * 360.f) / maxage };
-        return HSVtoColor(h, 0.8f, 0.9f);
-    }
-
     void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
         const float srcW{ _widthCellDest };
@@ -258,8 +234,6 @@ namespace winrt::ModernLife::implementation
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Aliased);
         ds.Blend(CanvasBlend::Copy);
-        ds.Clear(Colors::WhiteSmoke());
-
 
         {
             std::scoped_lock lock{ lockboard };
@@ -320,7 +294,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::theCanvasStatsContent_Draw(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    void MainWindow::theCanvasStatsContent_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args)
     {
         sender;
         
@@ -346,7 +320,7 @@ namespace winrt::ModernLife::implementation
 
         // create the strings to draw
         std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells");
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8}\r\n{:8}\r\n{:8}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize());
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize());
         
         // draw the text left aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
@@ -398,7 +372,7 @@ namespace winrt::ModernLife::implementation
     {
         e;
         sender;
-        // this locks the canvas size, but can we resize and if it's huge, can we zoom?
+        // this locks the canvas size, but can we let the user resize and if it's too big they can scroll and zoom?
         _canvasSize = bestcanvassize;
         SetupRenderTargets();
     }
@@ -426,6 +400,30 @@ namespace winrt::ModernLife::implementation
 		dropdownSpeed().Content(winrt::box_value(item.Text()));
 
 		timer.FPS(item.Tag().as<int>());
+    }
+
+    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
+    {
+        // should never see a black cell
+        if (age > maxage)
+        {
+            return Windows::UI::Colors::Black();
+        }
+
+        const float h{ (age * 360.f) / maxage };
+        return HSVtoColor(h, 0.6f, 0.8f);
+    }
+
+    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
+    {
+        // should never see a black cell
+        if (age > maxage)
+        {
+            return Windows::UI::Colors::Black();
+        }
+
+        const float h{ (age * 360.f) / maxage };
+        return HSVtoColor(h, 0.8f, 0.9f);
     }
 
     // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB
