@@ -308,11 +308,6 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 
 	const uint16_t count = cell.Neighbors();
 
-	if (cell.IsAlive())
-	{
-		cell.SetState(Cell::State::Live);
-	}
-	else
 	if (cell.IsDead() && count == 3)
 	{
 		cell.SetState(Cell::State::Born);
@@ -322,8 +317,8 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 void Board::HighlifeRules(Cell& cell) const noexcept
 {
 	// https://en.wikipedia.org/wiki/Highlife_(cellular_automaton)
-	// the rule B36 / S23; that is, a cell is
-	// born if it has 3 or 6 neighbors
+	// the rule B36 / S23; that is,
+	// a cell is born if it has 3 or 6 neighbors
 	// and survives if it has 2 or 3 neighbors.
 
 	const uint16_t count = cell.Neighbors();
@@ -338,7 +333,6 @@ void Board::HighlifeRules(Cell& cell) const noexcept
 		cell.SetState(Cell::State::Born);
 	}
 	else
-	if (cell.IsAlive())
 	{
 		cell.SetState(Cell::State::Dying);
 	}
@@ -382,9 +376,4 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	{
 		cell.SetState(Cell::State::Dying);
 	}
-	//else
-	//if (cell.GetState() == Cell::State::Dying)
-	//{
-	//	cell.SetState(Cell::State::Dead);
-	//}
 }
