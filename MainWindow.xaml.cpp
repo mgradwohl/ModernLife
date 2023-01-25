@@ -9,8 +9,12 @@
 #endif
 
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winuser.h>
 #include "TimerHelper.h"
 #include "fpscounter.h"
+
+using namespace Microsoft::Graphics::Canvas;
 
 namespace winrt::ModernLife::implementation
 {
@@ -29,9 +33,8 @@ namespace winrt::ModernLife::implementation
 #endif
 
         auto windowNative{ this->try_as<::IWindowNative>() };
-        winrt::check_bool(windowNative);
         HWND hWnd{ nullptr };
-        windowNative->get_WindowHandle(&hWnd);
+        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
 
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
@@ -39,8 +42,11 @@ namespace winrt::ModernLife::implementation
             Windows::Graphics::PointInt32 pos{ appWnd.Position() };
             pos.Y = 32;
             appWnd.Move(pos);
-            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ bestcanvassize + 240, bestcanvassize + 40 });
-            auto presenter = appWnd.Presenter().as<Microsoft::UI::Windowing::OverlappedPresenter>();
+            
+            const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
+            const int wndWidth = gsl::narrow_cast<int>((bestcanvassize + 240) * dpi / 96.0f);
+            const int wndHeight = gsl::narrow_cast<int>((bestcanvassize + 40) * dpi / 96.0f);
+			appWnd.ResizeClient(Windows::Graphics::SizeInt32{ wndWidth, wndHeight });
         }
 
         // doesn't work see TimerHelper.h
