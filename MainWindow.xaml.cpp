@@ -449,12 +449,12 @@ namespace winrt::ModernLife::implementation
         if (h > 360.0f)
         {
             //return Windows::UI::Colors::Black();
-            return ColorHelper::FromArgb(255, 196, 196, 196);
+			return Windows::UI::Colors::DarkSlateGray();
         }
         if (s == 0)
         {
             //return Windows::UI::Colors::Black();
-            return ColorHelper::FromArgb(255, 228, 228, 228);
+            return Windows::UI::Colors::DarkSlateGray();
         }
 
         h /= 60;
