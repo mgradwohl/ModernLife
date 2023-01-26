@@ -39,13 +39,21 @@ namespace winrt::ModernLife::implementation
 
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
+			appWnd.Title(L"ModernLife");
+
+            Microsoft::UI::Windowing::DisplayArea displayAreaFallback(nullptr);
+            Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
+            const Windows::Graphics::RectInt32 rez{ displayArea.OuterBounds() };
+            const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
+            
             Windows::Graphics::PointInt32 pos{ appWnd.Position() };
             pos.Y = 32;
             appWnd.Move(pos);
+
+            SetBestCanvasSizes(dpi, rez.Height);
             
-            const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
-            const int wndWidth = gsl::narrow_cast<int>((bestcanvassize + 240) * dpi / 96.0f);
-            const int wndHeight = gsl::narrow_cast<int>((bestcanvassize + 40) * dpi / 96.0f);
+            const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + 240) * dpi / 96.0f);
+            const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + 40) * dpi / 96.0f);
 			appWnd.ResizeClient(Windows::Graphics::SizeInt32{ wndWidth, wndHeight });
         }
 
@@ -56,6 +64,23 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
+    void MainWindow::SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight)
+    {
+        float best = gsl::narrow_cast<float>(480);
+        while (true)
+        {
+            if ((best * MonitorDPI / 96.0f) > MonitorHeight) break;
+            best += 200.0f;
+        }
+        best -= 200;
+        _bestcanvassize = gsl::narrow_cast<int>(best);
+    
+        if (_bestbackbuffersize < best)
+        {
+            _bestbackbuffersize = best;
+        }
+    }
+    
     void MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
         sender;
@@ -225,8 +250,8 @@ namespace winrt::ModernLife::implementation
         {
 			// lock the backbuffer because the it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
             std::scoped_lock lock{ lockbackbuffer };
-            _backbuffer = CanvasRenderTarget(device, bestbackbuffersize, bestbackbuffersize, theCanvas().Dpi());
-            _widthCellDest = (bestbackbuffersize / _boardwidth);
+            _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, theCanvas().Dpi());
+            _widthCellDest = (_bestbackbuffersize / _boardwidth);
         }
         BuildSpriteSheet(device);
     }
@@ -379,7 +404,7 @@ namespace winrt::ModernLife::implementation
         e;
         sender;
         // this locks the canvas size, but can we let the user resize and if it's too big they can scroll and zoom?
-        _canvasSize = bestcanvassize;
+        _canvasSize = gsl::narrow_cast<float>(_bestcanvassize);
         SetupRenderTargets();
     }
 

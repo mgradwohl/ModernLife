@@ -19,8 +19,6 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr float bestbackbuffersize = 3000.0f;
-constexpr int bestcanvassize = 1000;
 constexpr int maxage = 10000;
 
 namespace winrt::ModernLife::implementation
@@ -60,6 +58,7 @@ namespace winrt::ModernLife::implementation
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SetupRenderTargets();
+        void SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight);
         void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
@@ -89,6 +88,8 @@ namespace winrt::ModernLife::implementation
         int32_t _randompercent{30};
         int32_t _ruleset{ 1 };
         int16_t _boardwidth{ 200 };
+        int32_t _bestcanvassize{ 1000 };
+        float _bestbackbuffersize = 3000.0f;
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
     };
