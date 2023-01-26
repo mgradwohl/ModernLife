@@ -179,7 +179,7 @@ namespace winrt::ModernLife::implementation
             args.DrawingSession().DrawImage(_backbuffer, destRect);
             
             // uncomment the following line to see the sprite sheet
-            //args.DrawingSession().DrawImage(_assets, 0, 0);
+            //args.DrawingSession().DrawImage(_spritesheet, 0, 0);
             args.DrawingSession().Flush();
         }
         fps.AddFrame();
@@ -421,10 +421,9 @@ namespace winrt::ModernLife::implementation
 
     Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
-        // should never see a black cell
-        if (age > maxage)
+        if (age >= maxage)
         {
-            return Windows::UI::Colors::Black();
+            return Windows::UI::Colors::DarkGray();
         }
 
         const float h{ (age * 360.f) / maxage };
@@ -433,8 +432,7 @@ namespace winrt::ModernLife::implementation
 
     Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
     {
-        // should never see a black cell
-        if (age > maxage)
+        if (age >= maxage)
         {
             return Windows::UI::Colors::Black();
         }

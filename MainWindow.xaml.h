@@ -21,7 +21,7 @@ using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
 constexpr float bestbackbuffersize = 3000.0f;
 constexpr int bestcanvassize = 1000;
-constexpr int maxage = 2000;
+constexpr int maxage = 10000;
 
 namespace winrt::ModernLife::implementation
 {
