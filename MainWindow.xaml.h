@@ -58,7 +58,7 @@ namespace winrt::ModernLife::implementation
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SetupRenderTargets();
-        void SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight);
+        void SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight) noexcept;
         void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 

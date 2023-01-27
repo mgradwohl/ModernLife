@@ -26,35 +26,42 @@ namespace winrt::ModernLife::implementation
     void MainWindow::InitializeComponent()
     {
         MainWindowT::InitializeComponent();
+
+        // Set window title
         ExtendsContentIntoTitleBar(true);
         SetTitleBar(AppTitleBar());
 #ifdef _DEBUG
         AppTitlePreview().Text(L"PREVIEW DEBUG");
 #endif
 
+		// get window handle, window ID
         auto windowNative{ this->try_as<::IWindowNative>() };
         HWND hWnd{ nullptr };
         winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
 
+        // get monitor resolution to set sensible default sizes for Window and Canvases
+        Microsoft::UI::Windowing::DisplayArea displayAreaFallback(nullptr);
+        Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
+        const Windows::Graphics::RectInt32 rez{ displayArea.OuterBounds() };
+        const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
+        SetBestCanvasSizes(dpi, rez.Height);
+
+        // setup offsets for sensible default window size
+        const int border = 20;
+        const int stackpanelwidth = 200;
+        const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + stackpanelwidth + border) * dpi / 96.0f);
+        const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + border) * dpi / 96.0f);
+
+        // set the title, set the window size, and move the window
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
 			appWnd.Title(L"ModernLife");
-
-            Microsoft::UI::Windowing::DisplayArea displayAreaFallback(nullptr);
-            Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
-            const Windows::Graphics::RectInt32 rez{ displayArea.OuterBounds() };
-            const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
-            
-            Windows::Graphics::PointInt32 pos{ appWnd.Position() };
-            pos.Y = 32;
-            appWnd.Move(pos);
-
-            SetBestCanvasSizes(dpi, rez.Height);
-            
-            const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + 240) * dpi / 96.0f);
-            const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + 40) * dpi / 96.0f);
 			appWnd.ResizeClient(Windows::Graphics::SizeInt32{ wndWidth, wndHeight });
+
+            Windows::Graphics::PointInt32 pos{ appWnd.Position() };
+            pos.Y = border;
+            appWnd.Move(pos);
         }
 
         // doesn't work see TimerHelper.h
@@ -64,9 +71,9 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    void MainWindow::SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight)
+    void MainWindow::SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight) noexcept
     {
-        float best = gsl::narrow_cast<float>(480);
+        float best = gsl::narrow_cast<float>(400);
         while (true)
         {
             if ((best * MonitorDPI / 96.0f) > MonitorHeight) break;
