@@ -10,6 +10,7 @@
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Windows.Graphics.Display.h>
 #include <winuser.h>
 #include "TimerHelper.h"
 #include "fpscounter.h"
@@ -40,18 +41,14 @@ namespace winrt::ModernLife::implementation
         winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
 
-        // get monitor resolution to set sensible default sizes for Window and Canvases
-        Microsoft::UI::Windowing::DisplayArea displayAreaFallback(nullptr);
-        Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
-        const Windows::Graphics::RectInt32 rez{ displayArea.OuterBounds() };
-        const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
-        SetBestCanvasSizes(dpi, rez.Height);
+        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
+        SetBestCanvasSizes();
 
         // setup offsets for sensible default window size
         const int border = 20;
         const int stackpanelwidth = 200;
-        const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + stackpanelwidth + border) * dpi / 96.0f);
-        const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + border) * dpi / 96.0f);
+        const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + stackpanelwidth + border) * _dpi / 96.0f);
+        const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + border) * _dpi / 96.0f);
 
         // set the title, set the window size, and move the window
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
@@ -66,17 +63,47 @@ namespace winrt::ModernLife::implementation
 
         // doesn't work see TimerHelper.h
         //timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
-        
+
+		// not implemented https://github.com/microsoft/WindowsAppSDK/issues/3227
+        //Windows::Graphics::Display::DisplayInformation displayInfo = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+		//event_token dpitoken = displayInfo.DpiChanged({ this, &MainWindow::OnDpiChanged });
+
         timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
     }
-
-    void MainWindow::SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight) noexcept
+    
+    void MainWindow::theCanvas_CreateResources(CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
+        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
+        {
+            // get window handle, window ID
+            auto windowNative{ this->try_as<::IWindowNative>() };
+            HWND hWnd{ nullptr };
+            winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+
+            _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
+            SetBestCanvasSizes();
+            SetupRenderTargets();
+        }
+    }
+    
+    void MainWindow::SetBestCanvasSizes() noexcept
+    {
+        // get monitor resolution to set sensible default sizes for Window and Canvases
+        // get window handle, window ID
+        auto windowNative{ this->try_as<::IWindowNative>() };
+        HWND hWnd{ nullptr };
+        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
+
+        Microsoft::UI::Windowing::DisplayArea displayAreaFallback(nullptr);
+        Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
+        const Windows::Graphics::RectInt32 rez{ displayArea.OuterBounds() };
+
         float best = gsl::narrow_cast<float>(400);
         while (true)
         {
-            if ((best * MonitorDPI / 96.0f) > MonitorHeight) break;
+            if ((best * _dpi / 96.0f) > rez.Height) break;
             best += 200.0f;
         }
         best -= 200;
@@ -101,7 +128,7 @@ namespace winrt::ModernLife::implementation
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         const float rtsize = _widthCellDest * assetStride;
-        _spritesheet = CanvasRenderTarget(device, rtsize, rtsize, theCanvas().Dpi());
+        _spritesheet = CanvasRenderTarget(device, rtsize, rtsize, _dpi);// theCanvas().Dpi());
 
         CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
         ds.Clear(Colors::WhiteSmoke());
@@ -257,7 +284,7 @@ namespace winrt::ModernLife::implementation
         {
 			// lock the backbuffer because the it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
             std::scoped_lock lock{ lockbackbuffer };
-            _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, theCanvas().Dpi());
+            _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, _dpi);// theCanvas().Dpi());
             _widthCellDest = (_bestbackbuffersize / _boardwidth);
         }
         BuildSpriteSheet(device);
@@ -544,4 +571,3 @@ namespace winrt::ModernLife::implementation
         return ColorHelper::FromArgb(255, r, g, b);
     }
 }
-

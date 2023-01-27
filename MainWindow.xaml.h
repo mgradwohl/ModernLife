@@ -4,6 +4,7 @@
 #pragma once
 
 #include "MainWindow.g.h"
+#include <winrt/Windows.Graphics.Display.h>
 
 #include "Board.h"
 #include "fpscounter.h"
@@ -52,13 +53,14 @@ namespace winrt::ModernLife::implementation
 
         void theCanvasStatsContent_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&);
-        //void OnTick(IInspectable const& sender, IInspectable const& event);
         hstring GetRandPercentText(double_t value);
         hstring GetBoardWidthText(double_t value);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void SetupRenderTargets();
-        void SetBestCanvasSizes(float MonitorDPI, int32_t MonitorHeight) noexcept;
+        //void OnDpiChanged(Windows::Graphics::Display::DisplayInformation const& , IInspectable const&);
+        void theCanvas_CreateResources(CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
+        void SetBestCanvasSizes() noexcept;
         void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
@@ -84,6 +86,7 @@ namespace winrt::ModernLife::implementation
 
         float _widthCellDest{};
         float _canvasSize{};
+        float _dpi{ 96.0f };
 
         int32_t _randompercent{30};
         int32_t _ruleset{ 1 };
@@ -92,6 +95,7 @@ namespace winrt::ModernLife::implementation
         float _bestbackbuffersize = 3000.0f;
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
+
     };
 }
 
