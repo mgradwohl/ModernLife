@@ -28,91 +28,102 @@ namespace winrt::ModernLife::implementation
     {
         MainWindowT::InitializeComponent();
 
-        // Set window title
-        ExtendsContentIntoTitleBar(true);
-        SetTitleBar(AppTitleBar());
-#ifdef _DEBUG
-        AppTitlePreview().Text(L"PREVIEW DEBUG");
-#endif
-
-		// get window handle, window ID
-        auto windowNative{ this->try_as<::IWindowNative>() };
-        HWND hWnd{ nullptr };
-        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
-        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
-
-        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
-        SetBestCanvasSizes();
-
-        // setup offsets for sensible default window size
-        const int border = 20;
-        const int stackpanelwidth = 200;
-        const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + stackpanelwidth + border) * _dpi / 96.0f);
-        const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + border) * _dpi / 96.0f);
-
-        // set the title, set the window size, and move the window
-        if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
-        {
-			appWnd.Title(L"ModernLife");
-			appWnd.ResizeClient(Windows::Graphics::SizeInt32{ wndWidth, wndHeight });
-
-            Windows::Graphics::PointInt32 pos{ appWnd.Position() };
-            pos.Y = border;
-            appWnd.Move(pos);
-        }
+        SetMyTitleBar();
+        SetBestCanvasandWindowSizes();
 
         // doesn't work see TimerHelper.h
         //timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
-
-		// not implemented https://github.com/microsoft/WindowsAppSDK/issues/3227
-        //Windows::Graphics::Display::DisplayInformation displayInfo = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
-		//event_token dpitoken = displayInfo.DpiChanged({ this, &MainWindow::OnDpiChanged });
 
         timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
     }
     
-    void MainWindow::theCanvas_CreateResources(CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
+    void MainWindow::SetMyTitleBar()
     {
-        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
-        {
-            // get window handle, window ID
-            auto windowNative{ this->try_as<::IWindowNative>() };
-            HWND hWnd{ nullptr };
-            winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+        // Set window title
+        ExtendsContentIntoTitleBar(true);
+        SetTitleBar(AppTitleBar());
 
-            _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
-            SetBestCanvasSizes();
-            SetupRenderTargets();
-            theCanvas().Invalidate();
-        }
-    }
-    
-    void MainWindow::SetBestCanvasSizes() noexcept
-    {
-        // get monitor resolution to set sensible default sizes for Window and Canvases
         // get window handle, window ID
         auto windowNative{ this->try_as<::IWindowNative>() };
         HWND hWnd{ nullptr };
         winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
 
+        // set the title
+        if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
+        {
+            appWnd.Title(L"ModernLife");
+
+            #ifdef _DEBUG
+                AppTitlePreview().Text(L"PREVIEW DEBUG");
+            #endif
+
+            // position near the top of the screen only on launch
+            Windows::Graphics::PointInt32 pos{ appWnd.Position() };
+            pos.Y = 20;
+            appWnd.Move(pos);
+        }
+    }
+
+    void MainWindow::theCanvas_CreateResources(CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
+    {
+        // todo might want to do the code in the if-block in all cases (for all args.Reason()s
+        //if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
+        {
+            // get window handle, window ID
+            auto windowNative{ this->try_as<::IWindowNative>() };
+            HWND hWnd{ nullptr };
+            winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+
+            SetBestCanvasandWindowSizes();
+            SetupRenderTargets();
+            theCanvas().Invalidate();
+        }
+    }
+    
+    void MainWindow::SetBestCanvasandWindowSizes() noexcept
+    {
+        // get window handle, window ID
+        auto windowNative{ this->try_as<::IWindowNative>() };
+        HWND hWnd{ nullptr };
+        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
+
+        // get the window size
         Microsoft::UI::Windowing::DisplayArea displayAreaFallback(nullptr);
         Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
-        const Windows::Graphics::RectInt32 rez{ displayArea.OuterBounds() };
+        const Windows::Graphics::RectInt32 rez = displayArea.OuterBounds();
 
-        float best = gsl::narrow_cast<float>(400);
+        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
+        
+        // determine the right size for the canvas
+        float best = 400.0f;
         while (true)
         {
-            if ((best * _dpi / 96.0f) > rez.Height) break;
-            best += 200.0f;
+            if ((best * _dpi / 96.0f) >= rez.Height) break;
+            best += 100.0f;
         }
         best -= 200;
-        _bestcanvassize = gsl::narrow_cast<int>(best);
+        _bestcanvassize = best;
     
-        if (_bestbackbuffersize < best)
+        // make the backbuffer bigger than the front buffer, and a multiple of it
+        _bestbackbuffersize = _bestcanvassize;
+        while (_bestbackbuffersize < _idealbackbuffersize)
         {
-            _bestbackbuffersize = best;
+            _bestbackbuffersize += _bestcanvassize;
+        }
+            
+        // setup offsets for sensible default window size
+        constexpr int border = 20;
+        constexpr int stackpanelwidth = 200;
+        const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + stackpanelwidth + border) * _dpi / 96.0f);
+        const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + border) * _dpi / 96.0f);
+
+        // set the title, set the window size, and move the window
+        if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
+        {
+            appWnd.ResizeClient(Windows::Graphics::SizeInt32{ wndWidth, wndHeight });
         }
     }
     
@@ -385,8 +396,8 @@ namespace winrt::ModernLife::implementation
         args.DrawingSession().Clear(colorBack);
 
         // create the strings to draw
-        std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells");
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize());
+        std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size");
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize(),_dpi,_canvasSize, _bestbackbuffersize);
         
         // draw the text left aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
@@ -439,7 +450,7 @@ namespace winrt::ModernLife::implementation
         e;
         sender;
         // this locks the canvas size, but can we let the user resize and if it's too big they can scroll and zoom?
-        _canvasSize = gsl::narrow_cast<float>(_bestcanvassize);
+        _canvasSize = _bestcanvassize;
         SetupRenderTargets();
     }
 

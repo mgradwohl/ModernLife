@@ -29,6 +29,7 @@ namespace winrt::ModernLife::implementation
     public:
         MainWindow() noexcept;
         void InitializeComponent();
+        void SetMyTitleBar();
         void StartGameLoop();
 
         int32_t SeedPercent() const noexcept;
@@ -60,7 +61,7 @@ namespace winrt::ModernLife::implementation
         void SetupRenderTargets();
         //void OnDpiChanged(Windows::Graphics::Display::DisplayInformation const& , IInspectable const&);
         void theCanvas_CreateResources(CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
-        void SetBestCanvasSizes() noexcept;
+        void SetBestCanvasandWindowSizes() noexcept;
         void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
@@ -86,13 +87,15 @@ namespace winrt::ModernLife::implementation
 
         float _widthCellDest{};
         float _canvasSize{};
-        float _dpi{ 96.0f };
+        float _dpi{ 0.0f };
 
         int32_t _randompercent{30};
         int32_t _ruleset{ 1 };
         int16_t _boardwidth{ 200 };
-        int32_t _bestcanvassize{ 1000 };
-        float _bestbackbuffersize = 3000.0f;
+        float _bestcanvassize{ 1000 };
+        // 6 units per cell, 500 cells per line
+        float _idealbackbuffersize{ 3000.0f };
+        float _bestbackbuffersize{ 3000.0f };
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
 
