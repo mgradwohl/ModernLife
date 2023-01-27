@@ -84,6 +84,7 @@ namespace winrt::ModernLife::implementation
             _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
             SetBestCanvasSizes();
             SetupRenderTargets();
+            theCanvas().Invalidate();
         }
     }
     
