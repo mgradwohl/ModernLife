@@ -8,7 +8,7 @@ class TimerHelper
 {
 public:
     TimerHelper() = default;
-    explicit TimerHelper(std::nullptr_t) noexcept {};
+    explicit TimerHelper(std::nullptr_t) {};
 
     TimerHelper(int fps, bool repeating)
     {

@@ -20,7 +20,7 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr int maxage = 10000;
+constexpr int maxage = 5000;
 
 namespace winrt::ModernLife::implementation
 {
@@ -61,7 +61,7 @@ namespace winrt::ModernLife::implementation
         void SetupRenderTargets();
         //void OnDpiChanged(Windows::Graphics::Display::DisplayInformation const& , IInspectable const&);
         void theCanvas_CreateResources(CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
-        void SetBestCanvasandWindowSizes() noexcept;
+        void SetBestCanvasandWindowSizes();
         void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
@@ -81,6 +81,8 @@ namespace winrt::ModernLife::implementation
     private:
         CanvasRenderTarget _backbuffer{ nullptr };
         CanvasRenderTarget _spritesheet{ nullptr };
+        CanvasRenderTarget _spriteOld{ nullptr };
+
         std::mutex lockbackbuffer;
         std::mutex lockboard;
         Board _board{ nullptr };

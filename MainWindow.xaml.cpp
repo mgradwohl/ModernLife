@@ -68,6 +68,9 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvas_CreateResources(CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
+        sender;
+        args;
+
         // todo might want to do the code in the if-block in all cases (for all args.Reason()s
         //if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
         {
@@ -82,7 +85,7 @@ namespace winrt::ModernLife::implementation
         }
     }
     
-    void MainWindow::SetBestCanvasandWindowSizes() noexcept
+    void MainWindow::SetBestCanvasandWindowSizes()
     {
         // get window handle, window ID
         auto windowNative{ this->try_as<::IWindowNative>() };
@@ -140,7 +143,7 @@ namespace winrt::ModernLife::implementation
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         const float rtsize = _widthCellDest * assetStride;
-        _spritesheet = CanvasRenderTarget(device, rtsize, rtsize, _dpi);// theCanvas().Dpi());
+        _spritesheet = CanvasRenderTarget(device, rtsize, rtsize, _dpi);
 
         CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
         ds.Clear(Colors::WhiteSmoke());
@@ -164,13 +167,22 @@ namespace winrt::ModernLife::implementation
             for (uint16_t x = 0; x < assetStride; x++)
             {
                 ds.FillRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetCellColorHSV(index));
-                ds.DrawRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetOutlineColorHSV(index), 1.0f);
+                ds.DrawRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetOutlineColorHSV(index), 1.5f);
                 posx += _widthCellDest;
                 index++;
             }
             posy += _widthCellDest;
             posx = 0.0f;
         }
+        ds.Flush();
+        ds.Close();
+
+        _spriteOld = CanvasRenderTarget(device, _widthCellDest, _widthCellDest, _dpi);
+        ds = _spriteOld.CreateDrawingSession();
+        ds.Clear(Colors::WhiteSmoke());
+        ds.Antialiasing(CanvasAntialiasing::Antialiased);
+        ds.FillRoundedRectangle(0.0f, 0.0f, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, Colors::Gray());
+        ds.DrawRoundedRectangle(0.0f, 0.0f, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, Colors::DarkGray(), 1.5f);
         ds.Flush();
         ds.Close();
     }
@@ -259,7 +271,9 @@ namespace winrt::ModernLife::implementation
     void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
         const float srcW{ _widthCellDest };
-        const uint16_t srcStride{ gsl::narrow_cast<uint16_t>(std::sqrt(maxage) + 1) };
+        const double srcStride{ (std::sqrt(maxage) + 1) };
+        const int isrcStride = gsl::narrow_cast<int>(srcStride);
+        const Windows::Foundation::Rect rectOld{ 0.0f, 0.0f, _widthCellDest, _widthCellDest };
 
         CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::None, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
 
@@ -273,12 +287,19 @@ namespace winrt::ModernLife::implementation
                     if (const Cell& cell = _board.GetCell(x, y); cell.IsAlive())
                     {
                         const int age = cell.Age() > maxage ? maxage : cell.Age();
-                        const float srcX = gsl::narrow_cast<float>(age % srcStride);
-                        const float srcY = gsl::narrow_cast<float>(age / srcStride);
+                        const int srcX = gsl::narrow_cast<int>(age % isrcStride);
+                        const int srcY = gsl::narrow_cast<int>(age / srcStride);
                         const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
-                        spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, rectSrc);
+                        if (age < maxage)
+                        {
+                            spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, rectSrc);
+                        }
+                        else
+                        {
+                            spriteBatch.DrawFromSpriteSheet(_spriteOld, rectDest, rectOld);
+                        }
                     }
                     posx += _widthCellDest;
                 }
@@ -505,7 +526,7 @@ namespace winrt::ModernLife::implementation
     {
         if (age >= maxage)
         {
-            return Windows::UI::Colors::Black();
+            return Windows::UI::Colors::DarkSlateGray();
         }
 
         const float h{ (age * 360.f) / maxage };
