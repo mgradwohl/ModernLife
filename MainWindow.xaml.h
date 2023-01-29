@@ -20,8 +20,6 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr int maxage = 5000;
-
 namespace winrt::ModernLife::implementation
 {
     struct MainWindow : MainWindowT<MainWindow>
@@ -34,6 +32,13 @@ namespace winrt::ModernLife::implementation
 
         int32_t SeedPercent() const noexcept;
         void SeedPercent(int32_t value);
+        int32_t MaxAge() const noexcept;
+        void MaxAge(int32_t value);
+
+        bool ShowLegend() const noexcept;
+        void ShowLegend(bool value);
+
+        
         int16_t BoardWidth() const noexcept;
         void BoardWidth(int16_t value);
 
@@ -64,6 +69,7 @@ namespace winrt::ModernLife::implementation
         void SetBestCanvasandWindowSizes();
         void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void toggleCanvas_Toggled(IInspectable const& sender, RoutedEventArgs const& e);
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
         {
@@ -91,7 +97,9 @@ namespace winrt::ModernLife::implementation
         float _canvasSize{};
         float _dpi{ 0.0f };
 
+        bool _drawLegend{ false };
         int32_t _randompercent{30};
+        int32_t _maxage{ 1000 };
         int32_t _ruleset{ 1 };
         int16_t _boardwidth{ 200 };
         float _bestcanvassize{ 1000 };
@@ -100,7 +108,6 @@ namespace winrt::ModernLife::implementation
         float _bestbackbuffersize{ 3000.0f };
 
         winrt::event<PropertyChangedEventHandler> m_propertyChanged;
-
     };
 }
 

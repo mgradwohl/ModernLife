@@ -111,7 +111,7 @@ public:
 
     void ApplyNextStateToBoard() noexcept;
 
-    void RandomizeBoard(float alivepct);
+    void RandomizeBoard(float alivepct, int maxage);
 
     // This form does not work: void UpdateBoard(std::function<void(Cell& cell)>& F)
     // but using auto is magic

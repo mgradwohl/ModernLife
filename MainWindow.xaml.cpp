@@ -11,6 +11,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Windows.Graphics.Display.h>
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winuser.h>
 #include "TimerHelper.h"
 #include "fpscounter.h"
@@ -107,7 +108,7 @@ namespace winrt::ModernLife::implementation
             if ((best * _dpi / 96.0f) >= rez.Height) break;
             best += 100.0f;
         }
-        best -= 200;
+        best -= 200.0f;
         _bestcanvassize = best;
     
         // make the backbuffer bigger than the front buffer, and a multiple of it
@@ -138,8 +139,10 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::BuildSpriteSheet(const CanvasDevice& device)
     {
+        // TODO only fill most of the cells with color. Reserve maybe the last 10% or so for gray
+        // TODO gray is h=0, s=0, and v from 1 to 0
         // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
-        const uint16_t assetStride = gsl::narrow_cast<uint16_t>(std::sqrt(maxage)) + 1;
+        const uint16_t assetStride = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
         const float rtsize = _widthCellDest * assetStride;
@@ -223,6 +226,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::StartGameLoop()
     {
         // prep the play button
+        timer.Stop();
         using namespace Microsoft::UI::Xaml::Controls;
         GoButton().Icon(SymbolIcon(Symbol::Play));
         GoButton().Label(L"Play");
@@ -231,12 +235,14 @@ namespace winrt::ModernLife::implementation
         // we lock it because changing board parameters will call StartGameLoop()
         {
             std::scoped_lock lock{ lockboard };
-            _board = Board{ gsl::narrow_cast<uint16_t>(_boardwidth), gsl::narrow_cast<uint16_t>(_boardwidth) };
-        }
+            _board = Board{ gsl::narrow_cast<uint16_t>(BoardWidth()), gsl::narrow_cast<uint16_t>(BoardWidth()) };
 
-        // add a random population
-        auto randomizer = std::async(&Board::RandomizeBoard, &_board, _randompercent / 100.0f);
-        randomizer.wait();
+            // add a random population
+            //auto randomizer = std::async(&Board::RandomizeBoard, &_board, SeedPercent() / 100.0f, MaxAge());
+            //randomizer.wait();
+
+            _board.RandomizeBoard(SeedPercent() / 100.0f, MaxAge());
+        }
 
         // start the FPSCounter
         fps = FPScounter();
@@ -245,33 +251,39 @@ namespace winrt::ModernLife::implementation
         theCanvas().Invalidate();
     }
 
+    void MainWindow::toggleCanvas_Toggled(IInspectable const& sender, RoutedEventArgs const& e)
+    {
+        if (!timer.IsRunning())
+        {
+            theCanvas().Invalidate();
+        }
+    }
+    
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
     {
         RenderOffscreen(sender);
+        args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
+        args.DrawingSession().Blend(CanvasBlend::Copy);
+        const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _canvasSize, _canvasSize };
+
+        if (ShowLegend())
         {
-            // we lock the back buffer so that RenderOffscreen is not changing it while we draw it
-            std::scoped_lock lock{ lockbackbuffer };
-            args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
-            args.DrawingSession().Blend(CanvasBlend::Copy);
-
-			//Windows::Foundation::Rect sourceRect{ 0.0f, 0.0f, _back.Size().Width, _back.Size().Height };
-            const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _canvasSize, _canvasSize};
-
-            // draw the backbuffer to the control - they are likely different sizes
-            // comment out the following to see the sprite sheet
-            args.DrawingSession().DrawImage(_backbuffer, destRect);
-            
-            // uncomment the following line to see the sprite sheet
-            //args.DrawingSession().DrawImage(_spritesheet, 0, 0);
-            args.DrawingSession().Flush();
+            args.DrawingSession().DrawImage(_spritesheet, destRect);
         }
+        else
+        {
+            std::scoped_lock lock{ lockbackbuffer };
+            args.DrawingSession().DrawImage(_backbuffer, destRect);
+        }
+        args.DrawingSession().Flush();
+
         fps.AddFrame();
     }
 
     void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
 	{
         const float srcW{ _widthCellDest };
-        const double srcStride{ (std::sqrt(maxage) + 1) };
+        const double srcStride{ (std::sqrt(MaxAge()) + 1) };
         const int isrcStride = gsl::narrow_cast<int>(srcStride);
         const Windows::Foundation::Rect rectOld{ 0.0f, 0.0f, _widthCellDest, _widthCellDest };
 
@@ -286,13 +298,13 @@ namespace winrt::ModernLife::implementation
                 {
                     if (const Cell& cell = _board.GetCell(x, y); cell.IsAlive())
                     {
-                        const int age = cell.Age() > maxage ? maxage : cell.Age();
+                        const int age = cell.Age() > MaxAge() ? MaxAge() : cell.Age();
                         const int srcX = gsl::narrow_cast<int>(age % isrcStride);
                         const int srcY = gsl::narrow_cast<int>(age / srcStride);
                         const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
                         const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
-                        if (age < maxage)
+                        if (age < MaxAge())
                         {
                             spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, rectSrc);
                         }
@@ -317,10 +329,15 @@ namespace winrt::ModernLife::implementation
         {
 			// lock the backbuffer because the it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
             std::scoped_lock lock{ lockbackbuffer };
-            _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, _dpi);// theCanvas().Dpi());
-            _widthCellDest = (_bestbackbuffersize / _boardwidth);
+            _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, _dpi);
         }
+        _widthCellDest = (_bestbackbuffersize / BoardWidth());
         BuildSpriteSheet(device);
+
+        if (!timer.IsRunning())
+        {
+            theCanvas().Invalidate();
+        }
     }
 
     void MainWindow::RenderOffscreen(CanvasControl const& sender)
@@ -359,6 +376,37 @@ namespace winrt::ModernLife::implementation
         ds.Close();
     }
 
+    int32_t MainWindow::MaxAge() const noexcept
+    {
+        return _maxage;
+    }
+
+    void MainWindow::MaxAge(int32_t value)
+    {
+        if (_maxage != value)
+        {
+            _maxage = value;
+
+            m_propertyChanged(*this, PropertyChangedEventArgs{ L"MaxAge" });
+			SetupRenderTargets();
+        }
+    }
+
+    bool MainWindow::ShowLegend() const noexcept
+    {
+		return _drawLegend;
+    }
+    
+	void MainWindow::ShowLegend(bool value)
+	{
+		if (_drawLegend != value)
+		{
+			_drawLegend = value;
+
+			m_propertyChanged(*this, PropertyChangedEventArgs{ L"ShowLegend" });
+		}
+	}
+    
     int32_t MainWindow::SeedPercent() const noexcept
     {
         return _randompercent;
@@ -513,23 +561,23 @@ namespace winrt::ModernLife::implementation
 
     Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
-        if (age >= maxage)
+        if (age >= MaxAge())
         {
             return Windows::UI::Colors::DarkGray();
         }
 
-        const float h{ (age * 360.f) / maxage };
+        const float h{ (age * 360.f) / MaxAge()};
         return HSVtoColor(h, 0.6f, 0.8f);
     }
 
     Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
     {
-        if (age >= maxage)
+        if (age >= MaxAge())
         {
             return Windows::UI::Colors::DarkSlateGray();
         }
 
-        const float h{ (age * 360.f) / maxage };
+        const float h{ (age * 360.f) / MaxAge()};
         return HSVtoColor(h, 0.8f, 0.9f);
     }
 

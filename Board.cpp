@@ -173,12 +173,12 @@ void Board::ApplyNextStateToBoard() noexcept
 	}
 }
 
-void Board::RandomizeBoard(float alivepct)
+void Board::RandomizeBoard(float alivepct, int maxage)
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> pdis(0.0, 1.0);
-	std::uniform_int_distribution<unsigned short> adis(0, 1000);
+	std::uniform_int_distribution<int> adis(0, maxage);
 
 	// TODO check size of board before iterating over board
 	for (Cell& cell : _board)

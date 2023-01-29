@@ -125,10 +125,18 @@
                     <Slider x:Name="sliderBoardWidth" Margin="12,0,12,0" Minimum = "20" Maximum = "500" TickFrequency = "50" SmallChange="10" TickPlacement = "Outside"
                          Value="{x:Bind BoardWidth}" x:DefaultBindMode="TwoWay"/>
                     <TextBlock x:Name="textBoardWidth" Text="{x:Bind GetBoardWidthText(sliderBoardWidth.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+
                     <TextBlock Text="BOARD INITIALIZATION" Margin="0,36,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
                     <Slider x:Name="sliderRandPercent" Margin="12,0,12,0" Minimum = "0" Maximum = "100" TickFrequency = "5" SmallChange="5" TickPlacement = "Outside"
                          Value="{x:Bind SeedPercent}" x:DefaultBindMode="TwoWay"/>
                     <TextBlock x:Name="textRandPercent" Text="{x:Bind GetRandPercentText(sliderRandPercent.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+
+                    <TextBlock Text="MAXIMUM AGE" Margin="0,36,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <Slider x:Name="sliderMaxAge" Margin="12,0,12,0" Minimum = "100" Maximum = "10000" TickFrequency = "100" SmallChange="50" TickPlacement = "Outside"
+                         Value="{x:Bind MaxAge}" x:DefaultBindMode="TwoWay"/>
+
+                    <ToggleSwitch HorizontalAlignment="Center" Margin="6,36,6,6" x:Name="toggleCanvas" Header="Show Legend" Toggled="toggleCanvas_Toggled" x:DefaultBindMode="TwoWay" IsOn="{x:Bind ShowLegend}"></ToggleSwitch>
+
                     <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,36,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
                     <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="160">
                         <canvas:CanvasControl x:Name="theCanvasStatsContent" Draw="theCanvasStatsContent_Draw" />

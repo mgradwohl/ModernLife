@@ -9,6 +9,8 @@ namespace ModernLife
         MainWindow();
         Int32 SeedPercent;
         Int16 BoardWidth;
+        Int32 MaxAge;
+        Boolean ShowLegend;
         String GetRandPercentText(Double value);
         String GetBoardWidthText(Double value);
         Microsoft.UI.Xaml.Controls.Slider sliderRandPercent{get;};
