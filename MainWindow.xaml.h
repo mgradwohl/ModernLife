@@ -27,6 +27,7 @@ namespace winrt::ModernLife::implementation
     public:
         MainWindow() noexcept;
         void InitializeComponent();
+        void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
         void SetMyTitleBar();
         void StartGameLoop();
 
@@ -69,7 +70,6 @@ namespace winrt::ModernLife::implementation
         void SetBestCanvasandWindowSizes();
         void Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void toggleCanvas_Toggled(IInspectable const& sender, RoutedEventArgs const& e);
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
         {

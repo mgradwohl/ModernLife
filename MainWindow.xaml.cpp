@@ -35,8 +35,27 @@ namespace winrt::ModernLife::implementation
         // doesn't work see TimerHelper.h
         //timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
 
+		m_propertyChanged.add({ this, &MainWindow::OnPropertyChanged });
         timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
+    }
+    
+	void MainWindow::OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args)
+	{
+		if (args.PropertyName() == L"MaxAge")
+		{
+            SetupRenderTargets();
+		}
+
+        if (args.PropertyName() == L"BoardWidth")
+        {
+            SetupRenderTargets();
+            StartGameLoop();
+        }
+        if (args.PropertyName() == L"ShowLegend")
+        {
+			theCanvas().Invalidate();
+        }
     }
     
     void MainWindow::SetMyTitleBar()
@@ -251,14 +270,6 @@ namespace winrt::ModernLife::implementation
         theCanvas().Invalidate();
     }
 
-    void MainWindow::toggleCanvas_Toggled(IInspectable const& sender, RoutedEventArgs const& e)
-    {
-        if (!timer.IsRunning())
-        {
-            theCanvas().Invalidate();
-        }
-    }
-    
     void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
     {
         RenderOffscreen(sender);
@@ -388,7 +399,6 @@ namespace winrt::ModernLife::implementation
             _maxage = value;
 
             m_propertyChanged(*this, PropertyChangedEventArgs{ L"MaxAge" });
-			SetupRenderTargets();
         }
     }
 
@@ -434,9 +444,6 @@ namespace winrt::ModernLife::implementation
             _boardwidth = value;
             timer.Stop();
             m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
-
-            SetupRenderTargets();
-            StartGameLoop();
         }
     }
 

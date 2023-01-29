@@ -135,7 +135,7 @@
                     <Slider x:Name="sliderMaxAge" Margin="12,0,12,0" Minimum = "100" Maximum = "10000" TickFrequency = "100" SmallChange="50" TickPlacement = "Outside"
                          Value="{x:Bind MaxAge}" x:DefaultBindMode="TwoWay"/>
 
-                    <ToggleSwitch HorizontalAlignment="Center" Margin="6,36,6,6" x:Name="toggleCanvas" Header="Show Legend" Toggled="toggleCanvas_Toggled" x:DefaultBindMode="TwoWay" IsOn="{x:Bind ShowLegend}"></ToggleSwitch>
+                    <ToggleSwitch HorizontalAlignment="Center" Margin="6,36,6,6" x:Name="toggleCanvas" Header="Show Legend" IsOn="{x:Bind ShowLegend, Mode=TwoWay}"></ToggleSwitch>
 
                     <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,36,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
                     <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="160">
