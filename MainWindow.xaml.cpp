@@ -35,7 +35,8 @@ namespace winrt::ModernLife::implementation
         // doesn't work see TimerHelper.h
         //timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
 
-		m_propertyChanged.add({ this, &MainWindow::OnPropertyChanged });
+        PropertyChanged({ this, &MainWindow::OnPropertyChanged });
+        //_propertyToken = m_propertyChanged.add({ this, &MainWindow::OnPropertyChanged });
         timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
     }
@@ -154,6 +155,8 @@ namespace winrt::ModernLife::implementation
     {
         sender;
         args;
+
+        //PropertyChangedRevoker();
     }
 
     void MainWindow::BuildSpriteSheet(const CanvasDevice& device)
@@ -398,7 +401,7 @@ namespace winrt::ModernLife::implementation
         {
             _maxage = value;
 
-            m_propertyChanged(*this, PropertyChangedEventArgs{ L"MaxAge" });
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"MaxAge" });
         }
     }
 
@@ -413,7 +416,7 @@ namespace winrt::ModernLife::implementation
 		{
 			_drawLegend = value;
 
-			m_propertyChanged(*this, PropertyChangedEventArgs{ L"ShowLegend" });
+			_propertyChanged(*this, PropertyChangedEventArgs{ L"ShowLegend" });
 		}
 	}
     
@@ -428,7 +431,7 @@ namespace winrt::ModernLife::implementation
         {
             _randompercent = value;
 
-            m_propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
         }
     }
 
@@ -443,7 +446,7 @@ namespace winrt::ModernLife::implementation
         {
             _boardwidth = value;
             timer.Stop();
-            m_propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
         }
     }
 
@@ -472,8 +475,8 @@ namespace winrt::ModernLife::implementation
         args.DrawingSession().Clear(colorBack);
 
         // create the strings to draw
-        std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size");
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize(),_dpi,_canvasSize, _bestbackbuffersize);
+        std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size");
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize(),_dpi,_canvasSize, _bestbackbuffersize, _widthCellDest);
         
         // draw the text left aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);

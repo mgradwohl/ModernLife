@@ -73,12 +73,17 @@ namespace winrt::ModernLife::implementation
 
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
         {
-            return m_propertyChanged.add(value);
+            return _propertyChanged.add(value);
         }
 
         void PropertyChanged(winrt::event_token const& token)
         {
-            m_propertyChanged.remove(token);
+            _propertyChanged.remove(token);
+        }
+
+        void PropertyChangedRevoker()
+        {
+            _propertyChanged.remove(_propertyToken);
         }
 
         FPScounter fps{ nullptr };
@@ -107,7 +112,8 @@ namespace winrt::ModernLife::implementation
         float _idealbackbuffersize{ 3000.0f };
         float _bestbackbuffersize{ 3000.0f };
 
-        winrt::event<PropertyChangedEventHandler> m_propertyChanged;
+        winrt::event_token _propertyToken;
+        winrt::event<PropertyChangedEventHandler> _propertyChanged;
     };
 }
 
