@@ -596,13 +596,11 @@ namespace winrt::ModernLife::implementation
     {
         if (h > 360.0f)
         {
-            //return Windows::UI::Colors::Black();
-			return Windows::UI::Colors::DarkSlateGray();
+            return Windows::UI::Colors::Black();
         }
         if (s == 0)
         {
-            //return Windows::UI::Colors::Black();
-            return Windows::UI::Colors::DarkSlateGray();
+            return Windows::UI::Colors::Black();
         }
 
         h /= 60;
