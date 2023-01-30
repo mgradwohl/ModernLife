@@ -367,23 +367,23 @@ namespace winrt::ModernLife::implementation
         {
             std::scoped_lock lock{ lockboard };
             // render in threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
-            auto drawinto1 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                      gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8));
-            auto drawinto2 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8));
-            auto drawinto3 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8));
-            auto drawinto4 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8));
-            auto drawinto5 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8));
-            auto drawinto6 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8));
-            auto drawinto7 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8));
-            auto drawinto8 = std::async(std::launch::async, &MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(_board.Height()));
+            auto drawinto1 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0),                       gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8));
+            auto drawinto2 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8));
+            auto drawinto3 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8));
+            auto drawinto4 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8));
+            auto drawinto5 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8));
+            auto drawinto6 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8));
+            auto drawinto7 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8));
+            auto drawinto8 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(_board.Height()));
 
-            drawinto1.wait();
-            drawinto2.wait();
-            drawinto3.wait();
-            drawinto4.wait();
-            drawinto5.wait();
-            drawinto6.wait();
-            drawinto7.wait();
-            drawinto8.wait();
+            drawinto1.join();
+            drawinto2.join();
+            drawinto3.join();
+            drawinto4.join();
+            drawinto5.join();
+            drawinto6.join();
+            drawinto7.join();
+            drawinto8.join();
         }
 
         ds.Flush();

@@ -225,22 +225,23 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t 
 
 void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 {
-		auto update1 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(0),                gsl::narrow_cast<uint16_t>(Height() * 1 / 8), ruleset);
-		auto update2 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 1 / 8), gsl::narrow_cast<uint16_t>(Height() * 2 / 8), ruleset);
-		auto update3 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 2 / 8), gsl::narrow_cast<uint16_t>(Height() * 3 / 8), ruleset);
-		auto update4 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 3 / 8), gsl::narrow_cast<uint16_t>(Height() * 4 / 8), ruleset);
-		auto update5 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 4 / 8), gsl::narrow_cast<uint16_t>(Height() * 5 / 8), ruleset);
-		auto update6 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 5 / 8), gsl::narrow_cast<uint16_t>(Height() * 6 / 8), ruleset);
-		auto update7 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 6 / 8), gsl::narrow_cast<uint16_t>(Height() * 7 / 8), ruleset);
-		auto update8 = std::async(std::launch::async, &Board::UpdateRowsWithNextState, this, gsl::narrow_cast<uint16_t>(Height() * 7 / 8), gsl::narrow_cast<uint16_t>(Height())        , ruleset);
-		update1.wait();
-		update2.wait();
-		update3.wait();
-		update4.wait();
-		update5.wait();
-		update6.wait();
-		update7.wait();
-		update8.wait();
+	std::thread update1(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(0),                gsl::narrow_cast<uint16_t>(Height() * 1 / 8), ruleset);
+	std::thread update2(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 1 / 8), gsl::narrow_cast<uint16_t>(Height() * 2 / 8), ruleset);
+	std::thread update3(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 2 / 8), gsl::narrow_cast<uint16_t>(Height() * 3 / 8), ruleset);
+	std::thread update4(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 3 / 8), gsl::narrow_cast<uint16_t>(Height() * 4 / 8), ruleset);
+	std::thread update5(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 4 / 8), gsl::narrow_cast<uint16_t>(Height() * 5 / 8), ruleset);
+	std::thread update6(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 5 / 8), gsl::narrow_cast<uint16_t>(Height() * 6 / 8), ruleset);
+	std::thread update7(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 6 / 8), gsl::narrow_cast<uint16_t>(Height() * 7 / 8), ruleset);
+	std::thread update8(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 7 / 8), gsl::narrow_cast<uint16_t>(Height())        , ruleset);
+	
+	update1.join();
+	update2.join();
+	update3.join();
+	update4.join();
+	update5.join();
+	update6.join();
+	update7.join();
+	update8.join();
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept
