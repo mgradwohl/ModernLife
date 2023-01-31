@@ -5,7 +5,7 @@
 class Cell
 {
 public:
-    enum class State { Dead, Born, Live, Old, Dying };
+    enum class State { Dead, Born, Live, Old, Dying, BrianDying };
 
 private:
     State _state;
@@ -49,6 +49,10 @@ public:
     bool IsAlive() const noexcept;
 
     bool IsAliveNotDying() const noexcept;
+
+    bool IsDying() const noexcept;
+    
+    bool IsBrianDying() const noexcept;
 
     bool IsDead() const noexcept;
 

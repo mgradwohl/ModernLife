@@ -28,6 +28,24 @@ bool Cell::IsAliveNotDying() const noexcept
 	return false;
 }
 
+bool Cell::IsDying() const noexcept
+{
+	if (_state == Cell::State::Dying)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool Cell::IsBrianDying() const noexcept
+{
+	if (_state == Cell::State::BrianDying)
+	{
+		return true;
+	}
+	return false;
+}
+
 bool Cell::IsDead() const noexcept
 {
 	if (_state == Cell::State::Dead || _state == Cell::State::Born)

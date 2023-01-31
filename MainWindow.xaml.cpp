@@ -310,14 +310,15 @@ namespace winrt::ModernLife::implementation
             {
                 for (uint16_t x = 0; x < _board.Width(); x++)
                 {
-                    if (const Cell& cell = _board.GetCell(x, y); cell.IsAlive())
-                    {
-                        const int age = cell.Age() > MaxAge() ? MaxAge() : cell.Age();
-                        const int srcX = gsl::narrow_cast<int>(age % isrcStride);
-                        const int srcY = gsl::narrow_cast<int>(age / srcStride);
-                        const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
-                        const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
+                    const Cell& cell = _board.GetCell(x, y);
+                    const int age = cell.Age() > MaxAge() ? MaxAge() : cell.Age();
+                    const int srcX = gsl::narrow_cast<int>(age % isrcStride);
+                    const int srcY = gsl::narrow_cast<int>(age / srcStride);
+                    const Windows::Foundation::Rect rectSrc{ srcW * srcX, srcW * srcY, srcW, srcW};
+                    const Windows::Foundation::Rect rectDest{ posx, posy, _widthCellDest, _widthCellDest};
 
+                    if (cell.IsAlive())
+                    {
                         if (age < MaxAge())
                         {
                             spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, rectSrc);
@@ -326,6 +327,11 @@ namespace winrt::ModernLife::implementation
                         {
                             spriteBatch.DrawFromSpriteSheet(_spriteOld, rectDest, rectOld);
                         }
+                    }
+
+                    if ((_ruleset == 4) && cell.IsBrianDying())
+                    {
+                        spriteBatch.DrawFromSpriteSheet(_spriteOld, rectDest, rectOld);
                     }
                     posx += _widthCellDest;
                 }

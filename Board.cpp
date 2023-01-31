@@ -375,6 +375,11 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	else
 	if (cell.GetState() == Cell::State::Live)
 	{
+		cell.SetState(Cell::State::BrianDying);
+	}
+	else
+	if (cell.GetState() == Cell::State::BrianDying)
+	{
 		cell.SetState(Cell::State::Dying);
 	}
 }
