@@ -367,10 +367,9 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	// being born there. Cells that were in the dying state go into the off state.
 
 	const uint16_t count = cell.Neighbors();
-
-	if (cell.IsDead() && count == 2)
+	if (cell.GetState() == Cell::State::BrianDying)
 	{
-		cell.SetState(Cell::State::Born);
+		cell.SetState(Cell::State::Dying);
 	}
 	else
 	if (cell.GetState() == Cell::State::Live)
@@ -378,8 +377,8 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 		cell.SetState(Cell::State::BrianDying);
 	}
 	else
-	if (cell.GetState() == Cell::State::BrianDying)
+	if (cell.IsDead() && count == 2)
 	{
-		cell.SetState(Cell::State::Dying);
+		cell.SetState(Cell::State::Born);
 	}
 }
