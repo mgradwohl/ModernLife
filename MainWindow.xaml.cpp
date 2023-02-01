@@ -327,17 +327,14 @@ namespace winrt::ModernLife::implementation
         CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Antialiased);
+        ds.Blend(CanvasBlend::Copy);
+        
 
         float posx{ 0.0f };
         float posy{ 0.0f };
 
-        float round{ 2.0f };
-        float offset{ 1.0f };
-        if (_widthCellDest > 20)
-        {
-            round = 6.0f;
-            offset = 2.0f;
-        }
+        float round{ _widthCellDest * 0.2f };
+        float offset{ 2.0f };
 
         // start filling tiles at age 0
         uint16_t index = 0;

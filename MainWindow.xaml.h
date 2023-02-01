@@ -31,8 +31,18 @@ namespace winrt::ModernLife::implementation
         void SetMyTitleBar();
         void Window_Closed(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void StartGameLoop();
+        void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
 
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
+        winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
+        {
+            return _propertyChanged.add(value);
+        }
+
+        void PropertyChanged(winrt::event_token const& token)
+        {
+            _propertyChanged.remove(token);
+        }
         int32_t SeedPercent() const noexcept;
         void SeedPercent(int32_t value);
         int32_t MaxAge() const noexcept;
@@ -45,7 +55,6 @@ namespace winrt::ModernLife::implementation
         hstring GetBoardWidthText(double_t value);
         void speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void theCanvas_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
-        void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -63,16 +72,6 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color GetOutlineColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
-        winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
-        {
-            return _propertyChanged.add(value);
-        }
-
-        void PropertyChanged(winrt::event_token const& token)
-        {
-            _propertyChanged.remove(token);
-        }
-
         FPScounter fps{ nullptr };
 		TimerHelper timer{ 30, true };
 
@@ -85,8 +84,8 @@ namespace winrt::ModernLife::implementation
         std::mutex lockboard;
         Board _board{ nullptr };
 
-        float _widthCellDest{};
-        float _canvasSize{};
+        float _widthCellDest{0.0f};
+        float _canvasSize{0.0f};
         float _dpi{ 0.0f };
 
         bool _drawLegend{ false };
