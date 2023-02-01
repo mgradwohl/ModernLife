@@ -41,7 +41,7 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
     
-	void MainWindow::OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args)
+	void MainWindow::OnPropertyChanged([[maybe_unused]] IInspectable const& sender, PropertyChangedEventArgs const& args)
 	{
 		if (args.PropertyName() == L"MaxAge")
 		{
@@ -87,11 +87,8 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::theCanvas_CreateResources(CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
+    void MainWindow::theCanvas_CreateResources([[maybe_unused]] CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
-        sender;
-        args;
-
         // todo might want to do the code in the if-block in all cases (for all args.Reason()s
         //if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
         {
@@ -151,11 +148,8 @@ namespace winrt::ModernLife::implementation
         }
     }
     
-    void MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
+    void MainWindow::Window_Closed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
-        sender;
-        args;
-
         //PropertyChangedRevoker();
     }
 
@@ -212,10 +206,8 @@ namespace winrt::ModernLife::implementation
         ds.Close();
     }
 
-    void MainWindow::OnWindowActivate(IInspectable const& sender, WindowActivatedEventArgs const& args)
+    void MainWindow::OnWindowActivate([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] WindowActivatedEventArgs const& args)
     {
-        sender;
-
         using namespace Microsoft::UI::Xaml::Media;
 
         if (args.WindowActivationState() == WindowActivationState::Deactivated)
@@ -232,11 +224,8 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, winrt::Windows::Foundation::IInspectable const&)
+    void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
     {
-        //sender;
-        //event;
-
         {
             std::scoped_lock lock{ lockboard };
             _board.FastUpdateBoardWithNextState(_ruleset);
@@ -360,10 +349,9 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::RenderOffscreen(CanvasControl const& sender)
+    void MainWindow::RenderOffscreen([[maybe_unused]] CanvasControl const& sender)
     {
         // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
-        sender;
 
         CanvasDrawingSession ds = _backbuffer.CreateDrawingSession();
         ds.Clear(Colors::WhiteSmoke());
@@ -456,10 +444,8 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::theCanvasStatsContent_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args)
+    void MainWindow::theCanvasStatsContent_Draw([[maybe_unused]] CanvasControl const& sender, CanvasDrawEventArgs const& args)
     {
-        sender;
-        
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
@@ -496,11 +482,8 @@ namespace winrt::ModernLife::implementation
         sender.Invalidate();
     }
 
-    void MainWindow::GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::GoButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        e;
-        sender;
-
         using namespace Microsoft::UI::Xaml::Controls;
         if (timer.IsRunning())
         {
@@ -517,11 +500,8 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::RestartButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        e;
-        sender;
-
         using namespace Microsoft::UI::Xaml::Controls;
 
         timer.Stop();
@@ -530,10 +510,8 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
 
-    void MainWindow::theCanvas_SizeChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
+    void MainWindow::theCanvas_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
-        e;
-        sender;
         // this locks the canvas size, but can we let the user resize and if it's too big they can scroll and zoom?
         _canvasSize = _bestcanvassize;
         SetupRenderTargets();
@@ -553,7 +531,7 @@ namespace winrt::ModernLife::implementation
         return htext;
     }
 
-    void MainWindow::speedClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
         e;
         using namespace Microsoft::UI::Xaml::Controls;
@@ -564,9 +542,8 @@ namespace winrt::ModernLife::implementation
 		timer.FPS(item.Tag().as<int>());
     }
 
-    void MainWindow::ruleClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::ruleClick(IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        e;
         using namespace Microsoft::UI::Xaml::Controls;
         MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
 
