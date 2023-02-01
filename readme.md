@@ -35,3 +35,9 @@ I learned C++ on C++/98 so
 - Windows App SDK here https://docs.microsoft.com/windows/apps/windows-app-sdk/
 - WinUI3 here https://docs.microsoft.com/windows/apps/winui/winui3/
 - C++/WinRT here http://aka.ms/cppwinrt/
+
+## Contributing
+Pick an issue from the list, fork the repo, make your changes, and submit a pull request.
+If you find a problem, file it. Use the Performance Profiler to find bottlenecks and file issues. Run on different screen
+resolutions and DPIs. Build and debug on ARM devices. Write tests. Write documentation. Write code. Write more code. Run Code Analysis
+and file and fix issues. Clean up the class design. Go for it.
