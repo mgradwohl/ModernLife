@@ -184,7 +184,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="readme.txt" />
+    <Text Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />

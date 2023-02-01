@@ -186,7 +186,7 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="readme.txt">
+    <Text Include="readme.md">
       <DeploymentContent>false</DeploymentContent>
     </Text>
   </ItemGroup>
