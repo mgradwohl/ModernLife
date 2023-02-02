@@ -22,7 +22,8 @@ namespace winrt::ModernLife::implementation
 {
     MainWindow::MainWindow() noexcept
     {
-        //InitializeComponent(); https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
+        //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
+        //InitializeComponent(); 
     }
 
     void MainWindow::InitializeComponent()
@@ -290,6 +291,7 @@ namespace winrt::ModernLife::implementation
         {
             std::scoped_lock lock{ lockboard };
             // render in threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
+            // https://github.com/mgradwohl/ModernLife/issues/32
             auto drawinto1 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8));
             auto drawinto2 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8));
             auto drawinto3 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8));
