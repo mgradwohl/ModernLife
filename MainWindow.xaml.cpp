@@ -22,7 +22,8 @@ namespace winrt::ModernLife::implementation
 {
     MainWindow::MainWindow() noexcept
     {
-        //InitializeComponent(); https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
+        //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
+        //InitializeComponent(); 
     }
 
     void MainWindow::InitializeComponent()
