@@ -313,11 +313,19 @@ namespace winrt::ModernLife::implementation
             auto drawinto2 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[1], gsl::narrow_cast<uint16_t>(_board.Height() * 1 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / threadcount));
             auto drawinto3 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[2], gsl::narrow_cast<uint16_t>(_board.Height() * 2 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / threadcount));
             auto drawinto4 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[3], gsl::narrow_cast<uint16_t>(_board.Height() * 3 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / threadcount));
+            //auto drawinto5 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[4], gsl::narrow_cast<uint16_t>(_board.Height() * 4 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / threadcount));
+            //auto drawinto6 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[5], gsl::narrow_cast<uint16_t>(_board.Height() * 5 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / threadcount));
+            //auto drawinto7 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[6], gsl::narrow_cast<uint16_t>(_board.Height() * 6 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / threadcount));
+            //auto drawinto8 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[7], gsl::narrow_cast<uint16_t>(_board.Height() * 7 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 8 / threadcount));
 
             drawinto1.join();
             drawinto2.join();
             drawinto3.join();
             drawinto4.join();
+            //drawinto5.join();
+            //drawinto6.join();
+            //drawinto7.join();
+            //drawinto8.join();
         }
 
         const float scale{ _backbuffer.Size().Height / threadcount };
