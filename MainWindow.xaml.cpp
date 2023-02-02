@@ -138,8 +138,16 @@ namespace winrt::ModernLife::implementation
             // lock the backbuffer because the it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
             std::scoped_lock lock{ lockbackbuffer };
             _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, _dpi);
+
+            _backbuffers.clear();
+            for (int j = 0; j < threadcount; j++)
+            {
+                _backbuffers.push_back(CanvasRenderTarget{ device, _bestbackbuffersize, _bestbackbuffersize / threadcount, _dpi });
+            }
         }
-        _widthCellDest = (_bestbackbuffersize / BoardWidth());
+
+        _widthCellStride = _bestbackbuffersize / BoardWidth();
+        _widthCellDest = std::floor(_widthCellStride);
         BuildSpriteSheet(device);
 
         if (!timer.IsRunning())
@@ -232,15 +240,20 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startY, uint16_t endY)
     {
-        const float srcW{ _widthCellDest };
+        const float srcW{ _widthCellStride };
         const double srcStride{ (std::sqrt(MaxAge()) + 1) };
         const int isrcStride = gsl::narrow_cast<int>(srcStride);
         const Windows::Foundation::Rect rectOld{ 0.0f, 0.0f, _widthCellDest, _widthCellDest };
 
+        ds.Clear(Colors::WhiteSmoke());
+        ds.Antialiasing(CanvasAntialiasing::Aliased);
+        ds.Blend(CanvasBlend::Copy);
+
         CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::None, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
 
         float posx{ 0.0f };
-        float posy{ startY * _widthCellDest };
+        //float posy{ startY * _widthCellDest };
+        float posy{ 0.0f };
         {
             for (uint16_t y = startY; y < endY; y++)
             {
@@ -269,48 +282,64 @@ namespace winrt::ModernLife::implementation
                     {
                         spriteBatch.DrawFromSpriteSheet(_spriteOld, rectDest, rectOld);
                     }
-                    posx += _widthCellDest;
+                    posx += _widthCellStride;
                 }
-                posy += _widthCellDest;
+                posy += _widthCellStride;
                 posx = 0.0f;
             }
         }
         spriteBatch.Close();
+        ds.Flush();
+        ds.Close();
     }
 
     void MainWindow::RenderOffscreen([[maybe_unused]] CanvasControl const& sender)
     {
-        // https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
+        //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
-        CanvasDrawingSession ds = _backbuffer.CreateDrawingSession();
-        ds.Clear(Colors::WhiteSmoke());
-        ds.Antialiasing(CanvasAntialiasing::Aliased);
-        ds.Blend(CanvasBlend::Copy);
+        std::vector<CanvasDrawingSession> dsList;
+        for (int j = 0; j < threadcount; j++)
+		{
+            dsList.push_back({ _backbuffers[j].CreateDrawingSession() });
+		}
 
         {
+            // TODO use more hardware threads if they are available
+            //render in threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
+
             std::scoped_lock lock{ lockboard };
-            // render in threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
-            auto drawinto1 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8));
-            auto drawinto2 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8));
-            auto drawinto3 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8));
-            auto drawinto4 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8));
-            auto drawinto5 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8));
-            auto drawinto6 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8));
-            auto drawinto7 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / 8), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8));
-            auto drawinto8 = std::thread(&MainWindow::DrawHorizontalRows, this, std::ref(ds), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / 8), gsl::narrow_cast<uint16_t>(_board.Height()));
+            auto drawinto1 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[0], gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / threadcount));
+            auto drawinto2 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[1], gsl::narrow_cast<uint16_t>(_board.Height() * 1 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / threadcount));
+            auto drawinto3 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[2], gsl::narrow_cast<uint16_t>(_board.Height() * 2 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / threadcount));
+            auto drawinto4 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[3], gsl::narrow_cast<uint16_t>(_board.Height() * 3 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / threadcount));
 
             drawinto1.join();
             drawinto2.join();
             drawinto3.join();
             drawinto4.join();
-            drawinto5.join();
-            drawinto6.join();
-            drawinto7.join();
-            drawinto8.join();
         }
 
-        ds.Flush();
-        ds.Close();
+        const float scale{ _backbuffer.Size().Height / threadcount };
+        const Windows::Foundation::Rect source{ 0.0f, 0.0f, _backbuffer.Size().Width, scale };
+        Windows::Foundation::Rect dest{ 0.0f, 0.0f, _backbuffer.Size().Width, scale };
+
+        {
+            std::scoped_lock lock{ lockbackbuffer };
+
+            CanvasDrawingSession ds = _backbuffer.CreateDrawingSession();
+            ds.Clear(Colors::WhiteSmoke());
+            ds.Antialiasing(CanvasAntialiasing::Aliased);
+            ds.Blend(CanvasBlend::Copy);
+
+            for (int k = 0; k < threadcount; k++)
+            {
+                ds.DrawImage(_backbuffers[k], dest, source);
+                dest.Y += scale;
+            }
+
+            ds.Flush();
+            ds.Close();
+        }
     }
 
     void MainWindow::BuildSpriteSheet(const CanvasDevice& device)
@@ -321,7 +350,7 @@ namespace winrt::ModernLife::implementation
         const uint16_t assetStride = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
-        const float rtsize = _widthCellDest * assetStride;
+        const float rtsize = _widthCellStride * assetStride;
         _spritesheet = CanvasRenderTarget(device, rtsize, rtsize, _dpi);
 
         CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
@@ -333,8 +362,12 @@ namespace winrt::ModernLife::implementation
         float posx{ 0.0f };
         float posy{ 0.0f };
 
-        float round{ _widthCellDest * 0.2f };
-        float offset{ 2.0f };
+        const float round{ _widthCellDest * 0.2f };
+        float offset = gsl::narrow_cast<float>(1.0f - (_widthCellDest - _widthCellStride));
+        if (offset < 0.5f)
+        {
+            offset = 0.5f;
+        };
 
         // start filling tiles at age 0
         uint16_t index = 0;
@@ -343,11 +376,11 @@ namespace winrt::ModernLife::implementation
             for (uint16_t x = 0; x < assetStride; x++)
             {
                 ds.FillRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetCellColorHSV(index));
-                ds.DrawRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetOutlineColorHSV(index), 1.5f);
-                posx += _widthCellDest;
+                ds.DrawRoundedRectangle(posx + offset, posy + offset, _widthCellDest - (2 * offset), _widthCellDest - (2 * offset), round, round, GetOutlineColorHSV(index), 1.0f);
+                posx += _widthCellStride;
                 index++;
             }
-            posy += _widthCellDest;
+            posy += _widthCellStride;
             posx = 0.0f;
         }
         ds.Flush();

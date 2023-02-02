@@ -20,6 +20,8 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
+constexpr int threadcount = 4;
+
 namespace winrt::ModernLife::implementation
 {
     struct MainWindow : MainWindowT<MainWindow>
@@ -77,6 +79,8 @@ namespace winrt::ModernLife::implementation
 
     private:
         CanvasRenderTarget _backbuffer{ nullptr };
+        std::vector<CanvasRenderTarget> _backbuffers;
+        
         CanvasRenderTarget _spritesheet{ nullptr };
         CanvasRenderTarget _spriteOld{ nullptr };
 
@@ -85,6 +89,7 @@ namespace winrt::ModernLife::implementation
         Board _board{ nullptr };
 
         float _widthCellDest{0.0f};
+        float _widthCellStride{ 0.0f };
         float _canvasSize{0.0f};
         float _dpi{ 0.0f };
 
