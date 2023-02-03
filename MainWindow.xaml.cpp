@@ -141,9 +141,9 @@ namespace winrt::ModernLife::implementation
             _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, _dpi);
 
             _backbuffers.clear();
-            for (int j = 0; j < threadcount; j++)
+            for (int j = 0; j < _threadcount; j++)
             {
-                _backbuffers.push_back(CanvasRenderTarget{ device, _bestbackbuffersize, _bestbackbuffersize / threadcount, _dpi });
+                _backbuffers.push_back(CanvasRenderTarget{ device, _bestbackbuffersize, _bestbackbuffersize / _threadcount, _dpi });
             }
         }
 
@@ -299,36 +299,27 @@ namespace winrt::ModernLife::implementation
         //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
         std::vector<CanvasDrawingSession> dsList;
-        for (int j = 0; j < threadcount; j++)
+        for (int j = 0; j < _threadcount; j++)
 		{
             dsList.push_back({ _backbuffers[j].CreateDrawingSession() });
 		}
 
         {
-            // TODO use more hardware threads if they are available
-            //render in threads - doesn't actually seem to render in 8 threads, see https://github.com/Microsoft/Win2D/issues/570
-
             std::scoped_lock lock{ lockboard };
-            auto drawinto1 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[0], gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(_board.Height() * 1 / threadcount));
-            auto drawinto2 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[1], gsl::narrow_cast<uint16_t>(_board.Height() * 1 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 2 / threadcount));
-            auto drawinto3 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[2], gsl::narrow_cast<uint16_t>(_board.Height() * 2 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 3 / threadcount));
-            auto drawinto4 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[3], gsl::narrow_cast<uint16_t>(_board.Height() * 3 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 4 / threadcount));
-            //auto drawinto5 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[4], gsl::narrow_cast<uint16_t>(_board.Height() * 4 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 5 / threadcount));
-            //auto drawinto6 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[5], gsl::narrow_cast<uint16_t>(_board.Height() * 5 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 6 / threadcount));
-            //auto drawinto7 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[6], gsl::narrow_cast<uint16_t>(_board.Height() * 6 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 7 / threadcount));
-            //auto drawinto8 = std::thread(&MainWindow::DrawHorizontalRows, this, dsList[7], gsl::narrow_cast<uint16_t>(_board.Height() * 7 / threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * 8 / threadcount));
 
-            drawinto1.join();
-            drawinto2.join();
-            drawinto3.join();
-            drawinto4.join();
-            //drawinto5.join();
-            //drawinto6.join();
-            //drawinto7.join();
-            //drawinto8.join();
+            std::vector<std::thread> threads;
+            for (int t = 0; t < _threadcount; t++)
+            {
+                threads.push_back(std::thread{&MainWindow::DrawHorizontalRows, this, dsList[t], gsl::narrow_cast<uint16_t>(_board.Height() * t / _threadcount), gsl::narrow_cast<uint16_t>(_board.Height() * (t + 1) / _threadcount)});
+            }
+
+			for (auto& th : threads)
+			{
+				th.join();
+			}
         }
 
-        const float scale{ _backbuffer.Size().Height / threadcount };
+        const float scale{ _backbuffer.Size().Height / _threadcount };
         const Windows::Foundation::Rect source{ 0.0f, 0.0f, _backbuffer.Size().Width, scale };
         Windows::Foundation::Rect dest{ 0.0f, 0.0f, _backbuffer.Size().Width, scale };
 
@@ -340,7 +331,7 @@ namespace winrt::ModernLife::implementation
             ds.Antialiasing(CanvasAntialiasing::Aliased);
             ds.Blend(CanvasBlend::Copy);
 
-            for (int k = 0; k < threadcount; k++)
+            for (int k = 0; k < _threadcount; k++)
             {
                 ds.DrawImage(_backbuffers[k], dest, source);
                 dest.Y += scale;

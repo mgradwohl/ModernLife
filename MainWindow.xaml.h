@@ -20,8 +20,6 @@ using namespace Microsoft::Graphics;
 using namespace Microsoft::Graphics::Canvas;
 using namespace Microsoft::Graphics::Canvas::UI::Xaml;
 
-constexpr int threadcount = 4;
-
 namespace winrt::ModernLife::implementation
 {
     struct MainWindow : MainWindowT<MainWindow>
@@ -83,6 +81,8 @@ namespace winrt::ModernLife::implementation
         
         CanvasRenderTarget _spritesheet{ nullptr };
         CanvasRenderTarget _spriteOld{ nullptr };
+
+        int _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2 );
 
         std::mutex lockbackbuffer;
         std::mutex lockboard;
