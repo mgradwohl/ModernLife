@@ -60,9 +60,11 @@ namespace winrt::ModernLife::implementation
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void BuildSpriteSheet(const CanvasDevice& device);
+        Windows::Foundation::Rect& GetSpriteCell(int index);
+
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
-        void DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t sx, uint16_t ex);
+        void DrawHorizontalRows(const CanvasDrawingSession& ds, int startRow, int endRow);
         void theCanvasStatsContent_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void SetupRenderTargets();
         void theCanvas_CreateResources(CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
@@ -80,7 +82,6 @@ namespace winrt::ModernLife::implementation
         std::vector<CanvasRenderTarget> _backbuffers;
         
         CanvasRenderTarget _spritesheet{ nullptr };
-        CanvasRenderTarget _spriteOld{ nullptr };
 
         int _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2 );
 
