@@ -139,7 +139,7 @@
                     <ToggleSwitch HorizontalAlignment="Center" Margin="12,0,12,0" x:Name="toggleCanvas" IsOn="{x:Bind ShowLegend, Mode=TwoWay}"></ToggleSwitch>
 
                     <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,24,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
-                    <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="180">
+                    <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="200">
                         <canvas:CanvasControl x:Name="theCanvasStatsContent" Draw="theCanvasStatsContent_Draw" />
                     </Grid>
                     <TextBlock Text="LEARN MORE" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,24,0,0" Style="{StaticResource BaseTextBlockStyle}"/>

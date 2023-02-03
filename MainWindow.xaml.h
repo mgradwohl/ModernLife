@@ -32,6 +32,7 @@ namespace winrt::ModernLife::implementation
         void Window_Closed(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void StartGameLoop();
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
+        unsigned int SetThreadCount();
 
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
@@ -60,7 +61,7 @@ namespace winrt::ModernLife::implementation
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void BuildSpriteSheet(const CanvasDevice& device);
-        Windows::Foundation::Rect& GetSpriteCell(int index);
+        const Windows::Foundation::Rect GetSpriteCell(int index) const noexcept;
 
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
@@ -74,33 +75,35 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color GetOutlineColorHSV(uint16_t age);
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
-        FPScounter fps{ nullptr };
-		TimerHelper timer{ 30, true };
-
     private:
+        FPScounter fps{ nullptr };
+        TimerHelper timer{ 30, true };
+
         CanvasRenderTarget _backbuffer{ nullptr };
         std::vector<CanvasRenderTarget> _backbuffers;
         
         CanvasRenderTarget _spritesheet{ nullptr };
 
-        int _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2 );
+        int _threadcount{ 0 }; 
 
         std::mutex lockbackbuffer;
         std::mutex lockboard;
         Board _board{ nullptr };
 
-        float _widthCellDest{0.0f};
-        float _widthCellStride{ 0.0f };
-        float _canvasSize{0.0f};
         float _dpi{ 0.0f };
+        float _dipsPerCellDimension{ 0.0f };
+        uint16_t _rowsPerSlice{ 0 };
+        float _sliceHeight{ 0.0f };
+        int _spritesPerRow{ 0 };
+        float _spriteDipsPerRow{ 0.0f };
 
         bool _drawLegend{ false };
         int32_t _randompercent{30};
         int32_t _maxage{ 1000 };
         int32_t _ruleset{ 1 };
         int16_t _boardwidth{ 200 };
-        float _bestcanvassize{ 1000 };
-        // 6 units per cell, 500 cells per line
+        float _bestcanvassize{ 1000.0f };
+        // ensure at least 6 dips per cell max board size which is 500 cells per row
         float _idealbackbuffersize{ 3000.0f };
         float _bestbackbuffersize{ 3000.0f };
 
