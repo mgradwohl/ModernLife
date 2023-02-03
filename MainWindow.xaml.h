@@ -32,7 +32,7 @@ namespace winrt::ModernLife::implementation
         void Window_Closed(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void StartGameLoop();
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
-        unsigned int SetThreadCount();
+        unsigned int SetThreadCount() noexcept;
 
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
         winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)

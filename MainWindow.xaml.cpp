@@ -44,7 +44,7 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
     
-    unsigned int MainWindow::SetThreadCount()
+    unsigned int MainWindow::SetThreadCount() noexcept
     {
         unsigned int count{ std::thread::hardware_concurrency() / 2 };
         if (count < 1)
@@ -271,7 +271,7 @@ namespace winrt::ModernLife::implementation
 
         Windows::Foundation::Rect rectDest{ 0.0f, 0.0f, _dipsPerCellDimension, _dipsPerCellDimension };
         {
-            for (uint16_t y = startRow; y < endRow; y++)
+            for (uint16_t y = gsl::narrow_cast<uint16_t>(startRow); y < endRow; y++)
             {
                 for (uint16_t x = 0; x < _board.Width(); x++)
                 {
