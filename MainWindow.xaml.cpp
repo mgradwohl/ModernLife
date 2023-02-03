@@ -134,6 +134,8 @@ namespace winrt::ModernLife::implementation
     void MainWindow::SetupRenderTargets()
     {
         CanvasDevice device = CanvasDevice::GetSharedDevice();
+        _widthCellStride = _bestbackbuffersize / BoardWidth();
+        _widthCellDest = std::floor(_widthCellStride);
 
         {
             // lock the backbuffer because the it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
@@ -147,8 +149,6 @@ namespace winrt::ModernLife::implementation
             }
         }
 
-        _widthCellStride = _bestbackbuffersize / BoardWidth();
-        _widthCellDest = std::floor(_widthCellStride);
         BuildSpriteSheet(device);
 
         if (!timer.IsRunning())
@@ -246,6 +246,7 @@ namespace winrt::ModernLife::implementation
         const int isrcStride = gsl::narrow_cast<int>(srcStride);
         const Windows::Foundation::Rect rectOld{ 0.0f, 0.0f, _widthCellDest, _widthCellDest };
 
+        //ds.Clear(ColorHelper::FromArgb(255,128,startY, endY));
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Aliased);
         ds.Blend(CanvasBlend::Copy);
@@ -304,6 +305,7 @@ namespace winrt::ModernLife::implementation
             dsList.push_back({ _backbuffers[j].CreateDrawingSession() });
 		}
 
+
         {
             std::scoped_lock lock{ lockboard };
 
@@ -327,12 +329,14 @@ namespace winrt::ModernLife::implementation
             std::scoped_lock lock{ lockbackbuffer };
 
             CanvasDrawingSession ds = _backbuffer.CreateDrawingSession();
-            ds.Clear(Colors::WhiteSmoke());
             ds.Antialiasing(CanvasAntialiasing::Aliased);
             ds.Blend(CanvasBlend::Copy);
 
             for (int k = 0; k < _threadcount; k++)
             {
+#ifdef _DEBUG
+                //ds.DrawRectangle(dest, Colors::Black(), 8.0f);
+#endif
                 ds.DrawImage(_backbuffers[k], dest, source);
                 dest.Y += scale;
             }
