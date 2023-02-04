@@ -70,6 +70,8 @@ namespace winrt::ModernLife::implementation
         void SetupRenderTargets();
         void theCanvas_CreateResources(CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
         void SetBestCanvasandWindowSizes();
+        void OnBoardResized();
+        void RandomizeBoard();
 
         Windows::UI::Color GetCellColorHSV(uint16_t age);
         Windows::UI::Color GetOutlineColorHSV(uint16_t age);

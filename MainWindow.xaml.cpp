@@ -8,6 +8,7 @@
 #include "MainWindow.g.cpp"
 #endif
 
+#include <algorithm>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Windows.Graphics.Display.h>
@@ -30,31 +31,25 @@ namespace winrt::ModernLife::implementation
     {
         MainWindowT::InitializeComponent();
 
-        SetMyTitleBar();
-        SetBestCanvasandWindowSizes();
+        PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
-        // doesn't work see TimerHelper.h
-        //timer = TimerHelper({ this, &MainWindow::OnTick }, 60, true);
+        SetMyTitleBar();
+        OnBoardResized();
+        SetBestCanvasandWindowSizes();
 
         _threadcount = SetThreadCount();
 
-        PropertyChanged({ this, &MainWindow::OnPropertyChanged });
-        //_propertyToken = m_propertyChanged.add({ this, &MainWindow::OnPropertyChanged });
         timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
     }
     
     unsigned int MainWindow::SetThreadCount() noexcept
     {
-        unsigned int count{ std::thread::hardware_concurrency() / 2 };
-        if (count < 1)
-        {
-            count = 1;
-        }
-        if (count > 8)
-        {
-            count = 8;
-        }
+        _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
+        _threadcount = std::clamp(_threadcount, 1, 8);
+
+        int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
+		count = std::clamp(count, 1, 8);
         return count;
     }
     
@@ -117,16 +112,6 @@ namespace winrt::ModernLife::implementation
         GoButton().Icon(SymbolIcon(Symbol::Play));
         GoButton().Label(L"Play");
 
-        // create the board, lock it in the case that OnTick is updating it
-        // we lock it because changing board parameters will call StartGameLoop()
-        {
-            std::scoped_lock lock{ lockboard };
-            _board = Board{ gsl::narrow_cast<uint16_t>(BoardWidth()), gsl::narrow_cast<uint16_t>(BoardWidth()) };
-
-            // add a random population
-            _board.RandomizeBoard(SeedPercent() / 100.0f, MaxAge());
-        }
-
         // start the FPSCounter
         fps = FPScounter();
 
@@ -144,6 +129,23 @@ namespace winrt::ModernLife::implementation
         theCanvas().Invalidate();
     }
 
+    void MainWindow::RandomizeBoard()
+    {
+        // add a random population
+        _board.RandomizeBoard(SeedPercent() / 100.0f, MaxAge());
+    }
+    
+    void MainWindow::OnBoardResized()
+    {
+        // create the board, lock it in the case that OnTick is updating it
+        // we lock it because changing board parameters will call StartGameLoop()
+        {
+            std::scoped_lock lock{ lockboard };
+            _board = Board{ gsl::narrow_cast<uint16_t>(BoardWidth()), gsl::narrow_cast<uint16_t>(BoardWidth()) };
+            RandomizeBoard();
+        }
+
+    }
     void MainWindow::SetupRenderTargets()
     {
         CanvasDevice device = CanvasDevice::GetSharedDevice();
@@ -456,6 +458,7 @@ namespace winrt::ModernLife::implementation
         if (args.PropertyName() == L"BoardWidth")
         {
             timer.Stop();
+            OnBoardResized();
             SetupRenderTargets();
             StartGameLoop();
         }
@@ -467,6 +470,8 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"SeedPercent")
         {
+            OnBoardResized();
+//            RandomizeBoard();
             StartGameLoop();
         }
 
