@@ -296,7 +296,7 @@ namespace winrt::ModernLife::implementation
             {
                 for (uint16_t x = 0; x < _board.Width(); x++)
                 {
-                    Cell& cell = _board.GetCell(x, y);
+                    const Cell& cell = _board.GetCell(x, y);
 
                     rectDest.X = x * _dipsPerCellDimension;
                     rectDest.Y = (y - startRow) * _dipsPerCellDimension;
@@ -352,7 +352,7 @@ namespace winrt::ModernLife::implementation
         _dsList.clear();
     }
 
-    const Windows::Foundation::Rect MainWindow::GetSpriteCell(int index) const noexcept
+    const Windows::Foundation::Rect MainWindow::GetSpriteCell(uint16_t index) const noexcept
     {
         const uint16_t i = index;
         i >= MaxAge() ? MaxAge() : i;

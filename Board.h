@@ -20,7 +20,7 @@ private:
     uint32_t _numOld{ 0 };
     uint32_t _numDying{ 0 };
     uint32_t _OldAge{ 0xFFFFFFFF };
-    uint16_t _maxage;
+    uint16_t _maxage{ 100 };
 
     int _threadcount{ 1 };
 

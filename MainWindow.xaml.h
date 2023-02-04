@@ -61,7 +61,7 @@ namespace winrt::ModernLife::implementation
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void BuildSpriteSheet(const CanvasDevice& device);
-        const Windows::Foundation::Rect GetSpriteCell(int index) const noexcept;
+        const Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
 
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
