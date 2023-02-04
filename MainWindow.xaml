@@ -122,7 +122,7 @@
                     </DropDownButton>
 
                     <TextBlock Text="BOARD SIZE" Margin="0,24,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
-                    <Slider x:Name="sliderBoardWidth" Margin="12,0,12,0" Minimum = "20" Maximum = "500" TickFrequency = "50" SmallChange="10" TickPlacement = "Outside"
+                    <Slider x:Name="sliderBoardWidth" Margin="12,0,12,0" Minimum = "40" Maximum = "400" TickFrequency = "50" SmallChange="10" TickPlacement = "Outside"
                          Value="{x:Bind BoardWidth, Mode=TwoWay}"/>
                     <TextBlock x:Name="textBoardWidth" Text="{x:Bind GetBoardWidthText(sliderBoardWidth.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
 
@@ -139,7 +139,7 @@
                     <ToggleSwitch HorizontalAlignment="Center" Margin="12,0,12,0" x:Name="toggleCanvas" IsOn="{x:Bind ShowLegend, Mode=TwoWay}"></ToggleSwitch>
 
                     <TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,24,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
-                    <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="200">
+                    <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="190">
                         <canvas:CanvasControl x:Name="theCanvasStatsContent" Draw="theCanvasStatsContent_Draw" />
                     </Grid>
                     <TextBlock Text="LEARN MORE" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,24,0,0" Style="{StaticResource BaseTextBlockStyle}"/>

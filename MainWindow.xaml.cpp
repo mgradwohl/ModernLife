@@ -150,7 +150,7 @@ namespace winrt::ModernLife::implementation
         _dipsPerCellDimension = _bestbackbuffersize / BoardWidth();
         _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
         _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
-        _rowsPerSlice = gsl::narrow_cast<uint16_t>(std::floor(_bestbackbuffersize / _threadcount / _dipsPerCellDimension));
+        _rowsPerSlice = gsl::narrow_cast<uint16_t>(_board.Height() / _threadcount);
         _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
 
         CanvasDevice device = CanvasDevice::GetSharedDevice();
@@ -267,7 +267,7 @@ namespace winrt::ModernLife::implementation
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Antialiased);
         ds.Blend(CanvasBlend::Copy);
-        CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::ClampToSourceRect);
+        CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::None);
 
         Windows::Foundation::Rect rectDest{ 0.0f, 0.0f, _dipsPerCellDimension, _dipsPerCellDimension };
         {
@@ -378,29 +378,28 @@ namespace winrt::ModernLife::implementation
         ds.Antialiasing(CanvasAntialiasing::Antialiased);
         ds.Blend(CanvasBlend::Copy);
         
-        float posx{ 0.0f };
-        float posy{ 0.0f };
 
         // since we're using pixels, but the _dipsPerCellAxis is in dips
         // there is already "padding" in the sprite
         // so we'll take advantage of that
         // TODO maybe this is unneccessary
-        const float widthCellDest = std::floor(_dipsPerCellDimension);
-        const float round{ widthCellDest * 0.2f };
-        float offset = gsl::narrow_cast<float>(1.0f - (widthCellDest - _dipsPerCellDimension));
-        if (offset < 0.5f)
-        {
-            offset = 0.5f;
-        };
 
         // start filling tiles at age 0
+        const float offset = 1.0f;
+		const float inset = _dipsPerCellDimension / 4.0f;
         uint16_t index = 0;
+        float posx{ 0.0f };
+        float posy{ 0.0f };
+		const float round = 4.0f;
         for (uint16_t y = 0; y < _spritesPerRow; y++)
         {
             for (uint16_t x = 0; x < _spritesPerRow; x++)
             {
+                //ds.FillRectangle(posx, posy, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), GetCellColorHSV(index));
                 ds.FillRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetCellColorHSV(index));
-                ds.DrawRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetOutlineColorHSV(index), 1.0f);
+                ds.FillRoundedRectangle(posx + inset, posy + inset, _dipsPerCellDimension - (2 * inset), _dipsPerCellDimension - (2 * inset), round, round, GetOutlineColorHSV(index));
+
+                //ds.DrawRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetOutlineColorHSV(index), 1.0f);
                 posx += _dipsPerCellDimension;
                 index++;
             }
@@ -620,7 +619,7 @@ namespace winrt::ModernLife::implementation
     {
         if (age >= MaxAge())
         {
-            return Windows::UI::Colors::DarkSlateGray();
+            return Windows::UI::Colors::Gray();
         }
 
         const float h{ (age * 360.f) / MaxAge()};
