@@ -238,9 +238,10 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t 
 
 void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 {
+	uint16_t rowStart = 0;
 	const uint16_t rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
 	const uint16_t remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
-	uint16_t rowStart = 0;
+
 	std::vector<std::thread> threads;
 	for (int t = 0; t < _threadcount-1; t++)
 	{
