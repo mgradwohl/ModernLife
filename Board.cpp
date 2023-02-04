@@ -2,6 +2,7 @@
 #include "Board.h"
 #include "gsl/include/gsl"
 #include <future>
+#include <algorithm>
 
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
@@ -31,6 +32,9 @@ Board::Board(uint16_t width, uint16_t height)
 	: _width(width), _height(height), _size(width * height)
 {
 	_board.resize(_size);
+
+	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
+	_threadcount = std::clamp(_threadcount, 1, 8);
 }
 
 void Board::PrintBoard()
@@ -242,6 +246,19 @@ void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 	update6.join();
 	update7.join();
 	update8.join();
+
+
+	//std::vector<std::thread> threads;
+	//
+	//for (int t = 0; t < _threadcount; t++)
+	//{
+	//	threads.push_back(std::thread{ &Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * t / _threadcount), gsl::narrow_cast<uint16_t>(Height() * t+1 / _threadcount), ruleset });
+	//}
+
+	//for (auto& th : threads)
+	//{
+	//	th.join();
+	//}
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept

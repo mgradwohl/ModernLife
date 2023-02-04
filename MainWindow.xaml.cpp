@@ -146,32 +146,31 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::SetupRenderTargets()
     {
-        // Calculate important vales for the spritesheet and backbuffer slices
-        _dipsPerCellDimension = _bestbackbuffersize / BoardWidth();
-        _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
-        _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
-        _rowsPerSlice = gsl::narrow_cast<uint16_t>(_board.Height() / _threadcount);
-        _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
-
         CanvasDevice device = CanvasDevice::GetSharedDevice();
         {
-            // lock the backbuffer because it's being recreated and we don't want RenderOffscreen or Draw to use it while it's being recreated
+            // Calculate important vales for the spritesheet and backbuffer slices
             std::scoped_lock lock{ lockbackbuffer };
-            _backbuffer = CanvasRenderTarget(device, _bestbackbuffersize, _bestbackbuffersize, _dpi);
+
+            _dipsPerCellDimension = _bestbackbuffersize / BoardWidth();
+            _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
+            _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
+            _rowsPerSlice = gsl::narrow_cast<uint16_t>(_board.Height() / _threadcount);
+            _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
+
 
             // create backbuffers that are sliced horizontally
             // they will be as evenly divided as possible
             // with the final slice potentially being larger
             _backbuffers.clear();
             int j = 0;
-            for (j = 0; j < _threadcount -1 ; j++)
+            for (j = 0; j < _threadcount - 1; j++)
             {
                 _backbuffers.push_back(CanvasRenderTarget{ device, _bestbackbuffersize, _sliceHeight, _dpi });
             }
-			const int remainingRows = BoardWidth() - ( j * _rowsPerSlice);
+            const int remainingRows = BoardWidth() - (j * _rowsPerSlice);
             _backbuffers.push_back(CanvasRenderTarget{ device, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
         }
-
+        
         BuildSpriteSheet(device);
 
         if (!timer.IsRunning())
@@ -209,25 +208,28 @@ namespace winrt::ModernLife::implementation
         Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
         const Windows::Graphics::RectInt32 rez = displayArea.OuterBounds();
 
-        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
-
         // determine the right size for the canvas
-        float best = 400.0f;
-        while (true)
         {
-            if ((best * _dpi / 96.0f) >= rez.Height) break;
-            best += 100.0f;
-        }
-        best -= 200.0f;
-        _bestcanvassize = best;
+            std::scoped_lock lock{ lockbackbuffer };
+            _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
 
-        // make the backbuffer bigger than the front buffer, and a multiple of it
-        _bestbackbuffersize = _bestcanvassize;
-        while (_bestbackbuffersize < _idealbackbuffersize)
-        {
-            _bestbackbuffersize += _bestcanvassize;
-        }
+            float best = 400.0f;
+            while (true)
+            {
+                if ((best * _dpi / 96.0f) >= rez.Height) break;
+                best += 100.0f;
+            }
+            best -= 200.0f;
 
+            _bestcanvassize = best;
+
+            // make the backbuffer bigger than the front buffer, and a multiple of it
+            _bestbackbuffersize = _bestcanvassize;
+            while (_bestbackbuffersize < _idealbackbuffersize)
+            {
+                _bestbackbuffersize += _bestcanvassize;
+            }
+        }
         // setup offsets for sensible default window size
         constexpr int border = 20;
         constexpr int stackpanelwidth = 200;
@@ -254,10 +256,30 @@ namespace winrt::ModernLife::implementation
         }
         else
         {
-            std::scoped_lock lock{ lockbackbuffer };
-            args.DrawingSession().DrawImage(_backbuffer, destRect);
+            // lock the full size backbuffer and copy each slice into it
+            const float canvasSliceHeight = _sliceHeight / (_bestbackbuffersize / _bestcanvassize);
+            Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _sliceHeight };
+            Windows::Foundation::Rect dest{ 0.0f, 0.0f, _bestcanvassize,  canvasSliceHeight};
+            {
+                std::scoped_lock lock{ lockbackbuffer };
+
+                args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
+                args.DrawingSession().Blend(CanvasBlend::Copy);
+
+                int k = 0;
+                for (k = 0; k < _threadcount - 1; k++)
+                {
+                    args.DrawingSession().DrawImage(gsl::at(_backbuffers, k), dest, source);
+                    dest.Y += canvasSliceHeight;
+                }
+                dest.Height = _bestcanvassize - ( canvasSliceHeight * k);
+                source.Height = _bestbackbuffersize - ( _sliceHeight* k) ;
+                args.DrawingSession().DrawImage(gsl::at(_backbuffers, k), dest, source);
+
+                args.DrawingSession().Flush();
+                args.DrawingSession().Close();
+            }
         }
-        args.DrawingSession().Flush();
 
         fps.AddFrame();
     }
@@ -302,11 +324,11 @@ namespace winrt::ModernLife::implementation
 
         // create a drawing session for each backbuffer horizontal slice
         int startRow = 0;
-        std::vector<CanvasDrawingSession> dsList;
+
         for (int j = 0; j < _threadcount; j++)
-		{
-            dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
-		}
+        {
+            _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
+        }
 
         // lock the board and draw the cells into the horizontal slices
         // note that the last slice may be bigger than the other slices
@@ -317,10 +339,10 @@ namespace winrt::ModernLife::implementation
             int t = 0;
             for (t = 0; t < _threadcount-1; t++)
             {
-                threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(dsList , t), startRow, startRow + _rowsPerSlice});
+                threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, startRow + _rowsPerSlice});
                 startRow += _rowsPerSlice;
             }
-            threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(dsList , t), startRow, _board.Height()});
+            threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
 
             // join the threads which waits for them to complete their work
             for (auto& th : threads)
@@ -328,30 +350,7 @@ namespace winrt::ModernLife::implementation
 				th.join();
 			}
         }
-
-		// lock the full size backbuffer and copy each slice into it
-        Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _sliceHeight};
-        Windows::Foundation::Rect dest{ 0.0f, 0.0f, _bestbackbuffersize, _sliceHeight};
-        {
-            std::scoped_lock lock{ lockbackbuffer };
-
-            CanvasDrawingSession ds = _backbuffer.CreateDrawingSession();
-            ds.Antialiasing(CanvasAntialiasing::Aliased);
-            ds.Blend(CanvasBlend::Copy);
-
-            int k = 0;
-            for (k = 0; k < _threadcount-1; k++)
-            {
-                ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
-                dest.Y += _sliceHeight;
-            }
-            dest.Height = (_board.Height() - startRow) * _dipsPerCellDimension;
-            source.Height = (_board.Height() - startRow) * _dipsPerCellDimension;
-            ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
-
-            ds.Flush();
-            ds.Close();
-        }
+        _dsList.clear();
     }
 
     const Windows::Foundation::Rect MainWindow::GetSpriteCell(int index) const noexcept
@@ -395,11 +394,9 @@ namespace winrt::ModernLife::implementation
         {
             for (uint16_t x = 0; x < _spritesPerRow; x++)
             {
-                //ds.FillRectangle(posx, posy, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), GetCellColorHSV(index));
                 ds.FillRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetCellColorHSV(index));
                 ds.FillRoundedRectangle(posx + inset, posy + inset, _dipsPerCellDimension - (2 * inset), _dipsPerCellDimension - (2 * inset), round, round, GetOutlineColorHSV(index));
 
-                //ds.DrawRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetOutlineColorHSV(index), 1.0f);
                 posx += _dipsPerCellDimension;
                 index++;
             }
@@ -458,6 +455,7 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"BoardWidth")
         {
+            timer.Stop();
             SetupRenderTargets();
             StartGameLoop();
         }
@@ -529,7 +527,6 @@ namespace winrt::ModernLife::implementation
         if (_boardwidth != value)
         {
             _boardwidth = value;
-            timer.Stop();
             _propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
         }
     }

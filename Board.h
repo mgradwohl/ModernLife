@@ -21,6 +21,8 @@ private:
     uint32_t _numDying{ 0 };
     uint32_t _OldAge{ 0xFFFFFFFF };
 
+    int _threadcount;
+
 public:
     explicit Board(std::nullptr_t) noexcept {};
     Board(Board& b) = delete;

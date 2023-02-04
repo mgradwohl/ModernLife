@@ -79,12 +79,10 @@ namespace winrt::ModernLife::implementation
         FPScounter fps{ nullptr };
         TimerHelper timer{ 30, true };
 
-        CanvasRenderTarget _backbuffer{ nullptr };
+        int _threadcount{ 0 };
         std::vector<CanvasRenderTarget> _backbuffers;
-        
+        std::vector<CanvasDrawingSession> _dsList;
         CanvasRenderTarget _spritesheet{ nullptr };
-
-        int _threadcount{ 0 }; 
 
         std::mutex lockbackbuffer;
         std::mutex lockboard;
@@ -104,8 +102,8 @@ namespace winrt::ModernLife::implementation
         int16_t _boardwidth{ 200 };
         float _bestcanvassize{ 1000.0f };
         // ensure at least 6 dips per cell max board size which is 500 cells per row
-        float _idealbackbuffersize{ 3000.0f };
-        float _bestbackbuffersize{ 3000.0f };
+        float _idealbackbuffersize{ 4000.0f };
+        float _bestbackbuffersize{ 4000.0f };
 
         winrt::event_token _propertyToken;
         winrt::event<PropertyChangedEventHandler> _propertyChanged;
