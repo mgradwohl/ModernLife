@@ -386,12 +386,12 @@ namespace winrt::ModernLife::implementation
         // TODO maybe this is unneccessary
 
         // start filling tiles at age 0
-        const float offset = 1.0f;
-		const float inset = _dipsPerCellDimension / 4.0f;
+        constexpr float offset = 1.0f;
+        constexpr float round = 4.0f;
+        const float inset = _dipsPerCellDimension / 4.0f;
         uint16_t index = 0;
         float posx{ 0.0f };
         float posy{ 0.0f };
-		const float round = 4.0f;
         for (uint16_t y = 0; y < _spritesPerRow; y++)
         {
             for (uint16_t x = 0; x < _spritesPerRow; x++)
@@ -470,11 +470,9 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"SeedPercent")
         {
-            OnBoardResized();
-//            RandomizeBoard();
+            RandomizeBoard();
             StartGameLoop();
         }
-
     }
 
     int32_t MainWindow::MaxAge() const noexcept
@@ -487,7 +485,6 @@ namespace winrt::ModernLife::implementation
         if (_maxage != value)
         {
             _maxage = value;
-
             _propertyChanged(*this, PropertyChangedEventArgs{ L"MaxAge" });
         }
     }
@@ -502,7 +499,6 @@ namespace winrt::ModernLife::implementation
 		if (_drawLegend != value)
 		{
 			_drawLegend = value;
-
 			_propertyChanged(*this, PropertyChangedEventArgs{ L"ShowLegend" });
 		}
 	}
@@ -517,7 +513,6 @@ namespace winrt::ModernLife::implementation
         if (_randompercent != value)
         {
             _randompercent = value;
-
             _propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
         }
     }
@@ -566,8 +561,6 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::theCanvas_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
-        // this locks the canvas size, but can we let the user resize and if it's too big they can scroll and zoom?
-        //_canvasSize = _bestcanvassize;
         SetupRenderTargets();
     }
 
@@ -585,9 +578,8 @@ namespace winrt::ModernLife::implementation
         return htext;
     }
 
-    void MainWindow::speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::speedClick(IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        e;
         using namespace Microsoft::UI::Xaml::Controls;
         MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
         
@@ -647,9 +639,9 @@ namespace winrt::ModernLife::implementation
         const float q{ v * (1 - s * f) };
         const float t{ v * (1 - s * (1 - f)) };
 
-        float dr{ 0 };
-        float dg{ 0 };
-        float db{ 0 };
+        float dr{ 0.0f };
+        float dg{ 0.0f };
+        float db{ 0.0f };
 
         switch (i)
         {

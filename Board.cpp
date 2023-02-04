@@ -197,6 +197,10 @@ void Board::RandomizeBoard(float alivepct, int maxage)
 			SetCell(cell, Cell::State::Live);
 			cell.SetAge(gsl::narrow_cast<uint16_t>(ra));
 		}
+		else
+		{
+			SetCell(cell, Cell::State::Dead);
+		}
 	}
 }
 
