@@ -9,13 +9,14 @@ I learned C++ on C++/98 so
  - This is a great way to learn about improvements in C++ from C++
    11/14/17/20
  - This is a great way to learn our recommended Windows App Development path
- - Cellular Automata is something that interests met
+ - Cellular Automata is something that interests me
  - The project includes many good opportunities for learning
  - XAML, XAML binding
  - Multithreading
- - Syncronization
+ - Synchronization
  - Timers
  - Canvas and drawing
+ - std:: and gsl:: and wil::
  - Class design and much more
 
 ## Requires
