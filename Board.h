@@ -21,13 +21,15 @@ private:
     uint32_t _numDying{ 0 };
     uint32_t _OldAge{ 0xFFFFFFFF };
 
-    int _threadcount;
+    int _threadcount{ 1 };
 
 public:
     explicit Board(std::nullptr_t) noexcept {};
     Board(Board& b) = delete;
     Board(uint16_t width, uint16_t height);
     ~Board() = default;
+
+    void SetThreadCount();
 
     void SetOldAge(uint32_t age) noexcept
     {

@@ -33,6 +33,11 @@ Board::Board(uint16_t width, uint16_t height)
 {
 	_board.resize(_size);
 
+	SetThreadCount();
+}
+
+void Board::SetThreadCount()
+{
 	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 	_threadcount = std::clamp(_threadcount, 1, 8);
 }
@@ -233,36 +238,22 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t 
 
 void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 {
-	std::thread update1(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(0),                gsl::narrow_cast<uint16_t>(Height() * 1 / 8), ruleset);
-	std::thread update2(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 1 / 8), gsl::narrow_cast<uint16_t>(Height() * 2 / 8), ruleset);
-	std::thread update3(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 2 / 8), gsl::narrow_cast<uint16_t>(Height() * 3 / 8), ruleset);
-	std::thread update4(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 3 / 8), gsl::narrow_cast<uint16_t>(Height() * 4 / 8), ruleset);
-	std::thread update5(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 4 / 8), gsl::narrow_cast<uint16_t>(Height() * 5 / 8), ruleset);
-	std::thread update6(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 5 / 8), gsl::narrow_cast<uint16_t>(Height() * 6 / 8), ruleset);
-	std::thread update7(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 6 / 8), gsl::narrow_cast<uint16_t>(Height() * 7 / 8), ruleset);
-	std::thread update8(&Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * 7 / 8), gsl::narrow_cast<uint16_t>(Height())        , ruleset);
-	
-	update1.join();
-	update2.join();
-	update3.join();
-	update4.join();
-	update5.join();
-	update6.join();
-	update7.join();
-	update8.join();
+	const uint16_t rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
+	const uint16_t remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
+	uint16_t rowStart = 0;
+	std::vector<std::thread> threads;
+	for (int t = 0; t < _threadcount-1; t++)
+	{
+		threads.push_back(std::thread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
+		rowStart += rowsPerThread;
+		
+	}
+	threads.push_back(std::thread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 
-
-	//std::vector<std::thread> threads;
-	//
-	//for (int t = 0; t < _threadcount; t++)
-	//{
-	//	threads.push_back(std::thread{ &Board::UpdateRowsWithNextState,this, gsl::narrow_cast<uint16_t>(Height() * t / _threadcount), gsl::narrow_cast<uint16_t>(Height() * t+1 / _threadcount), ruleset });
-	//}
-
-	//for (auto& th : threads)
-	//{
-	//	th.join();
-	//}
+	for (auto& th : threads)
+	{
+		th.join();
+	}
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept
