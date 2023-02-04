@@ -20,16 +20,27 @@ private:
     uint32_t _numOld{ 0 };
     uint32_t _numDying{ 0 };
     uint32_t _OldAge{ 0xFFFFFFFF };
+    uint16_t _maxage;
 
     int _threadcount{ 1 };
 
 public:
     explicit Board(std::nullptr_t) noexcept {};
     Board(Board& b) = delete;
-    Board(uint16_t width, uint16_t height);
+    Board(uint16_t width, uint16_t height, uint16_t maxage);
     ~Board() = default;
 
     void SetThreadCount();
+
+    void SetMaxAge(uint16_t maxage) noexcept
+    {
+        _maxage = maxage;
+    }
+
+	uint16_t MaxAge() const noexcept
+	{
+		return _maxage;
+	}
 
     void SetOldAge(uint32_t age) noexcept
     {
@@ -85,12 +96,12 @@ public:
         return _generation;
     }
 
-    uint32_t Width() const noexcept
+    uint16_t Width() const noexcept
     {
         return _width;
     }
 
-    uint32_t Height() const noexcept
+    uint16_t Height() const noexcept
     {
         return _height;
     }

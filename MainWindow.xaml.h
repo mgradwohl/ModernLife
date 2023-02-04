@@ -44,14 +44,14 @@ namespace winrt::ModernLife::implementation
         {
             _propertyChanged.remove(token);
         }
-        int32_t SeedPercent() const noexcept;
-        void SeedPercent(int32_t value);
-        int32_t MaxAge() const noexcept;
-        void MaxAge(int32_t value);
+        uint16_t SeedPercent() const noexcept;
+        void SeedPercent(uint16_t value);
+        uint16_t MaxAge() const noexcept;
+        void MaxAge(uint16_t value);
         bool ShowLegend() const noexcept;
         void ShowLegend(bool value);
-        void BoardWidth(int16_t value);
-        int16_t BoardWidth() const noexcept;
+        void BoardWidth(uint16_t value);
+        uint16_t BoardWidth() const noexcept;
         hstring GetRandPercentText(double_t value);
         hstring GetBoardWidthText(double_t value);
         void speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -65,13 +65,14 @@ namespace winrt::ModernLife::implementation
 
         void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void RenderOffscreen(CanvasControl const& sender);
-        void DrawHorizontalRows(const CanvasDrawingSession& ds, int startRow, int endRow);
+        void DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow);
         void theCanvasStatsContent_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
         void SetupRenderTargets();
         void theCanvas_CreateResources(CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
         void SetBestCanvasandWindowSizes();
         void OnBoardResized();
         void RandomizeBoard();
+        void OnMaxAgeChanged();
 
         Windows::UI::Color GetCellColorHSV(uint16_t age);
         Windows::UI::Color GetOutlineColorHSV(uint16_t age);
@@ -94,12 +95,12 @@ namespace winrt::ModernLife::implementation
         float _dipsPerCellDimension{ 0.0f };
         uint16_t _rowsPerSlice{ 0 };
         float _sliceHeight{ 0.0f };
-        int _spritesPerRow{ 0 };
+        uint16_t _spritesPerRow{ 0 };
         float _spriteDipsPerRow{ 0.0f };
 
         bool _drawLegend{ false };
-        int32_t _randompercent{30};
-        int32_t _maxage{ 1000 };
+        uint16_t _randompercent{30};
+        uint16_t _maxage{ 1000 };
         int32_t _ruleset{ 1 };
         int16_t _boardwidth{ 200 };
         float _bestcanvassize{ 1000.0f };

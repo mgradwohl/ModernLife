@@ -45,9 +45,6 @@ namespace winrt::ModernLife::implementation
     
     unsigned int MainWindow::SetThreadCount() noexcept
     {
-        _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
-        _threadcount = std::clamp(_threadcount, 1, 8);
-
         int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 		count = std::clamp(count, 1, 8);
         return count;
@@ -141,7 +138,7 @@ namespace winrt::ModernLife::implementation
         // we lock it because changing board parameters will call StartGameLoop()
         {
             std::scoped_lock lock{ lockboard };
-            _board = Board{ gsl::narrow_cast<uint16_t>(BoardWidth()), gsl::narrow_cast<uint16_t>(BoardWidth()) };
+            _board = Board{ BoardWidth(), BoardWidth(), MaxAge()};
             RandomizeBoard();
         }
 
@@ -286,7 +283,7 @@ namespace winrt::ModernLife::implementation
         fps.AddFrame();
     }
 
-    void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, int startRow, int endRow)
+    void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow)
     {
         ds.Clear(Colors::WhiteSmoke());
         ds.Antialiasing(CanvasAntialiasing::Antialiased);
@@ -295,11 +292,11 @@ namespace winrt::ModernLife::implementation
 
         Windows::Foundation::Rect rectDest{ 0.0f, 0.0f, _dipsPerCellDimension, _dipsPerCellDimension };
         {
-            for (uint16_t y = gsl::narrow_cast<uint16_t>(startRow); y < endRow; y++)
+            for (uint16_t y = startRow; y < endRow; y++)
             {
                 for (uint16_t x = 0; x < _board.Width(); x++)
                 {
-                    const Cell& cell = _board.GetCell(x, y);
+                    Cell& cell = _board.GetCell(x, y);
 
                     rectDest.X = x * _dipsPerCellDimension;
                     rectDest.Y = (y - startRow) * _dipsPerCellDimension;
@@ -325,7 +322,7 @@ namespace winrt::ModernLife::implementation
         //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
         // create a drawing session for each backbuffer horizontal slice
-        int startRow = 0;
+        uint16_t startRow = 0;
 
         for (int j = 0; j < _threadcount; j++)
         {
@@ -341,7 +338,7 @@ namespace winrt::ModernLife::implementation
             int t = 0;
             for (t = 0; t < _threadcount-1; t++)
             {
-                threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, startRow + _rowsPerSlice});
+                threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
                 startRow += _rowsPerSlice;
             }
             threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
@@ -357,7 +354,8 @@ namespace winrt::ModernLife::implementation
 
     const Windows::Foundation::Rect MainWindow::GetSpriteCell(int index) const noexcept
     {
-        const uint32_t i = index >= MaxAge() ? MaxAge() : index;
+        const uint16_t i = index;
+        i >= MaxAge() ? MaxAge() : i;
 		const Windows::Foundation::Rect rect{ (i % _spritesPerRow) * _dipsPerCellDimension, (i / _spritesPerRow) * _dipsPerCellDimension, _dipsPerCellDimension, _dipsPerCellDimension };
        
         return rect;
@@ -396,8 +394,8 @@ namespace winrt::ModernLife::implementation
         {
             for (uint16_t x = 0; x < _spritesPerRow; x++)
             {
-                ds.FillRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetCellColorHSV(index));
-                ds.FillRoundedRectangle(posx + inset, posy + inset, _dipsPerCellDimension - (2 * inset), _dipsPerCellDimension - (2 * inset), round, round, GetOutlineColorHSV(index));
+                ds.FillRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetOutlineColorHSV(index));
+                ds.FillRoundedRectangle(posx + inset, posy + inset, _dipsPerCellDimension - (2 * inset), _dipsPerCellDimension - (2 * inset), round, round, GetCellColorHSV(index));
 
                 posx += _dipsPerCellDimension;
                 index++;
@@ -448,11 +446,17 @@ namespace winrt::ModernLife::implementation
         sender.Invalidate();
     }
 
+    void MainWindow::OnMaxAgeChanged()
+    {
+        _board.SetMaxAge(MaxAge());
+        SetupRenderTargets();
+    }
+    
     void MainWindow::OnPropertyChanged([[maybe_unused]] IInspectable const& sender, PropertyChangedEventArgs const& args)
     {
         if (args.PropertyName() == L"MaxAge")
         {
-            SetupRenderTargets();
+            OnMaxAgeChanged();
         }
 
         if (args.PropertyName() == L"BoardWidth")
@@ -475,12 +479,12 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    int32_t MainWindow::MaxAge() const noexcept
+    uint16_t MainWindow::MaxAge() const noexcept
     {
         return _maxage;
     }
 
-    void MainWindow::MaxAge(int32_t value)
+    void MainWindow::MaxAge(uint16_t value)
     {
         if (_maxage != value)
         {
@@ -503,12 +507,12 @@ namespace winrt::ModernLife::implementation
 		}
 	}
     
-    int32_t MainWindow::SeedPercent() const noexcept
+    uint16_t MainWindow::SeedPercent() const noexcept
     {
         return _randompercent;
     }
 
-    void MainWindow::SeedPercent(int32_t value)
+    void MainWindow::SeedPercent(uint16_t value)
     {
         if (_randompercent != value)
         {
@@ -517,12 +521,12 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    int16_t MainWindow::BoardWidth() const noexcept
+    uint16_t MainWindow::BoardWidth() const noexcept
     {
         return _boardwidth;
     }
 
-    void MainWindow::BoardWidth(int16_t value)
+    void MainWindow::BoardWidth(uint16_t value)
     {
         if (_boardwidth != value)
         {
@@ -582,7 +586,6 @@ namespace winrt::ModernLife::implementation
     {
         using namespace Microsoft::UI::Xaml::Controls;
         MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
-        
 		dropdownSpeed().Content(winrt::box_value(item.Text()));
 
 		timer.FPS(item.Tag().as<int>());
@@ -592,13 +595,12 @@ namespace winrt::ModernLife::implementation
     {
         using namespace Microsoft::UI::Xaml::Controls;
         MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
-
         dropdownRules().Content(winrt::box_value(item.Text()));
 
         _ruleset = item.Tag().as<int>();
     }
 
-    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
+    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
     {
         if (age >= MaxAge())
         {
@@ -606,10 +608,10 @@ namespace winrt::ModernLife::implementation
         }
 
         const float h{ (age * 360.f) / MaxAge()};
-        return HSVtoColor(h, 0.6f, 0.8f);
+        return HSVtoColor(h, 0.6f, 0.7f);
     }
 
-    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
+    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
     {
         if (age >= MaxAge())
         {
@@ -617,7 +619,7 @@ namespace winrt::ModernLife::implementation
         }
 
         const float h{ (age * 360.f) / MaxAge()};
-        return HSVtoColor(h, 0.8f, 0.9f);
+        return HSVtoColor(h, 0.7f, 0.9f);
     }
 
     // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB

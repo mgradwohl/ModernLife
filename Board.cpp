@@ -28,9 +28,10 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 	return stream;
 }
 
-Board::Board(uint16_t width, uint16_t height)
+Board::Board(uint16_t width, uint16_t height, uint16_t maxage)
 	: _width(width), _height(height), _size(width * height)
 {
+	_maxage = maxage;
 	_board.resize(_size);
 
 	SetThreadCount();
@@ -387,6 +388,7 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	else
 	if (cell.GetState() == Cell::State::Live)
 	{
+		cell.SetAge(_maxage);
 		cell.SetState(Cell::State::BrianDying);
 	}
 	else
