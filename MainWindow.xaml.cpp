@@ -115,7 +115,7 @@ namespace winrt::ModernLife::implementation
         fps = FPScounter();
 
         // draw the initial population
-        theCanvas().Invalidate();
+        InvalidateIfNeeded();
     }
 
     void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
@@ -126,6 +126,7 @@ namespace winrt::ModernLife::implementation
             _board.ApplyNextStateToBoard();
         }
         theCanvas().Invalidate();
+        theCanvasStatsContent().Invalidate();
     }
 
     void MainWindow::SetupRenderTargets()
@@ -156,10 +157,15 @@ namespace winrt::ModernLife::implementation
         }
         
         BuildSpriteSheet();
+        InvalidateIfNeeded();
+    }
 
+    void MainWindow::InvalidateIfNeeded()
+    {
         if (!timer.IsRunning())
         {
             theCanvas().Invalidate();
+            theCanvasStatsContent().Invalidate();
         }
     }
 
@@ -175,7 +181,7 @@ namespace winrt::ModernLife::implementation
 
             SetBestCanvasandWindowSizes();
             SetupRenderTargets();
-            theCanvas().Invalidate();
+            InvalidateIfNeeded();
         }
     }
 
@@ -430,7 +436,6 @@ namespace winrt::ModernLife::implementation
         args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
         args.DrawingSession().Flush();
 
-        sender.Invalidate();
     }
 
     // property handlers
@@ -483,7 +488,7 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"ShowLegend")
         {
-            theCanvas().Invalidate();
+            InvalidateIfNeeded();
         }
 
         if (args.PropertyName() == L"SeedPercent")

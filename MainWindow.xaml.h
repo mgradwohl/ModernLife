@@ -65,6 +65,7 @@ namespace winrt::ModernLife::implementation
         void DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow);
         void theCanvasStatsContent_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void SetupRenderTargets();
+        void InvalidateIfNeeded();
         void theCanvas_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
         void SetBestCanvasandWindowSizes();
         void OnBoardResized();
