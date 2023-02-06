@@ -33,15 +33,16 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::InitializeComponent()
     {
+        //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
+
+        _threadcount = SetThreadCount();
 
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
         SetMyTitleBar();
         OnBoardResized();
         SetBestCanvasandWindowSizes();
-
-        _threadcount = SetThreadCount();
 
         timer.Tick({ this, &MainWindow::OnTick });
         StartGameLoop();
@@ -127,23 +128,6 @@ namespace winrt::ModernLife::implementation
         theCanvas().Invalidate();
     }
 
-    void MainWindow::RandomizeBoard()
-    {
-        // add a random population
-        _board.RandomizeBoard(SeedPercent() / 100.0f, MaxAge());
-    }
-    
-    void MainWindow::OnBoardResized()
-    {
-        // create the board, lock it in the case that OnTick is updating it
-        // we lock it because changing board parameters will call StartGameLoop()
-        {
-            std::scoped_lock lock{ lockboard };
-            _board = Board{ BoardWidth(), BoardWidth(), MaxAge()};
-            RandomizeBoard();
-        }
-
-    }
     void MainWindow::SetupRenderTargets()
     {
         Microsoft::Graphics::Canvas::CanvasDevice device = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
@@ -171,7 +155,7 @@ namespace winrt::ModernLife::implementation
             _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ device, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
         }
         
-        BuildSpriteSheet(device);
+        BuildSpriteSheet();
 
         if (!timer.IsRunning())
         {
@@ -355,14 +339,15 @@ namespace winrt::ModernLife::implementation
 
     const Windows::Foundation::Rect MainWindow::GetSpriteCell(uint16_t index) const noexcept
     {
-        const uint16_t i = index;
-        i >= MaxAge() ? MaxAge() : i;
+        const uint16_t i = std::clamp(index, gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(MaxAge() + 1));
+        //winrt::check_bool(i < MaxAge());
+
 		const Windows::Foundation::Rect rect{ (i % _spritesPerRow) * _dipsPerCellDimension, (i / _spritesPerRow) * _dipsPerCellDimension, _dipsPerCellDimension, _dipsPerCellDimension };
        
         return rect;
     }
 
-    void MainWindow::BuildSpriteSheet(const Microsoft::Graphics::Canvas::CanvasDevice& device)
+    void MainWindow::BuildSpriteSheet()
     {
         // TODO only fill most of the cells with color. Reserve maybe the last 10% or so for gray
         // TODO gray is h=0, s=0, and v from 1 to 0
@@ -370,6 +355,7 @@ namespace winrt::ModernLife::implementation
         //_spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
+        Microsoft::Graphics::Canvas::CanvasDevice device = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         _spritesheet = Microsoft::Graphics::Canvas::CanvasRenderTarget(device, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
 
         Microsoft::Graphics::Canvas::CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
@@ -447,6 +433,36 @@ namespace winrt::ModernLife::implementation
         sender.Invalidate();
     }
 
+    // property handlers
+    void MainWindow::OnRandomizeBoard()
+    {
+        RandomizeBoard();
+        StartGameLoop();
+    }
+
+    void MainWindow::RandomizeBoard()
+    {
+        // add a random population
+        {
+            std::scoped_lock lock{ lockboard };
+            _board.RandomizeBoard(SeedPercent() / 100.0f, MaxAge());
+        }
+    }
+
+    void MainWindow::OnBoardResized()
+    {
+        // create the board, lock it in the case that OnTick is updating it
+        // we lock it because changing board parameters will call StartGameLoop()
+        timer.Stop();
+        {
+            std::scoped_lock lock{ lockboard };
+            _board = Board{ BoardWidth(), BoardWidth(), MaxAge() };
+        }
+        RandomizeBoard();
+        SetupRenderTargets();
+        StartGameLoop();
+    }
+
     void MainWindow::OnMaxAgeChanged()
     {
         _board.SetMaxAge(MaxAge());
@@ -462,10 +478,7 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"BoardWidth")
         {
-            timer.Stop();
             OnBoardResized();
-            SetupRenderTargets();
-            StartGameLoop();
         }
 
         if (args.PropertyName() == L"ShowLegend")
@@ -475,8 +488,7 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"SeedPercent")
         {
-            RandomizeBoard();
-            StartGameLoop();
+            OnRandomizeBoard();
         }
     }
 
@@ -555,10 +567,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::RestartButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        timer.Stop();
-        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
-        GoButton().Label(L"Pause");
-        StartGameLoop();
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
     }
 
     void MainWindow::theCanvas_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
@@ -596,6 +605,7 @@ namespace winrt::ModernLife::implementation
         _ruleset = item.Tag().as<int>();
     }
 
+    // color helpers used by spritesheet
     Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
     {
         if (age >= MaxAge())

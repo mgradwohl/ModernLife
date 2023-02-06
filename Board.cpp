@@ -330,6 +330,12 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 	{
 		cell.SetState(Cell::State::Born);
 	}
+	if (cell.IsDying())
+	{
+		// should never happen
+		cell.SetState(Cell::State::Live);
+	}
+	
 }
 
 void Board::HighlifeRules(Cell& cell) const noexcept
@@ -384,6 +390,7 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	// being born there. Cells that were in the dying state go into the off state.
 
 	const uint16_t count = cell.Neighbors();
+	
 	if (cell.GetState() == Cell::State::BrianDying)
 	{
 		cell.SetState(Cell::State::Dying);
@@ -391,7 +398,7 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	else
 	if (cell.GetState() == Cell::State::Live)
 	{
-		cell.SetAge(_maxage);
+		cell.SetAge(_maxage +1);
 		cell.SetState(Cell::State::BrianDying);
 	}
 	else

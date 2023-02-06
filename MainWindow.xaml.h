@@ -28,6 +28,7 @@ namespace winrt::ModernLife::implementation
         void Window_Closed(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void StartGameLoop();
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
+        void OnRandomizeBoard();
         unsigned int SetThreadCount() noexcept;
 
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
@@ -56,7 +57,7 @@ namespace winrt::ModernLife::implementation
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
-        void BuildSpriteSheet(const Microsoft::Graphics::Canvas::CanvasDevice& device);
+        void BuildSpriteSheet();
         const Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
 
         void CanvasControl_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
