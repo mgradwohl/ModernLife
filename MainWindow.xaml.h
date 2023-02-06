@@ -4,7 +4,13 @@
 #pragma once
 
 #include "MainWindow.g.h"
+
 #include <winrt/Windows.Graphics.Display.h>
+#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Microsoft.UI.Xaml.h>
+#include <winrt/Microsoft.UI.Xaml.Data.h>
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
 #include "Board.h"
 #include "fpscounter.h"

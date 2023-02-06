@@ -9,9 +9,14 @@
 #endif
 
 #include <winrt/Windows.Foundation.h>
-#include <winrt/Microsoft.Graphics.Canvas.h>
-#include <winrt/Windows.Graphics.Display.h>
+#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
+#include <winrt/Microsoft.UI.Xaml.Data.h>
+#include <winrt/Windows.Graphics.Display.h>
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
+
 #include <winuser.h>
 #include <algorithm>
 
@@ -102,8 +107,7 @@ namespace winrt::ModernLife::implementation
     {
         // prep the play button
         timer.Stop();
-        using namespace Microsoft::UI::Xaml::Controls;
-        GoButton().Icon(SymbolIcon(Symbol::Play));
+        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
         GoButton().Label(L"Play");
 
         // start the FPSCounter
@@ -534,28 +538,25 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::GoButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        using namespace Microsoft::UI::Xaml::Controls;
         if (timer.IsRunning())
         {
             timer.Stop();
             GoButton().Label(L"Play");
-            GoButton().Icon(SymbolIcon(Symbol::Play));
+            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
 
         }
         else
         {
             timer.Start();
-            GoButton().Icon(SymbolIcon(Symbol::Pause));
+            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
             GoButton().Label(L"Pause");
         }
     }
 
     void MainWindow::RestartButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        using namespace Microsoft::UI::Xaml::Controls;
-
         timer.Stop();
-        GoButton().Icon(SymbolIcon(Symbol::Pause));
+        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
         GoButton().Label(L"Pause");
         StartGameLoop();
     }
@@ -581,8 +582,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::speedClick(IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        using namespace Microsoft::UI::Xaml::Controls;
-        MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
+        Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.try_as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
 		dropdownSpeed().Content(winrt::box_value(item.Text()));
 
 		timer.FPS(item.Tag().as<int>());
@@ -590,8 +590,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::ruleClick(IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        using namespace Microsoft::UI::Xaml::Controls;
-        MenuFlyoutItem item = sender.try_as<MenuFlyoutItem>();
+        Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.try_as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
         dropdownRules().Content(winrt::box_value(item.Text()));
 
         _ruleset = item.Tag().as<int>();

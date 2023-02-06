@@ -1,4 +1,7 @@
 ﻿#include "pch.h"
+
+#include <string>
+
 #include "Cell.h"
 
 void Cell::SetState(State state) noexcept

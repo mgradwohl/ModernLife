@@ -1,8 +1,11 @@
 ﻿#include "pch.h"
-#include "Board.h"
-#include "gsl/include/gsl"
+
 #include <future>
 #include <algorithm>
+
+#include "gsl/include/gsl"
+
+#include "Board.h"
 
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
