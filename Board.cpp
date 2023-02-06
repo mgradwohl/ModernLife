@@ -391,6 +391,8 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 
 	const uint16_t count = cell.Neighbors();
 	
+	// Cell::State::BrianDying is a special case for this ruleset
+	// so that Dying cells draw as well as Live cells
 	if (cell.GetState() == Cell::State::BrianDying)
 	{
 		cell.SetState(Cell::State::Dying);
