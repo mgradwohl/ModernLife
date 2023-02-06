@@ -10,16 +10,6 @@
 #include "fpscounter.h"
 #include "TimerHelper.h"
 
-using namespace winrt;
-using namespace Microsoft::UI;
-using namespace Microsoft::UI::Dispatching;
-using namespace Microsoft::UI::Xaml;
-using namespace Microsoft::UI::Xaml::Media;
-using namespace Microsoft::UI::Xaml::Data;
-using namespace Microsoft::Graphics;
-using namespace Microsoft::Graphics::Canvas;
-using namespace Microsoft::Graphics::Canvas::UI::Xaml;
-
 namespace winrt::ModernLife::implementation
 {
     struct MainWindow : MainWindowT<MainWindow>
@@ -35,7 +25,7 @@ namespace winrt::ModernLife::implementation
         unsigned int SetThreadCount() noexcept;
 
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
-        winrt::event_token PropertyChanged(PropertyChangedEventHandler const& value)
+        winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
         {
             return _propertyChanged.add(value);
         }
@@ -60,15 +50,15 @@ namespace winrt::ModernLife::implementation
         void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
-        void BuildSpriteSheet(const CanvasDevice& device);
+        void BuildSpriteSheet(const Microsoft::Graphics::Canvas::CanvasDevice& device);
         const Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
 
-        void CanvasControl_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
-        void RenderOffscreen(CanvasControl const& sender);
-        void DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow);
-        void theCanvasStatsContent_Draw(CanvasControl const& sender, CanvasDrawEventArgs const& args);
+        void CanvasControl_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        void RenderOffscreen(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender);
+        void DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow);
+        void theCanvasStatsContent_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void SetupRenderTargets();
-        void theCanvas_CreateResources(CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
+        void theCanvas_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
         void SetBestCanvasandWindowSizes();
         void OnBoardResized();
         void RandomizeBoard();
@@ -83,9 +73,9 @@ namespace winrt::ModernLife::implementation
         TimerHelper timer{ 30, true };
 
         int _threadcount{ 0 };
-        std::vector<CanvasRenderTarget> _backbuffers;
-        std::vector<CanvasDrawingSession> _dsList;
-        CanvasRenderTarget _spritesheet{ nullptr };
+        std::vector<Microsoft::Graphics::Canvas::CanvasRenderTarget> _backbuffers;
+        std::vector<Microsoft::Graphics::Canvas::CanvasDrawingSession> _dsList;
+        Microsoft::Graphics::Canvas::CanvasRenderTarget _spritesheet{ nullptr };
 
         std::mutex lockbackbuffer;
         std::mutex lockboard;
@@ -109,7 +99,7 @@ namespace winrt::ModernLife::implementation
         float _bestbackbuffersize{ 4000.0f };
 
         winrt::event_token _propertyToken;
-        winrt::event<PropertyChangedEventHandler> _propertyChanged;
+        winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> _propertyChanged;
     };
 }
 

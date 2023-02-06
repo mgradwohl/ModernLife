@@ -2,22 +2,21 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
-#include "MainWindow.xaml.h"
 
+#include "MainWindow.xaml.h"
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
 
-#include <algorithm>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winuser.h>
+#include <algorithm>
+
 #include "TimerHelper.h"
 #include "fpscounter.h"
-
-using namespace Microsoft::Graphics::Canvas;
 
 namespace winrt::ModernLife::implementation
 {
@@ -80,17 +79,15 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowActivate([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] WindowActivatedEventArgs const& args)
     {
-        using namespace Microsoft::UI::Xaml::Media;
-
-        if (args.WindowActivationState() == WindowActivationState::Deactivated)
+        if (args.WindowActivationState() == Microsoft::UI::Xaml::WindowActivationState::Deactivated)
         {
-            SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<SolidColorBrush>();
+            Microsoft::UI::Xaml::Media::SolidColorBrush brush = Microsoft::UI::Xaml::ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<Microsoft::UI::Xaml::Media::SolidColorBrush>();
             AppTitleTextBlock().Foreground(brush);
             AppTitlePreview().Foreground(brush);
         }
         else
         {
-            SolidColorBrush brush = ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<SolidColorBrush>();
+            Microsoft::UI::Xaml::Media::SolidColorBrush brush = Microsoft::UI::Xaml::ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<Microsoft::UI::Xaml::Media::SolidColorBrush>();
             AppTitleTextBlock().Foreground(brush);
             AppTitlePreview().Foreground(brush);
         }
@@ -145,7 +142,7 @@ namespace winrt::ModernLife::implementation
     }
     void MainWindow::SetupRenderTargets()
     {
-        CanvasDevice device = CanvasDevice::GetSharedDevice();
+        Microsoft::Graphics::Canvas::CanvasDevice device = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         {
             // Calculate important vales for the spritesheet and backbuffer slices
             std::scoped_lock lock{ lockbackbuffer };
@@ -164,10 +161,10 @@ namespace winrt::ModernLife::implementation
             int j = 0;
             for (j = 0; j < _threadcount - 1; j++)
             {
-                _backbuffers.push_back(CanvasRenderTarget{ device, _bestbackbuffersize, _sliceHeight, _dpi });
+                _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ device, _bestbackbuffersize, _sliceHeight, _dpi });
             }
             const int remainingRows = BoardWidth() - (j * _rowsPerSlice);
-            _backbuffers.push_back(CanvasRenderTarget{ device, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
+            _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ device, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
         }
         
         BuildSpriteSheet(device);
@@ -178,7 +175,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::theCanvas_CreateResources([[maybe_unused]] CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
+    void MainWindow::theCanvas_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
         // todo might want to do the code in the if-block in all cases (for all args.Reason()s
         //if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
@@ -242,11 +239,11 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::CanvasControl_Draw(CanvasControl  const& sender, CanvasDrawEventArgs const& args)
+    void MainWindow::CanvasControl_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
         RenderOffscreen(sender);
-        args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
-        args.DrawingSession().Blend(CanvasBlend::Copy);
+        args.DrawingSession().Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
+        args.DrawingSession().Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
         const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _bestcanvassize, _bestcanvassize };
 
         if (ShowLegend())
@@ -262,8 +259,8 @@ namespace winrt::ModernLife::implementation
             {
                 std::scoped_lock lock{ lockbackbuffer };
 
-                args.DrawingSession().Antialiasing(CanvasAntialiasing::Aliased);
-                args.DrawingSession().Blend(CanvasBlend::Copy);
+                args.DrawingSession().Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
+                args.DrawingSession().Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
 
                 int k = 0;
                 for (k = 0; k < _threadcount - 1; k++)
@@ -283,12 +280,12 @@ namespace winrt::ModernLife::implementation
         fps.AddFrame();
     }
 
-    void MainWindow::DrawHorizontalRows(const CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow)
+    void MainWindow::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow)
     {
-        ds.Clear(Colors::WhiteSmoke());
-        ds.Antialiasing(CanvasAntialiasing::Antialiased);
-        ds.Blend(CanvasBlend::Copy);
-        CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(CanvasSpriteSortMode::Bitmap, CanvasImageInterpolation::NearestNeighbor, CanvasSpriteOptions::None);
+        ds.Clear(Windows::UI::Colors::WhiteSmoke());
+        ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
+        ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
+        Microsoft::Graphics::Canvas::CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(Microsoft::Graphics::Canvas::CanvasSpriteSortMode::Bitmap, Microsoft::Graphics::Canvas::CanvasImageInterpolation::NearestNeighbor, Microsoft::Graphics::Canvas::CanvasSpriteOptions::None);
 
         Windows::Foundation::Rect rectDest{ 0.0f, 0.0f, _dipsPerCellDimension, _dipsPerCellDimension };
         {
@@ -317,7 +314,7 @@ namespace winrt::ModernLife::implementation
         ds.Close();
     }
 
-    void MainWindow::RenderOffscreen([[maybe_unused]] CanvasControl const& sender)
+    void MainWindow::RenderOffscreen([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender)
     {
         //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
@@ -361,7 +358,7 @@ namespace winrt::ModernLife::implementation
         return rect;
     }
 
-    void MainWindow::BuildSpriteSheet(const CanvasDevice& device)
+    void MainWindow::BuildSpriteSheet(const Microsoft::Graphics::Canvas::CanvasDevice& device)
     {
         // TODO only fill most of the cells with color. Reserve maybe the last 10% or so for gray
         // TODO gray is h=0, s=0, and v from 1 to 0
@@ -369,13 +366,13 @@ namespace winrt::ModernLife::implementation
         //_spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
-        _spritesheet = CanvasRenderTarget(device, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
+        _spritesheet = Microsoft::Graphics::Canvas::CanvasRenderTarget(device, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
 
-        CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
+        Microsoft::Graphics::Canvas::CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
         //ds.Clear(Colors::Black());
-        ds.Clear(Colors::WhiteSmoke());
-        ds.Antialiasing(CanvasAntialiasing::Antialiased);
-        ds.Blend(CanvasBlend::Copy);
+        ds.Clear(Windows::UI::Colors::WhiteSmoke());
+        ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
+        ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
         
 
         // since we're using pixels, but the _dipsPerCellAxis is in dips
@@ -408,7 +405,7 @@ namespace winrt::ModernLife::implementation
         ds.Close();
     }
 
-    void MainWindow::theCanvasStatsContent_Draw([[maybe_unused]] CanvasControl const& sender, CanvasDrawEventArgs const& args)
+    void MainWindow::theCanvasStatsContent_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
@@ -688,6 +685,6 @@ namespace winrt::ModernLife::implementation
         const uint8_t g{ gsl::narrow_cast<uint8_t>(dg * 255) };
         const uint8_t b{ gsl::narrow_cast<uint8_t>(db * 255)};
 
-        return ColorHelper::FromArgb(255, r, g, b);
+        return Windows::UI::ColorHelper::FromArgb(255, r, g, b);
     }
 }
