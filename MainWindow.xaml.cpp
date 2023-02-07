@@ -37,7 +37,7 @@ namespace winrt::ModernLife::implementation
         MainWindowT::InitializeComponent();
 
         _threadcount = SetThreadCount();
-
+        OnDPIChanged();
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
         SetMyTitleBar();
@@ -61,13 +61,7 @@ namespace winrt::ModernLife::implementation
         ExtendsContentIntoTitleBar(true);
         SetTitleBar(AppTitleBar());
 
-        // get window handle, window ID
-        auto windowNative{ this->try_as<::IWindowNative>() };
-        HWND hWnd{ nullptr };
-        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
-        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
-
-        // set the title
+        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
             appWnd.Title(L"ModernLife");
@@ -125,8 +119,8 @@ namespace winrt::ModernLife::implementation
             _board.FastUpdateBoardWithNextState(_ruleset);
             _board.ApplyNextStateToBoard();
         }
-        theCanvas().Invalidate();
-        theCanvasStatsContent().Invalidate();
+        canvasBoard().Invalidate();
+        canvasStats().Invalidate();
     }
 
     void MainWindow::SetupRenderTargets()
@@ -164,34 +158,43 @@ namespace winrt::ModernLife::implementation
     {
         if (!timer.IsRunning())
         {
-            theCanvas().Invalidate();
-            theCanvasStatsContent().Invalidate();
+            canvasBoard().Invalidate();
+            canvasStats().Invalidate();
         }
     }
 
-    void MainWindow::theCanvas_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
+    void MainWindow::CanvasBoard_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
         // todo might want to do the code in the if-block in all cases (for all args.Reason()s
-        //if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
+        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
         {
-            // get window handle, window ID
-            auto windowNative{ this->try_as<::IWindowNative>() };
-            HWND hWnd{ nullptr };
-            winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"DPIChanged" });
+        }
 
+        {
             SetBestCanvasandWindowSizes();
             SetupRenderTargets();
             InvalidateIfNeeded();
         }
     }
 
-    void MainWindow::SetBestCanvasandWindowSizes()
+    HWND MainWindow::GetWindowHandle()
     {
         // get window handle, window ID
         auto windowNative{ this->try_as<::IWindowNative>() };
         HWND hWnd{ nullptr };
         winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
-        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(hWnd);
+		return hWnd;
+    }
+
+    void MainWindow::OnDPIChanged()
+    {
+        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
+    }
+
+    void MainWindow::SetBestCanvasandWindowSizes()
+    {
+        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());
 
         // get the window size
         Microsoft::UI::Windowing::DisplayArea displayAreaFallback(nullptr);
@@ -199,9 +202,9 @@ namespace winrt::ModernLife::implementation
         const Windows::Graphics::RectInt32 rez = displayArea.OuterBounds();
 
         // determine the right size for the canvas
+        // lock these because they could change underneath a draw
         {
             std::scoped_lock lock{ lockbackbuffer };
-            _dpi = gsl::narrow_cast<float>(GetDpiForWindow(hWnd));
 
             float best = 400.0f;
             while (true)
@@ -226,14 +229,14 @@ namespace winrt::ModernLife::implementation
         const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + stackpanelwidth + border) * _dpi / 96.0f);
         const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + border) * _dpi / 96.0f);
 
-        // set the title, set the window size, and move the window
+        // resize the window
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
         {
             appWnd.ResizeClient(Windows::Graphics::SizeInt32{ wndWidth, wndHeight });
         }
     }
 
-    void MainWindow::CanvasControl_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    void MainWindow::CanvasBoard_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
         RenderOffscreen(sender);
         args.DrawingSession().Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
@@ -346,8 +349,6 @@ namespace winrt::ModernLife::implementation
     const Windows::Foundation::Rect MainWindow::GetSpriteCell(uint16_t index) const noexcept
     {
         const uint16_t i = std::clamp(index, gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(MaxAge() + 1));
-        //winrt::check_bool(i < MaxAge());
-
 		const Windows::Foundation::Rect rect{ (i % _spritesPerRow) * _dipsPerCellDimension, (i / _spritesPerRow) * _dipsPerCellDimension, _dipsPerCellDimension, _dipsPerCellDimension };
        
         return rect;
@@ -401,7 +402,7 @@ namespace winrt::ModernLife::implementation
         ds.Close();
     }
 
-    void MainWindow::theCanvasStatsContent_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
@@ -450,7 +451,7 @@ namespace winrt::ModernLife::implementation
         // add a random population
         {
             std::scoped_lock lock{ lockboard };
-            _board.RandomizeBoard(SeedPercent() / 100.0f, MaxAge());
+            _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
         }
     }
 
@@ -478,6 +479,11 @@ namespace winrt::ModernLife::implementation
     {
         if (args.PropertyName() == L"MaxAge")
         {
+            OnDPIChanged();
+        }
+
+        if (args.PropertyName() == L"MaxAge")
+        {
             OnMaxAgeChanged();
         }
 
@@ -491,7 +497,7 @@ namespace winrt::ModernLife::implementation
             InvalidateIfNeeded();
         }
 
-        if (args.PropertyName() == L"SeedPercent")
+        if (args.PropertyName() == L"RandomPercent")
         {
             OnRandomizeBoard();
         }
@@ -525,17 +531,17 @@ namespace winrt::ModernLife::implementation
 		}
 	}
     
-    uint16_t MainWindow::SeedPercent() const noexcept
+    uint16_t MainWindow::RandomPercent() const noexcept
     {
         return _randompercent;
     }
 
-    void MainWindow::SeedPercent(uint16_t value)
+    void MainWindow::RandomPercent(uint16_t value)
     {
         if (_randompercent != value)
         {
             _randompercent = value;
-            _propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"RandomPercent" });
         }
     }
 
@@ -570,17 +576,19 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::RestartButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::RandomizeButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        _propertyChanged(*this, PropertyChangedEventArgs{ L"SeedPercent" });
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"RandomPercent" });
     }
 
-    void MainWindow::theCanvas_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
+    void MainWindow::CanvasBoard_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
         SetupRenderTargets();
+        // might need to BuildSpriteSheet here
+        // TODO test
     }
 
-    hstring MainWindow::GetRandPercentText(double_t value)
+    hstring MainWindow::GetRandomPercentText(double_t value)
     {
         std::wstring text = std::format(L"{0}% random", gsl::narrow_cast<int>(value));
         hstring htext{ text };

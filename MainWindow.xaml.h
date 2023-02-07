@@ -41,32 +41,34 @@ namespace winrt::ModernLife::implementation
         {
             _propertyChanged.remove(token);
         }
-        uint16_t SeedPercent() const noexcept;
-        void SeedPercent(uint16_t value);
+        uint16_t RandomPercent() const noexcept;
+        void RandomPercent(uint16_t value);
         uint16_t MaxAge() const noexcept;
         void MaxAge(uint16_t value);
         bool ShowLegend() const noexcept;
         void ShowLegend(bool value);
         void BoardWidth(uint16_t value);
         uint16_t BoardWidth() const noexcept;
-        hstring GetRandPercentText(double_t value);
+        hstring GetRandomPercentText(double_t value);
         hstring GetBoardWidthText(double_t value);
         void speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void theCanvas_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
+        void CanvasBoard_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        void RestartButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void RandomizeButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void BuildSpriteSheet();
         const Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
 
-        void CanvasControl_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        void CanvasBoard_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void RenderOffscreen(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender);
         void DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow);
-        void theCanvasStatsContent_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void SetupRenderTargets();
         void InvalidateIfNeeded();
-        void theCanvas_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
+        void CanvasBoard_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
+        HWND GetWindowHandle();
+        void OnDPIChanged();
         void SetBestCanvasandWindowSizes();
         void OnBoardResized();
         void RandomizeBoard();
