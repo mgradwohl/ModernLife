@@ -36,7 +36,7 @@ namespace winrt::ModernLife::implementation
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
 
-        _threadcount = SetThreadCount();
+        SetThreadCount();
         OnCanvasDeviceChanged();
         OnDPIChanged();
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
@@ -49,11 +49,10 @@ namespace winrt::ModernLife::implementation
         StartGameLoop();
     }
     
-    unsigned int MainWindow::SetThreadCount() noexcept
+    void MainWindow::SetThreadCount() noexcept
     {
         int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
-		count = std::clamp(count, 1, 8);
-        return count;
+		_threadcount = std::clamp(count, 1, 8);
     }
     
     void MainWindow::SetMyTitleBar()
