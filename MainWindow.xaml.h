@@ -107,8 +107,8 @@ namespace winrt::ModernLife::implementation
         int16_t _boardwidth{ 200 };
         float _bestcanvassize{ 1000.0f };
         // ensure at least 6 dips per cell max board size which is 500 cells per row
-        float _idealbackbuffersize{ 4000.0f };
-        float _bestbackbuffersize{ 4000.0f };
+        float _idealbackbuffersize{ 2000.0f };
+        float _bestbackbuffersize{ 2000.0f };
 
         winrt::event_token _propertyToken;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> _propertyChanged;
