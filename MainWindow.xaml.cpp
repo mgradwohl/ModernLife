@@ -236,6 +236,7 @@ namespace winrt::ModernLife::implementation
 
         if (ShowLegend())
         {
+            // TODO don't stretch or shrink the _spritesheet if we don't need to
             args.DrawingSession().DrawImage(_spritesheet, destRect);
         }
         else
