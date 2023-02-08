@@ -90,7 +90,6 @@ namespace winrt::ModernLife::implementation
 		Microsoft::Graphics::Canvas::CanvasDevice _canvasDevice{ nullptr };
 
         std::mutex lockbackbuffer;
-        std::mutex lockboard;
         Board _board;
 
         float _dpi{ 0.0f };
