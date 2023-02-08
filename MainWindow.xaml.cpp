@@ -267,6 +267,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow)
     {
+        // only read from the board/the cells in this method
         ds.Clear(Windows::UI::Colors::WhiteSmoke());
         ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
         ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
@@ -282,12 +283,7 @@ namespace winrt::ModernLife::implementation
 
                     rectDest.X = x * _dipsPerCellDimension;
                     rectDest.Y = (y - startRow) * _dipsPerCellDimension;
-                    if (cell.IsAlive())
-                    {
-                        spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, GetSpriteCell(cell.Age()));
-                    }
-
-                    if ((_ruleset == 4) && cell.IsBrianDying())
+                    if (cell.ShouldDraw())
                     {
                         spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, GetSpriteCell(cell.Age()));
                     }
@@ -311,26 +307,22 @@ namespace winrt::ModernLife::implementation
             _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
         }
 
-        // lock the board and draw the cells into the horizontal slices
-        // note that the last slice may be bigger than the other slices
-        {   
-//            std::scoped_lock lock{ lockboard };
-
-            std::vector<std::thread> threads;
-            int t = 0;
-            for (t = 0; t < _threadcount-1; t++)
-            {
-                threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
-                startRow += _rowsPerSlice;
-            }
-            threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
-
-            // join the threads which waits for them to complete their work
-            for (auto& th : threads)
-			{
-				th.join();
-			}
+        // technically the board could be changing underneath us, but we're only reading the cells not writing to them
+        std::vector<std::thread> threads;
+        int t = 0;
+        for (t = 0; t < _threadcount-1; t++)
+        {
+            threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
+            startRow += _rowsPerSlice;
         }
+        threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
+
+        // join the threads which waits for them to complete their work
+        for (auto& th : threads)
+		{
+			th.join();
+		}
+
         _dsList.clear();
     }
 

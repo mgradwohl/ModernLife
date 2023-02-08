@@ -54,6 +54,15 @@ public:
         }
     }
 
+    inline bool ShouldDraw() const noexcept
+    {
+        if (_state == Cell::State::Live || _state == Cell::State::BrianDying)
+        {
+            return true;
+        }
+        return false;
+    }
+    
     inline bool IsAlive() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
