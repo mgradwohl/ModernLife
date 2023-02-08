@@ -37,6 +37,7 @@ namespace winrt::ModernLife::implementation
         MainWindowT::InitializeComponent();
 
         _threadcount = SetThreadCount();
+        OnCanvasDeviceChanged();
         OnDPIChanged();
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
@@ -93,7 +94,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::Window_Closed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
+    void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
         //PropertyChangedRevoker();
     }
@@ -125,7 +126,6 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::SetupRenderTargets()
     {
-        Microsoft::Graphics::Canvas::CanvasDevice device = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         {
             // Calculate important vales for the spritesheet and backbuffer slices
             std::scoped_lock lock{ lockbackbuffer };
@@ -144,10 +144,10 @@ namespace winrt::ModernLife::implementation
             int j = 0;
             for (j = 0; j < _threadcount - 1; j++)
             {
-                _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ device, _bestbackbuffersize, _sliceHeight, _dpi });
+                _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, _sliceHeight, _dpi });
             }
             const int remainingRows = BoardWidth() - (j * _rowsPerSlice);
-            _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ device, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
+            _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
         }
         
         BuildSpriteSheet();
@@ -166,9 +166,15 @@ namespace winrt::ModernLife::implementation
     void MainWindow::CanvasBoard_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
         // todo might want to do the code in the if-block in all cases (for all args.Reason()s
+
         if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
         {
             _propertyChanged(*this, PropertyChangedEventArgs{ L"DPIChanged" });
+        }
+
+        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::NewDevice)
+        {
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"NewCanvasDevice" });
         }
 
         {
@@ -176,20 +182,6 @@ namespace winrt::ModernLife::implementation
             SetupRenderTargets();
             InvalidateIfNeeded();
         }
-    }
-
-    HWND MainWindow::GetWindowHandle()
-    {
-        // get window handle, window ID
-        auto windowNative{ this->try_as<::IWindowNative>() };
-        HWND hWnd{ nullptr };
-        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
-		return hWnd;
-    }
-
-    void MainWindow::OnDPIChanged()
-    {
-        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
     }
 
     void MainWindow::SetBestCanvasandWindowSizes()
@@ -359,14 +351,11 @@ namespace winrt::ModernLife::implementation
         // TODO only fill most of the cells with color. Reserve maybe the last 10% or so for gray
         // TODO gray is h=0, s=0, and v from 1 to 0
         // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
-        //_spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
 
         // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
-        Microsoft::Graphics::Canvas::CanvasDevice device = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
-        _spritesheet = Microsoft::Graphics::Canvas::CanvasRenderTarget(device, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
+        _spritesheet = Microsoft::Graphics::Canvas::CanvasRenderTarget(_canvasDevice, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
 
         Microsoft::Graphics::Canvas::CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
-        //ds.Clear(Colors::Black());
         ds.Clear(Windows::UI::Colors::WhiteSmoke());
         ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
         ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
@@ -455,6 +444,29 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    HWND MainWindow::GetWindowHandle()
+    {
+        // get window handle, window ID
+        auto windowNative{ this->try_as<::IWindowNative>() };
+        HWND hWnd{ nullptr };
+        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+        return hWnd;
+    }
+
+    void MainWindow::OnCanvasDeviceChanged()
+    {
+        _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
+        OnDPIChanged();
+        SetBestCanvasandWindowSizes();
+        SetupRenderTargets();
+        InvalidateIfNeeded();
+    }
+
+    void MainWindow::OnDPIChanged()
+    {
+        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
+    }
+    
     void MainWindow::OnBoardResized()
     {
         // create the board, lock it in the case that OnTick is updating it
@@ -495,6 +507,11 @@ namespace winrt::ModernLife::implementation
         if (args.PropertyName() == L"ShowLegend")
         {
             InvalidateIfNeeded();
+        }
+
+        if (args.PropertyName() == L"NewCanvasDevice")
+        {
+            OnCanvasDeviceChanged();
         }
 
         if (args.PropertyName() == L"RandomPercent")

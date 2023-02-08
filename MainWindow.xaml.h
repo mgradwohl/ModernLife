@@ -25,7 +25,7 @@ namespace winrt::ModernLife::implementation
         void OnWindowActivate(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
         void InitializeComponent();
         void SetMyTitleBar();
-        void Window_Closed(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
+        void OnWindowClosed(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void StartGameLoop();
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
         void OnRandomizeBoard();
@@ -69,6 +69,7 @@ namespace winrt::ModernLife::implementation
         void CanvasBoard_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
         HWND GetWindowHandle();
         void OnDPIChanged();
+        void OnCanvasDeviceChanged();
         void SetBestCanvasandWindowSizes();
         void OnBoardResized();
         void RandomizeBoard();
@@ -86,6 +87,7 @@ namespace winrt::ModernLife::implementation
         std::vector<Microsoft::Graphics::Canvas::CanvasRenderTarget> _backbuffers;
         std::vector<Microsoft::Graphics::Canvas::CanvasDrawingSession> _dsList;
         Microsoft::Graphics::Canvas::CanvasRenderTarget _spritesheet{ nullptr };
+		Microsoft::Graphics::Canvas::CanvasDevice _canvasDevice{ nullptr };
 
         std::mutex lockbackbuffer;
         std::mutex lockboard;
