@@ -363,7 +363,19 @@ namespace winrt::ModernLife::implementation
         // TODO maybe this is unneccessary
 
         // start filling tiles at age 0
-        constexpr float offset = 1.0f;
+        float offset = 1.0f;
+        if (_dipsPerCellDimension < 14.0f)
+        {
+            offset = 0.5f;
+
+        }
+
+        if (_dipsPerCellDimension < 7.0f)
+        {
+            offset = 0.25f;
+
+        }
+
         constexpr float round = 4.0f;
         const float inset = _dipsPerCellDimension / 4.0f;
         uint16_t index = 0;
