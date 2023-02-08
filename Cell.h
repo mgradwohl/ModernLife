@@ -8,9 +8,9 @@ public:
     enum class State { Dead, Born, Live, Old, Dying, BrianDying };
 
 private:
-    State _state;
-    uint16_t _age;
-    uint8_t _neighbors;
+    State _state{ State::Dead };
+    uint16_t _age{ 0 };
+    uint8_t _neighbors{ 0 };
 
 public:
     Cell() noexcept : _state(State::Dead), _age(0), _neighbors(0)
@@ -19,42 +19,85 @@ public:
 
     ~Cell() = default;
 
-    uint8_t Neighbors() const noexcept
+    inline uint8_t Neighbors() const noexcept
     {
         return _neighbors;
     }
 
-    void SetNeighbors(uint8_t n) noexcept
+    inline void SetNeighbors(uint8_t n) noexcept
     {
         _neighbors = n;
     }
 
-    void SetAge(uint16_t age) noexcept
+    inline void SetAge(uint16_t age) noexcept
     {
         _age = age;
     }
 
-    uint16_t Age() const noexcept
+    inline uint16_t Age() const noexcept
     {
         return _age;
     }
 
-    void SetState(State state) noexcept;
 
-    State GetState() const noexcept
+    inline State GetState() const noexcept
     {
         return _state;
     }
 
-    bool IsAlive() const noexcept;
+    inline void SetState(State state) noexcept
+    {
+        _state = state;
+        if (state == Cell::State::Born)
+        {
+            _age = 0;
+        }
+    }
 
-    bool IsAliveNotDying() const noexcept;
+    inline bool IsAlive() const noexcept
+    {
+        if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
+        {
+            return true;
+        }
+        return false;
+    }
 
-    bool IsDying() const noexcept;
-    
-    bool IsBrianDying() const noexcept;
+    inline bool IsAliveNotDying() const noexcept
+    {
+        if (_state == Cell::State::Live)
+        {
+            return true;
+        }
+        return false;
+    }
 
-    bool IsDead() const noexcept;
+    inline bool IsDying() const noexcept
+    {
+        if (_state == Cell::State::Dying)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    inline bool IsBrianDying() const noexcept
+    {
+        if (_state == Cell::State::BrianDying)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    inline bool IsDead() const noexcept
+    {
+        if (_state == Cell::State::Dead || _state == Cell::State::Born)
+        {
+            return true;
+        }
+        return false;
+    }
 
     const char* GetStateString() const noexcept;
 

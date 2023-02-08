@@ -91,7 +91,7 @@ namespace winrt::ModernLife::implementation
 
         std::mutex lockbackbuffer;
         std::mutex lockboard;
-        Board _board{ nullptr };
+        Board _board;
 
         float _dpi{ 0.0f };
         float _dipsPerCellDimension{ 0.0f };

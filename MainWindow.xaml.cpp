@@ -114,11 +114,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
     {
-        {
-            std::scoped_lock lock{ lockboard };
-            _board.FastUpdateBoardWithNextState(_ruleset);
-            _board.ApplyNextStateToBoard();
-        }
+        _board.Update(_ruleset);
         canvasBoard().Invalidate();
         canvasStats().Invalidate();
     }
@@ -318,7 +314,7 @@ namespace winrt::ModernLife::implementation
         // lock the board and draw the cells into the horizontal slices
         // note that the last slice may be bigger than the other slices
         {   
-            std::scoped_lock lock{ lockboard };
+//            std::scoped_lock lock{ lockboard };
 
             std::vector<std::thread> threads;
             int t = 0;
@@ -437,11 +433,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::RandomizeBoard()
     {
-        // add a random population
-        {
-            std::scoped_lock lock{ lockboard };
-            _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
-        }
+        _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
     }
 
     HWND MainWindow::GetWindowHandle()
@@ -472,10 +464,8 @@ namespace winrt::ModernLife::implementation
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
         timer.Stop();
-        {
-            std::scoped_lock lock{ lockboard };
-            _board = Board{ BoardWidth(), BoardWidth(), MaxAge() };
-        }
+        _board.Resize( BoardWidth(), BoardWidth(), MaxAge() );
+        
         RandomizeBoard();
         SetupRenderTargets();
         StartGameLoop();
