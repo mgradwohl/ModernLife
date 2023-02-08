@@ -308,6 +308,8 @@ namespace winrt::ModernLife::implementation
         }
 
         // technically the board could be changing underneath us, but we're only reading the cells not writing to them
+		// TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
+        
         std::vector<std::thread> threads;
         int t = 0;
         for (t = 0; t < _threadcount-1; t++)
