@@ -1,14 +1,22 @@
 #pragma once
 
+#include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 
 // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
 class TimerHelper
 {
 public:
-    TimerHelper() = default;
+    // construct
+    TimerHelper() = delete;
+    TimerHelper(const TimerHelper&) = delete;
 
-    explicit TimerHelper(std::nullptr_t) noexcept {};
+    // copy/move
+    TimerHelper& operator=(const TimerHelper&) = delete;
+    TimerHelper(TimerHelper&&) = delete;
+
+    // destruct
+    ~TimerHelper() = default;
 
     TimerHelper(int fps, bool repeating)
     {
@@ -20,16 +28,11 @@ public:
         _controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
         _queue = _controller.DispatcherQueue();
         _timer = _queue.CreateTimer();
+        _timer.Stop();
         Repeating(repeating);
         FPS(fps);
     }
     
-    ~TimerHelper()
-    {
-        // release anything that needs to be released
-        //_timer.Stop();
-        _timer.Tick(_eventtoken);
-    }
     
     inline void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
     {

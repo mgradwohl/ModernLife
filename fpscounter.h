@@ -1,13 +1,11 @@
 #pragma once
+
 #include <chrono>
 
 class FPScounter
 {
 public:
-	explicit FPScounter(std::nullptr_t) noexcept {};
-	FPScounter(FPScounter& b) = delete;
-	~FPScounter() = default;
-	
+	// construct
 	FPScounter() noexcept
 	{
 		_start = std::chrono::high_resolution_clock::now();
@@ -17,7 +15,23 @@ public:
 		_framebaseline = 0;
 		_fps = 0;
 	}
-	
+
+	FPScounter(FPScounter&& b) = delete;
+	FPScounter(FPScounter& b) = delete;
+
+	// copy/move
+	FPScounter& operator=(FPScounter&& b) = delete;
+	FPScounter& operator=(FPScounter& b) = delete;
+
+	// destruct
+	~FPScounter() = default;
+
+	inline void Start() noexcept
+	{
+		_start = std::chrono::high_resolution_clock::now();
+		_end = std::chrono::high_resolution_clock::now();
+	}
+
 	inline double FPS() noexcept
 	{
 		return _fps;

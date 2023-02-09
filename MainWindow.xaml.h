@@ -82,7 +82,7 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
     private:
-        FPScounter fps{ nullptr };
+        FPScounter fps{};
         TimerHelper timer{ 30, true };
 
         int _threadcount{ 0 };
