@@ -11,6 +11,8 @@ Global
 		CodeAnalysis|x64 = CodeAnalysis|x64
 		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
+		Profile|ARM64 = Profile|ARM64
+		Profile|x64 = Profile|x64
 		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
 	EndGlobalSection
@@ -27,6 +29,12 @@ Global
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Debug|x64.ActiveCfg = Debug|x64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Debug|x64.Build.0 = Debug|x64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Debug|x64.Deploy.0 = Debug|x64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Profile|ARM64.ActiveCfg = Profile|ARM64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Profile|ARM64.Build.0 = Profile|ARM64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Profile|ARM64.Deploy.0 = Profile|ARM64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Profile|x64.ActiveCfg = Profile|x64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Profile|x64.Build.0 = Profile|x64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Profile|x64.Deploy.0 = Profile|x64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Release|ARM64.ActiveCfg = Release|ARM64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Release|ARM64.Build.0 = Release|ARM64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Release|ARM64.Deploy.0 = Release|ARM64

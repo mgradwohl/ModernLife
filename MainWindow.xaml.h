@@ -5,6 +5,8 @@
 
 #include "MainWindow.g.h"
 
+#include <windows.h>
+
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
@@ -80,7 +82,7 @@ namespace winrt::ModernLife::implementation
         Windows::UI::Color HSVtoColor(float h, float s, float v);
 
     private:
-        FPScounter fps{ nullptr };
+        FPScounter fps{};
         TimerHelper timer{ 30, true };
 
         int _threadcount{ 0 };
@@ -90,8 +92,7 @@ namespace winrt::ModernLife::implementation
 		Microsoft::Graphics::Canvas::CanvasDevice _canvasDevice{ nullptr };
 
         std::mutex lockbackbuffer;
-        std::mutex lockboard;
-        Board _board{ nullptr };
+        Board _board;
 
         float _dpi{ 0.0f };
         float _dipsPerCellDimension{ 0.0f };

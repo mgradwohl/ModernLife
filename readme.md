@@ -3,7 +3,6 @@ ModernLife Project Overview
 Conway's Game of Life and other Cellular Automata
 Coded with C++/WinRT, WIL, WinUI3, Win2D, GSL
 
-
 ## Why?
 I learned C++ on C++/98 so
  - This is a great way to learn about improvements in C++ from C++
@@ -18,6 +17,11 @@ I learned C++ on C++/98 so
  - Canvas and drawing
  - std:: and gsl:: and wil::
  - Class design and much more
+
+## Recommended reading
+- https://abseil.io/tips/
+- https://google.github.io/styleguide/cppguide.html
+- http://isocpp.github.io/CppCoreGuidelines/
 
 ## Requires
 - Visual Studio 2022 Preview https://visualstudio.microsoft.com/vs/preview/

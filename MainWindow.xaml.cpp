@@ -8,17 +8,26 @@
 #include "MainWindow.g.cpp"
 #endif
 
+#undef GetCurrentTime
+
+#include <winuser.h>
+#include <algorithm>
+
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Microsoft.UI.h>
+#include <winrt/Microsoft.UI.Interop.h>
+#include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Microsoft.UI.Xaml.Data.h>
+#include <winrt/Microsoft.UI.Xaml.Media.h>
+#include "microsoft.ui.xaml.window.h"
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Microsoft.Graphics.Canvas.Text.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
-
-#include <winuser.h>
-#include <algorithm>
 
 #include "TimerHelper.h"
 #include "fpscounter.h"
@@ -51,8 +60,8 @@ namespace winrt::ModernLife::implementation
     
     void MainWindow::SetThreadCount() noexcept
     {
-        int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
-        _threadcount = std::clamp(count, 1, 8);
+        const int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
+		_threadcount = std::clamp(count, 1, 8);
     }
     
     void MainWindow::SetMyTitleBar()
@@ -106,7 +115,7 @@ namespace winrt::ModernLife::implementation
         GoButton().Label(L"Play");
 
         // start the FPSCounter
-        fps = FPScounter();
+        fps.Start();
 
         // draw the initial population
         InvalidateIfNeeded();
@@ -114,11 +123,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
     {
-        {
-            std::scoped_lock lock{ lockboard };
-            _board.FastUpdateBoardWithNextState(_ruleset);
-            _board.ApplyNextStateToBoard();
-        }
+        _board.Update(_ruleset);
         canvasBoard().Invalidate();
         canvasStats().Invalidate();
     }
@@ -236,6 +241,7 @@ namespace winrt::ModernLife::implementation
 
         if (ShowLegend())
         {
+            // TODO don't stretch or shrink the _spritesheet if we don't need to
             args.DrawingSession().DrawImage(_spritesheet, destRect);
         }
         else
@@ -270,6 +276,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow)
     {
+        // only read from the board/the cells in this method
         ds.Clear(Windows::UI::Colors::WhiteSmoke());
         ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
         ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
@@ -285,12 +292,7 @@ namespace winrt::ModernLife::implementation
 
                     rectDest.X = x * _dipsPerCellDimension;
                     rectDest.Y = (y - startRow) * _dipsPerCellDimension;
-                    if (cell.IsAlive())
-                    {
-                        spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, GetSpriteCell(cell.Age()));
-                    }
-
-                    if ((_ruleset == 4) && cell.IsBrianDying())
+                    if (cell.ShouldDraw())
                     {
                         spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, GetSpriteCell(cell.Age()));
                     }
@@ -314,26 +316,24 @@ namespace winrt::ModernLife::implementation
             _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
         }
 
-        // lock the board and draw the cells into the horizontal slices
-        // note that the last slice may be bigger than the other slices
-        {   
-            std::scoped_lock lock{ lockboard };
-
-            std::vector<std::thread> threads;
-            int t = 0;
-            for (t = 0; t < _threadcount-1; t++)
-            {
-                threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
-                startRow += _rowsPerSlice;
-            }
-            threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
-
-            // join the threads which waits for them to complete their work
-            for (auto& th : threads)
-			{
-				th.join();
-			}
+        // technically the board could be changing underneath us, but we're only reading the cells not writing to them
+		// TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
+        
+        std::vector<std::thread> threads;
+        int t = 0;
+        for (t = 0; t < _threadcount-1; t++)
+        {
+            threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
+            startRow += _rowsPerSlice;
         }
+        threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
+
+        // join the threads which waits for them to complete their work
+        for (auto& th : threads)
+		{
+			th.join();
+		}
+
         _dsList.clear();
     }
 
@@ -366,7 +366,19 @@ namespace winrt::ModernLife::implementation
         // TODO maybe this is unneccessary
 
         // start filling tiles at age 0
-        constexpr float offset = 1.0f;
+        float offset = 1.0f;
+        if (_dipsPerCellDimension < 14.0f)
+        {
+            offset = 0.5f;
+
+        }
+
+        if (_dipsPerCellDimension < 7.0f)
+        {
+            offset = 0.25f;
+
+        }
+
         constexpr float round = 4.0f;
         const float inset = _dipsPerCellDimension / 4.0f;
         uint16_t index = 0;
@@ -413,7 +425,7 @@ namespace winrt::ModernLife::implementation
         args.DrawingSession().Clear(colorBack);
 
         // create the strings to draw
-        std::wstring strTitle = std::format(L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads");
+        std::wstring strTitle{ (L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads") };
         std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize(), _dpi, _bestcanvassize, _bestbackbuffersize, _dipsPerCellDimension, _threadcount);
 
         // draw the text left aligned
@@ -436,11 +448,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::RandomizeBoard()
     {
-        // add a random population
-        {
-            std::scoped_lock lock{ lockboard };
-            _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
-        }
+        _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
     }
 
     HWND MainWindow::GetWindowHandle()
@@ -471,10 +479,8 @@ namespace winrt::ModernLife::implementation
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
         timer.Stop();
-        {
-            std::scoped_lock lock{ lockboard };
-            _board = Board{ BoardWidth(), BoardWidth(), MaxAge() };
-        }
+        _board.Resize( BoardWidth(), BoardWidth(), MaxAge() );
+        
         RandomizeBoard();
         SetupRenderTargets();
         StartGameLoop();
@@ -482,7 +488,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnMaxAgeChanged()
     {
-        _board.SetMaxAge(MaxAge());
+        _board.MaxAge(MaxAge());
         SetupRenderTargets();
     }
     

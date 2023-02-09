@@ -1,62 +1,7 @@
 ﻿#include "pch.h"
-
-#include <string>
-
 #include "Cell.h"
 
-void Cell::SetState(State state) noexcept
-{
-	_state = state;
-	if (state == Cell::State::Born)
-	{
-		_age = 0;
-	}
-}
-
-bool Cell::IsAlive() const noexcept
-{
-	if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
-	{
-		return true;
-	}
-	return false;
-}
-
-bool Cell::IsAliveNotDying() const noexcept
-{
-	if (_state == Cell::State::Live)
-	{
-		return true;
-	}
-	return false;
-}
-
-bool Cell::IsDying() const noexcept
-{
-	if (_state == Cell::State::Dying)
-	{
-		return true;
-	}
-	return false;
-}
-
-bool Cell::IsBrianDying() const noexcept
-{
-	if (_state == Cell::State::BrianDying)
-	{
-		return true;
-	}
-	return false;
-}
-
-bool Cell::IsDead() const noexcept
-{
-	if (_state == Cell::State::Dead || _state == Cell::State::Born)
-	{
-		return true;
-	}
-	return false;
-}
+#include <string>
 
 const char* Cell::GetStateString() const noexcept
 {

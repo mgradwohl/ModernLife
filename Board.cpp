@@ -1,14 +1,12 @@
 ﻿#include "pch.h"
+#include "Board.h"
 
 #include <future>
 #include <algorithm>
+#include <random>
+#include <iostream>
 
 #include "gsl/include/gsl"
-
-#include "Board.h"
-
-// for visualization purposes (0,0) is the top left.
-// as x increases move right, as y increases move down
 
 // optimized to never use std::endl until the full board is done printing
 std::wostream& operator<<(std::wostream& stream, Board& board)
@@ -31,11 +29,13 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 	return stream;
 }
 
-Board::Board(uint16_t width, uint16_t height, uint16_t maxage)
-	: _width(width), _height(height), _size(width * height)
+void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 {
+	std::scoped_lock lock { _lockboard };
+	_height = height;
+	_width = width;
 	_maxage = maxage;
-	_board.resize(_size);
+	_board.resize(gsl::narrow_cast<size_t>(_height * _width));
 
 	SetThreadCount();
 }
@@ -161,6 +161,13 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 	return count;
 }
 
+void Board::Update(int32_t ruleset)
+{
+	std::scoped_lock lock { _lockboard };
+	FastUpdateBoardWithNextState(ruleset);
+	ApplyNextStateToBoard();
+}
+
 void Board::ApplyNextStateToBoard() noexcept
 {
 	_generation++;
@@ -186,29 +193,33 @@ void Board::ApplyNextStateToBoard() noexcept
 	}
 }
 
-void Board::RandomizeBoard(float alivepct, int maxage)
+void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> pdis(0.0, 1.0);
 	std::uniform_int_distribution<int> adis(0, maxage);
 
+	_maxage = maxage;
 	// TODO check size of board before iterating over board
-	for (Cell& cell : _board)
 	{
-		static int ra;
-		static double rp;
-		ra = adis(gen);
-		rp = pdis(gen);
+		std::scoped_lock lock { _lockboard };
+		for (Cell& cell : _board)
+		{
+			static int ra;
+			static double rp;
+			ra = adis(gen);
+			rp = pdis(gen);
 
-		if (rp <= alivepct)
-		{
-			SetCell(cell, Cell::State::Live);
-			cell.SetAge(gsl::narrow_cast<uint16_t>(ra));
-		}
-		else
-		{
-			SetCell(cell, Cell::State::Dead);
+			if (rp <= alivepct)
+			{
+				SetCell(cell, Cell::State::Live);
+				cell.SetAge(gsl::narrow_cast<uint16_t>(ra));
+			}
+			else
+			{
+				SetCell(cell, Cell::State::Dead);
+			}
 		}
 	}
 }
