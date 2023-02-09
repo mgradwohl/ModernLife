@@ -15,6 +15,7 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Cell.cpp" />
+    <ClCompile Include="HSVColorHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -22,6 +23,7 @@
     <ClInclude Include="Cell.h" />
     <ClInclude Include="fpscounter.h" />
     <ClInclude Include="TimerHelper.h" />
+    <ClInclude Include="HSVColorHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
