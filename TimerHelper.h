@@ -1,13 +1,13 @@
 #pragma once
 
-// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
-
 #include <winrt/Microsoft.UI.Dispatching.h>
 
+// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
 class TimerHelper
 {
 public:
     TimerHelper() = default;
+
     explicit TimerHelper(std::nullptr_t) noexcept {};
 
     TimerHelper(int fps, bool repeating)
@@ -24,23 +24,6 @@ public:
         FPS(fps);
     }
     
-    // does not work
-    //TimerHelper(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler, int fps, bool repeating)
-    //{
-    //    if (!_initialized)
-    //    {
-    //        _controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
-    //        _queue = _controller.DispatcherQueue();
-    //        _timer = _queue.CreateTimer();
-    //        _eventtoken = _timer.Tick(handler);
-
-    //        using namespace  std::literals::chrono_literals;
-    //        _timer.Interval(std::chrono::milliseconds(1000/fps));
-    //        _timer.IsRepeating(repeating);
-    //        _initialized = true;
-    //    }
-    //}
-
     ~TimerHelper()
     {
         // release anything that needs to be released
@@ -48,42 +31,42 @@ public:
         _timer.Tick(_eventtoken);
     }
     
-    void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
+    inline void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
     {
         _eventtoken = _timer.Tick(handler);
     }
 
-    void Stop()
+    inline void Stop()
     {
         _timer.Stop();
     }
 
-    void Start()
+    inline void Start()
     {
         _timer.Start();
     }
 
-    bool IsRunning()
+    inline bool IsRunning()
     {
         return _timer.IsRunning();
     }
 
-    void Repeating(bool repeating)
+    inline void Repeating(bool repeating)
     {
         _timer.IsRepeating(repeating);
     }
 
-    bool Repeating()
+    inline bool Repeating()
     {
         return _timer.IsRepeating();
     }
 
-    int FPS() noexcept
+    inline int FPS() noexcept
     {
 		return _fps;
     }
     
-    void FPS(int fps)
+    inline void FPS(int fps)
     {
         using namespace  std::literals::chrono_literals;
         if (fps > 0 && fps <= 240)

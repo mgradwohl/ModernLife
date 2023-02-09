@@ -1,8 +1,11 @@
 ﻿#pragma once
-#include "Cell.h"
 
 #include <vector>
-#include <stdexcept>
+#include <mutex>
+
+#include "gsl/include/gsl"
+
+#include "Cell.h"
 
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
@@ -19,12 +22,12 @@ public:
 
     inline const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        return gsl::at(_board, x + (y * _width));
+        return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
     inline Cell& GetCell(uint16_t x, uint16_t y)
     {
-        return gsl::at(_board, x + (y * _width));
+        return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
     void RandomizeBoard(float alivepct, uint16_t maxage);
@@ -53,7 +56,7 @@ public:
     void PrintBoard();
 
 	// getters
-    inline void SetMaxAge(uint16_t maxage) noexcept
+    inline void MaxAge(uint16_t maxage) noexcept
     {
         _maxage = maxage;
     }
@@ -63,7 +66,7 @@ public:
         return _maxage;
     }
 
-    inline void SetOldAge(uint32_t age) noexcept
+    inline void OldAge(uint32_t age) noexcept
     {
         _OldAge = age;
     }

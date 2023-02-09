@@ -6,6 +6,12 @@
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
 
+#include <iostream>
+#include <locale>
+
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
+
 using namespace winrt;
 using namespace ModernLife;
 using namespace ModernLife::implementation;

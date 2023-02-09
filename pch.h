@@ -8,6 +8,15 @@
 #include <restrictederrorinfo.h>
 #include <hstring.h>
 
+#include <string>
+#include <iostream>
+#include <functional>
+#include <algorithm>
+#include <random>
+#include <vector>
+#include <future>
+#include <format>
+
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
@@ -36,13 +45,4 @@
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
 #include "gsl/include/gsl"
-#include <string>
-#include <iostream>
-#include <functional>
-#include <algorithm>
-#include <random>
-#include <vector>
-#include <future>
-#include <format>
 #include <wil/cppwinrt_helpers.h>
-

@@ -18,7 +18,7 @@ public:
 		_fps = 0;
 	}
 	
-	double FPS() noexcept
+	inline double FPS() noexcept
 	{
 		return _fps;
 	}
