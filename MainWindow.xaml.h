@@ -29,7 +29,7 @@ namespace winrt::ModernLife::implementation
         void StartGameLoop();
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
         void OnRandomizeBoard();
-        unsigned int SetThreadCount() noexcept;
+        void SetThreadCount() noexcept;
 
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
         winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
