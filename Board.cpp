@@ -35,7 +35,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_height = height;
 	_width = width;
 	_maxage = maxage;
-	_board.resize(_height * _width);
+	_board.resize(gsl::narrow_cast<size_t>(_height * _width));
 
 	SetThreadCount();
 }

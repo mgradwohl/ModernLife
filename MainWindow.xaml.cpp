@@ -23,7 +23,7 @@
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 #include <winrt/Microsoft.UI.Xaml.Media.h>
-#include "Microsoft.UI.Xaml.Window.h"
+#include "microsoft.ui.xaml.window.h"
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
@@ -60,7 +60,7 @@ namespace winrt::ModernLife::implementation
     
     void MainWindow::SetThreadCount() noexcept
     {
-        int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
+        const int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 		_threadcount = std::clamp(count, 1, 8);
     }
     
@@ -488,7 +488,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnMaxAgeChanged()
     {
-        _board.SetMaxAge(MaxAge());
+        _board.MaxAge(MaxAge());
         SetupRenderTargets();
     }
     

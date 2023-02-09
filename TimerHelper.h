@@ -1,9 +1,8 @@
 #pragma once
 
-// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
-
 #include <winrt/Microsoft.UI.Dispatching.h>
 
+// https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
 class TimerHelper
 {
 public:
