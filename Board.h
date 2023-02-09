@@ -1,8 +1,11 @@
 ﻿#pragma once
-#include "Cell.h"
 
 #include <vector>
-#include <stdexcept>
+#include <mutex>
+
+#include "gsl/include/gsl"
+
+#include "Cell.h"
 
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down

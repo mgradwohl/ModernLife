@@ -1,14 +1,12 @@
 ﻿#include "pch.h"
+#include "Board.h"
 
 #include <future>
 #include <algorithm>
+#include <random>
+#include <iostream>
 
 #include "gsl/include/gsl"
-
-#include "Board.h"
-
-// for visualization purposes (0,0) is the top left.
-// as x increases move right, as y increases move down
 
 // optimized to never use std::endl until the full board is done printing
 std::wostream& operator<<(std::wostream& stream, Board& board)

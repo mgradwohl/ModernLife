@@ -3,7 +3,6 @@
 
 #include <string>
 
-
 const char* Cell::GetStateString() const noexcept
 {
 	switch (_state)

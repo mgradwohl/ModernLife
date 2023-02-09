@@ -5,6 +5,8 @@
 
 #include "MainWindow.g.h"
 
+#include <windows.h>
+
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>

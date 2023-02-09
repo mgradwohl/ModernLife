@@ -8,17 +8,26 @@
 #include "MainWindow.g.cpp"
 #endif
 
+#undef GetCurrentTime
+
+#include <winuser.h>
+#include <algorithm>
+
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Microsoft.UI.h>
+#include <winrt/Microsoft.UI.Interop.h>
+#include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Microsoft.UI.Xaml.Data.h>
+#include <winrt/Microsoft.UI.Xaml.Media.h>
+#include "Microsoft.UI.Xaml.Window.h"
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Microsoft.Graphics.Canvas.Text.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
-
-#include <winuser.h>
-#include <algorithm>
 
 #include "TimerHelper.h"
 #include "fpscounter.h"
