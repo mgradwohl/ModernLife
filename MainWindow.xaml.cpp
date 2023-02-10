@@ -11,6 +11,8 @@
 #undef GetCurrentTime
 
 #include <winuser.h>
+
+#include <string>
 #include <algorithm>
 
 #include <winrt/Windows.Foundation.h>
@@ -46,68 +48,33 @@ namespace winrt::ModernLife::implementation
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
 
-        SetThreadCount();
-        OnCanvasDeviceChanged();
-        OnDPIChanged();
-        PropertyChanged({ this, &MainWindow::OnPropertyChanged });
-
         SetMyTitleBar();
-        OnBoardResized();
-        SetBestCanvasandWindowSizes();
 
+        PropertyChanged({ this, &MainWindow::OnPropertyChanged });
         timer.Tick({ this, &MainWindow::OnTick });
+
+        OnFirstRun();
+
         StartGameLoop();
     }
-    
+
+    void MainWindow::OnFirstRun()
+    {
+        SetThreadCount();
+        OnDPIChanged();                 // initializes _dpi
+        OnCanvasDeviceChanged();	    // initializes _canvasDevice
+        OnBoardResized();               // initializes _boardSize
+        SetBestCanvasandWindowSizes();  // initializes _canvasSize and _windowSize
+        SetupRenderTargets();           // initializes _renderTarget and _renderTargetBitmap
+        InvalidateIfNeeded();
+    }
+
     void MainWindow::SetThreadCount() noexcept
     {
         const int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 		_threadcount = std::clamp(count, 1, 8);
     }
     
-    void MainWindow::SetMyTitleBar()
-    {
-        // Set window title
-        ExtendsContentIntoTitleBar(true);
-        SetTitleBar(AppTitleBar());
-
-        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());
-        if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
-        {
-            appWnd.Title(L"ModernLife");
-
-            #ifdef _DEBUG
-                AppTitlePreview().Text(L"PREVIEW DEBUG");
-            #endif
-
-            // position near the top of the screen only on launch
-            Windows::Graphics::PointInt32 pos{ appWnd.Position() };
-            pos.Y = 20;
-            appWnd.Move(pos);
-        }
-    }
-
-    void MainWindow::OnWindowActivate([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] WindowActivatedEventArgs const& args)
-    {
-        if (args.WindowActivationState() == Microsoft::UI::Xaml::WindowActivationState::Deactivated)
-        {
-            Microsoft::UI::Xaml::Media::SolidColorBrush brush = Microsoft::UI::Xaml::ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<Microsoft::UI::Xaml::Media::SolidColorBrush>();
-            AppTitleTextBlock().Foreground(brush);
-            AppTitlePreview().Foreground(brush);
-        }
-        else
-        {
-            Microsoft::UI::Xaml::Media::SolidColorBrush brush = Microsoft::UI::Xaml::ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<Microsoft::UI::Xaml::Media::SolidColorBrush>();
-            AppTitleTextBlock().Foreground(brush);
-            AppTitlePreview().Foreground(brush);
-        }
-    }
-
-    void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
-    {
-        //PropertyChangedRevoker();
-    }
-
     void MainWindow::StartGameLoop()
     {
         // prep the play button
@@ -182,11 +149,10 @@ namespace winrt::ModernLife::implementation
             _propertyChanged(*this, PropertyChangedEventArgs{ L"NewCanvasDevice" });
         }
 
+        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::FirstTime)
         {
-            SetBestCanvasandWindowSizes();
-            SetupRenderTargets();
-            InvalidateIfNeeded();
-        }
+			_propertyChanged(*this, PropertyChangedEventArgs{ L"FirstTime" });
+		}
     }
 
     void MainWindow::SetBestCanvasandWindowSizes()
@@ -524,6 +490,11 @@ namespace winrt::ModernLife::implementation
         {
             OnRandomizeBoard();
         }
+
+        if (args.PropertyName() == L"FirstTime")
+        {
+            //OnFirstRun();
+        }
     }
 
     uint16_t MainWindow::MaxAge() const noexcept
@@ -639,6 +610,49 @@ namespace winrt::ModernLife::implementation
         dropdownRules().Content(winrt::box_value(item.Text()));
 
         _ruleset = item.Tag().as<int>();
+    }
+
+    void MainWindow::SetMyTitleBar()
+    {
+        // Set window title
+        ExtendsContentIntoTitleBar(true);
+        SetTitleBar(AppTitleBar());
+
+        const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());
+        if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
+        {
+            appWnd.Title(L"ModernLife");
+
+#ifdef _DEBUG
+            AppTitlePreview().Text(L"PREVIEW DEBUG");
+#endif
+
+            // position near the top of the screen only on launch
+            Windows::Graphics::PointInt32 pos{ appWnd.Position() };
+            pos.Y = 20;
+            appWnd.Move(pos);
+        }
+    }
+
+    void MainWindow::OnWindowActivate([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] WindowActivatedEventArgs const& args)
+    {
+        if (args.WindowActivationState() == Microsoft::UI::Xaml::WindowActivationState::Deactivated)
+        {
+            Microsoft::UI::Xaml::Media::SolidColorBrush brush = Microsoft::UI::Xaml::ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForegroundDisabled")).as<Microsoft::UI::Xaml::Media::SolidColorBrush>();
+            AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
+        }
+        else
+        {
+            Microsoft::UI::Xaml::Media::SolidColorBrush brush = Microsoft::UI::Xaml::ResourceDictionary().Lookup(winrt::box_value(L"WindowCaptionForeground")).as<Microsoft::UI::Xaml::Media::SolidColorBrush>();
+            AppTitleTextBlock().Foreground(brush);
+            AppTitlePreview().Foreground(brush);
+        }
+    }
+
+    void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
+    {
+        //PropertyChangedRevoker();
     }
 
     // color helpers used by spritesheet

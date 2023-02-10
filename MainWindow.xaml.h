@@ -7,6 +7,8 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
@@ -76,6 +78,7 @@ namespace winrt::ModernLife::implementation
         void OnBoardResized();
         void RandomizeBoard();
         void OnMaxAgeChanged();
+        void OnFirstRun();
 
         Windows::UI::Color GetCellColorHSV(uint16_t age);
         Windows::UI::Color GetOutlineColorHSV(uint16_t age);

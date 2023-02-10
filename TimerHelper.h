@@ -33,7 +33,6 @@ public:
         FPS(fps);
     }
     
-    
     inline void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
     {
         _eventtoken = _timer.Tick(handler);
