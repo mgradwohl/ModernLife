@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <vector>
 #include <mutex>
+#include <vector>
 
 #include "gsl/include/gsl"
 
@@ -11,21 +11,21 @@
 // as x increases move right, as y increases move down
 class Board
 {
-public:
+  public:
     Board() = default;
     ~Board() = default;
 
     void SetThreadCount();
     void Resize(uint16_t width, uint16_t height, uint16_t maxage);
 
-    void SetCell(Cell& cell, Cell::State state) noexcept;
+    void SetCell(Cell &cell, Cell::State state) noexcept;
 
-    inline const Cell& GetCell(uint16_t x, uint16_t y) const
+    inline const Cell &GetCell(uint16_t x, uint16_t y) const
     {
         return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
-    inline Cell& GetCell(uint16_t x, uint16_t y)
+    inline Cell &GetCell(uint16_t x, uint16_t y)
     {
         return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
@@ -33,29 +33,29 @@ public:
     void RandomizeBoard(float alivepct, uint16_t maxage);
 
     // board updating
-	// Update calls UpdateRowsWithNextState and FastUpdateBoardWithNextState
-	// if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die in the next generation
-	// many of these are split up to support multithreading
+    // Update calls UpdateRowsWithNextState and FastUpdateBoardWithNextState
+    // if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die
+    // in the next generation many of these are split up to support multithreading
     void Update(int32_t ruleset);
     void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
-	void FastUpdateBoardWithNextState(int32_t ruleset);
+    void FastUpdateBoardWithNextState(int32_t ruleset);
     uint8_t FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
     uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
     uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
     void ApplyNextStateToBoard() noexcept;
 
     // rulesets
-    void ConwayRules(Cell& cell) const noexcept;
-    void FastConwayRules(Cell& cell) const noexcept;
-    void DayAndNightRules(Cell& cell) const noexcept;
-    void LifeWithoutDeathRules(Cell& cell) const noexcept;
-    void HighlifeRules(Cell& cell) const noexcept;
-    void SeedsRules(Cell& cell) const noexcept;
-    void BriansBrainRules(Cell& cell) const noexcept;
- 
+    void ConwayRules(Cell &cell) const noexcept;
+    void FastConwayRules(Cell &cell) const noexcept;
+    void DayAndNightRules(Cell &cell) const noexcept;
+    void LifeWithoutDeathRules(Cell &cell) const noexcept;
+    void HighlifeRules(Cell &cell) const noexcept;
+    void SeedsRules(Cell &cell) const noexcept;
+    void BriansBrainRules(Cell &cell) const noexcept;
+
     void PrintBoard();
 
-	// getters
+    // getters
     inline void MaxAge(uint16_t maxage) noexcept
     {
         _maxage = maxage;
@@ -130,21 +130,21 @@ public:
         return _height * _width;
     }
 
-private:
+  private:
     std::vector<Cell> _board;
     std::mutex _lockboard;
 
-    uint16_t _width{ 0 };
-    uint16_t _height{ 0 };
-    uint32_t _generation{ 0 };
+    uint16_t _width{0};
+    uint16_t _height{0};
+    uint32_t _generation{0};
 
-    uint32_t _numDead{ 0 };
-    uint32_t _numLive{ 0 };
-    uint32_t _numBorn{ 0 };
-    uint32_t _numOld{ 0 };
-    uint32_t _numDying{ 0 };
-    uint32_t _OldAge{ 0xFFFFFFFF };
-    uint16_t _maxage{ 100 };
+    uint32_t _numDead{0};
+    uint32_t _numLive{0};
+    uint32_t _numBorn{0};
+    uint32_t _numOld{0};
+    uint32_t _numDying{0};
+    uint32_t _OldAge{0xFFFFFFFF};
+    uint16_t _maxage{100};
 
-    int _threadcount{ 1 };
+    int _threadcount{1};
 };

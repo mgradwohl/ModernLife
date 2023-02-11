@@ -10,10 +10,10 @@
 
 #undef GetCurrentTime
 
-#include <WinUser.h>
-
 #include <string>
+
 #include <algorithm>
+#include <WinUser.h>
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
