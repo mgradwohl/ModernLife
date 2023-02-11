@@ -70,15 +70,6 @@ public:
         return false;
     }
 
-    [[nodiscard]] inline bool IsAliveNotDying() const noexcept
-    {
-        if (_state == Cell::State::Live)
-        {
-            return true;
-        }
-        return false;
-    }
-
     [[nodiscard]] inline bool IsDying() const noexcept
     {
         if (_state == Cell::State::Dying)

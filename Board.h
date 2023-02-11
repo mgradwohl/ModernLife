@@ -39,9 +39,8 @@ class Board
     void Update(int32_t ruleset);
     void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
     void FastUpdateBoardWithNextState(int32_t ruleset);
-    uint8_t FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
-    uint8_t CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
-    uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
+    void FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
+    void CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
     void ApplyNextStateToBoard() noexcept;
 
     // rulesets
@@ -56,12 +55,12 @@ class Board
     void PrintBoard();
 
     // getters
-    inline void MaxAge(uint16_t maxage) noexcept
+    [[nodiscard]] inline void MaxAge(uint16_t maxage) noexcept
     {
         _maxage = maxage;
     }
 
-    inline uint16_t MaxAge() const noexcept
+    [[nodiscard]] inline uint16_t MaxAge() const noexcept
     {
         return _maxage;
     }
@@ -71,32 +70,32 @@ class Board
         _OldAge = age;
     }
 
-    inline uint32_t GetOldAge() const noexcept
+    [[nodiscard]] inline uint32_t GetOldAge() const noexcept
     {
         return _OldAge;
     }
 
-    inline uint32_t GetDeadCount() const noexcept
+    [[nodiscard]] inline uint32_t GetDeadCount() const noexcept
     {
         return _numDead;
     }
 
-    inline uint32_t GetLiveCount() const noexcept
+    [[nodiscard]] inline uint32_t GetLiveCount() const noexcept
     {
         return _numLive;
     }
 
-    inline uint32_t GetBornCount() const noexcept
+    [[nodiscard]] inline uint32_t GetBornCount() const noexcept
     {
         return _numBorn;
     }
 
-    inline uint32_t GetOldCount() const noexcept
+    [[nodiscard]] inline uint32_t GetOldCount() const noexcept
     {
         return _numOld;
     }
 
-    inline uint32_t GetDyingCount() const noexcept
+    [[nodiscard]] inline uint32_t GetDyingCount() const noexcept
     {
         return _numDying;
     }
@@ -110,22 +109,22 @@ class Board
         _numOld = 0;
     }
 
-    inline uint32_t Generation() const noexcept
+    [[nodiscard]] inline uint32_t Generation() const noexcept
     {
         return _generation;
     }
 
-    inline uint16_t Width() const noexcept
+    [[nodiscard]] inline uint16_t Width() const noexcept
     {
         return _width;
     }
 
-    inline uint16_t Height() const noexcept
+    [[nodiscard]] inline uint16_t Height() const noexcept
     {
         return _height;
     }
 
-    inline uint32_t GetSize() const noexcept
+    [[nodiscard]] inline uint32_t GetSize() const noexcept
     {
         return _height * _width;
     }
