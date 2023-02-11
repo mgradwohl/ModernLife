@@ -48,7 +48,7 @@ public:
         _timer.Start();
     }
 
-    inline bool IsRunning()
+    inline bool IsRunning() const
     {
         return _timer.IsRunning();
     }
@@ -58,7 +58,7 @@ public:
         _timer.IsRepeating(repeating);
     }
 
-    inline bool Repeating()
+    inline bool Repeating() const
     {
         return _timer.IsRepeating();
     }

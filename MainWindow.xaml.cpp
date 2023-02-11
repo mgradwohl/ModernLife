@@ -100,7 +100,7 @@ namespace winrt::ModernLife::implementation
     {
         {
             // Calculate important vales for the spritesheet and backbuffer slices
-            std::scoped_lock lock{ lockbackbuffer };
+            std::scoped_lock lock{ _lockbackbuffer };
 
             _dipsPerCellDimension = _bestbackbuffersize / BoardWidth();
             _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
@@ -167,7 +167,7 @@ namespace winrt::ModernLife::implementation
         // determine the right size for the canvas
         // lock these because they could change underneath a draw
         {
-            std::scoped_lock lock{ lockbackbuffer };
+            std::scoped_lock lock{ _lockbackbuffer };
 
             float best = 400.0f;
             while (true)
@@ -218,7 +218,7 @@ namespace winrt::ModernLife::implementation
             Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _sliceHeight };
             Windows::Foundation::Rect dest{ 0.0f, 0.0f, _bestcanvassize,  canvasSliceHeight};
             {
-                std::scoped_lock lock{ lockbackbuffer };
+                std::scoped_lock lock{ _lockbackbuffer };
 
                 args.DrawingSession().Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
                 args.DrawingSession().Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
@@ -241,7 +241,7 @@ namespace winrt::ModernLife::implementation
         fps.AddFrame();
     }
 
-    void MainWindow::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow)
+    void MainWindow::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow) const
     {
         // only read from the board/the cells in this method
         ds.Clear(Windows::UI::Colors::WhiteSmoke());
@@ -418,7 +418,7 @@ namespace winrt::ModernLife::implementation
         _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
     }
 
-    HWND MainWindow::GetWindowHandle()
+    inline HWND MainWindow::GetWindowHandle() const
     {
         // get window handle, window ID
         auto windowNative{ this->try_as<::IWindowNative>() };
@@ -497,7 +497,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    uint16_t MainWindow::MaxAge() const noexcept
+    inline uint16_t MainWindow::MaxAge() const noexcept
     {
         return _maxage;
     }
@@ -511,7 +511,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    bool MainWindow::ShowLegend() const noexcept
+    inline bool MainWindow::ShowLegend() const noexcept
     {
 		return _drawLegend;
     }
@@ -539,7 +539,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    uint16_t MainWindow::BoardWidth() const noexcept
+    inline uint16_t MainWindow::BoardWidth() const noexcept
     {
         return _boardwidth;
     }
@@ -582,14 +582,14 @@ namespace winrt::ModernLife::implementation
         // TODO test
     }
 
-    hstring MainWindow::GetRandomPercentText(double_t value)
+    inline hstring MainWindow::GetRandomPercentText(double_t value)
     {
         std::wstring text = std::format(L"{0}% random", gsl::narrow_cast<int>(value));
         hstring htext{ text };
         return htext;
     }
 
-    hstring MainWindow::GetBoardWidthText(double_t value)
+    inline hstring MainWindow::GetBoardWidthText(double_t value)
     {
         std::wstring text = std::format(L"Width {0} x Height {0}", gsl::narrow_cast<int>(value));
         hstring htext{ text };
@@ -656,7 +656,7 @@ namespace winrt::ModernLife::implementation
     }
 
     // color helpers used by spritesheet
-    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age)
+    const Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age) const
     {
         if (age >= MaxAge())
         {
@@ -667,7 +667,7 @@ namespace winrt::ModernLife::implementation
         return HSVColorHelper::HSVtoColor(h, 0.6f, 0.7f);
     }
 
-    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age)
+    const Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age) const
     {
         if (age >= MaxAge())
         {

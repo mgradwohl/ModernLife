@@ -294,7 +294,7 @@ void Board::ConwayRules(Cell& cell) const noexcept
 	}
 }
 
-void Board::FastConwayRules(Cell& cell) const noexcept
+inline void Board::FastConwayRules(Cell& cell) const noexcept
 {
 	const uint16_t count = cell.Neighbors();
 

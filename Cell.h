@@ -19,28 +19,28 @@ public:
 
     ~Cell() = default;
 
-    inline uint8_t Neighbors() const noexcept
+    const inline uint8_t Neighbors() const noexcept
     {
         return _neighbors;
     }
 
-    inline void SetNeighbors(uint8_t n) noexcept
+    const inline void SetNeighbors(uint8_t n) noexcept
     {
         _neighbors = n;
     }
 
-    inline void SetAge(uint16_t age) noexcept
+    const inline void SetAge(uint16_t age) noexcept
     {
         _age = age;
     }
 
-    inline uint16_t Age() const noexcept
+    const inline uint16_t Age() const noexcept
     {
         return _age;
     }
 
 
-    inline State GetState() const noexcept
+    const inline State GetState() const noexcept
     {
         return _state;
     }
@@ -54,7 +54,7 @@ public:
         }
     }
 
-    inline bool ShouldDraw() const noexcept
+    const inline bool ShouldDraw() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::BrianDying)
         {
@@ -63,7 +63,7 @@ public:
         return false;
     }
     
-    inline bool IsAlive() const noexcept
+    const inline bool IsAlive() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
         {
@@ -72,7 +72,7 @@ public:
         return false;
     }
 
-    inline bool IsAliveNotDying() const noexcept
+    const inline bool IsAliveNotDying() const noexcept
     {
         if (_state == Cell::State::Live)
         {
@@ -81,7 +81,7 @@ public:
         return false;
     }
 
-    inline bool IsDying() const noexcept
+    const inline bool IsDying() const noexcept
     {
         if (_state == Cell::State::Dying)
         {
@@ -90,7 +90,7 @@ public:
         return false;
     }
 
-    inline bool IsBrianDying() const noexcept
+    const inline bool IsBrianDying() const noexcept
     {
         if (_state == Cell::State::BrianDying)
         {
@@ -99,7 +99,7 @@ public:
         return false;
     }
 
-    inline bool IsDead() const noexcept
+    const inline bool IsDead() const noexcept
     {
         if (_state == Cell::State::Dead || _state == Cell::State::Born)
         {

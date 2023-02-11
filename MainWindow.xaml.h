@@ -47,14 +47,14 @@ namespace winrt::ModernLife::implementation
         }
         uint16_t RandomPercent() const noexcept;
         void RandomPercent(uint16_t value);
-        uint16_t MaxAge() const noexcept;
+        inline uint16_t MaxAge() const noexcept;
         void MaxAge(uint16_t value);
-        bool ShowLegend() const noexcept;
+        inline bool ShowLegend() const noexcept;
         void ShowLegend(bool value);
         void BoardWidth(uint16_t value);
-        uint16_t BoardWidth() const noexcept;
-        hstring GetRandomPercentText(double_t value);
-        hstring GetBoardWidthText(double_t value);
+        inline uint16_t BoardWidth() const noexcept;
+        inline hstring GetRandomPercentText(double_t value);
+        inline hstring GetBoardWidthText(double_t value);
         void speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void CanvasBoard_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -66,12 +66,12 @@ namespace winrt::ModernLife::implementation
 
         void CanvasBoard_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void RenderOffscreen(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender);
-        void DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow);
+        void DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow) const;
         void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void SetupRenderTargets();
         void InvalidateIfNeeded();
         void CanvasBoard_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
-        HWND GetWindowHandle();
+        inline HWND GetWindowHandle() const;
         void OnDPIChanged();
         void OnCanvasDeviceChanged();
         void SetBestCanvasandWindowSizes();
@@ -80,9 +80,8 @@ namespace winrt::ModernLife::implementation
         void OnMaxAgeChanged();
         void OnFirstRun();
 
-        Windows::UI::Color GetCellColorHSV(uint16_t age);
-        Windows::UI::Color GetOutlineColorHSV(uint16_t age);
-        Windows::UI::Color HSVtoColor(float h, float s, float v);
+        const Windows::UI::Color GetCellColorHSV(uint16_t age) const;
+        const Windows::UI::Color GetOutlineColorHSV(uint16_t age) const;
 
     private:
         FPScounter fps{};
@@ -94,7 +93,7 @@ namespace winrt::ModernLife::implementation
         Microsoft::Graphics::Canvas::CanvasRenderTarget _spritesheet{ nullptr };
 		Microsoft::Graphics::Canvas::CanvasDevice _canvasDevice{ nullptr };
 
-        std::mutex lockbackbuffer;
+        std::mutex _lockbackbuffer;
         Board _board;
 
         float _dpi{ 0.0f };

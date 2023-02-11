@@ -32,7 +32,7 @@ public:
 		_end = std::chrono::high_resolution_clock::now();
 	}
 
-	inline double FPS() noexcept
+	const inline double FPS() noexcept
 	{
 		return _fps;
 	}
@@ -44,9 +44,9 @@ public:
 		if (_frames - _framebaseline >= 5)
 		{
 			_end = std::chrono::high_resolution_clock::now();
-			auto start = std::chrono::time_point_cast<std::chrono::milliseconds>(_start).time_since_epoch().count();
-			auto end = std::chrono::time_point_cast<std::chrono::milliseconds>(_end).time_since_epoch().count();
-			auto span = end - start;
+			const auto start = std::chrono::time_point_cast<std::chrono::milliseconds>(_start).time_since_epoch().count();
+			const auto end = std::chrono::time_point_cast<std::chrono::milliseconds>(_end).time_since_epoch().count();
+			const auto span = end - start;
 			const double dspan = span * 0.001;
 
 			if (span != 0)
