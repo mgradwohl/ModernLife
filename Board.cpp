@@ -257,19 +257,19 @@ void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 	const uint16_t rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
 	const uint16_t remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
 
-	std::vector<std::thread> threads;
+	std::vector<std::jthread> threads;
 	for (int t = 0; t < _threadcount-1; t++)
 	{
-		threads.push_back(std::thread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
+		threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
 		rowStart += rowsPerThread;
 		
 	}
-	threads.push_back(std::thread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
+	threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 
-	for (auto& th : threads)
-	{
-		th.join();
-	}
+	//for (auto& th : threads)
+	//{
+	//	th.join();
+	//}
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept

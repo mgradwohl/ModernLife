@@ -61,7 +61,7 @@ public:
         _maxage = maxage;
     }
 
-    const inline uint16_t MaxAge() const noexcept
+    inline uint16_t MaxAge() const noexcept
     {
         return _maxage;
     }
@@ -71,32 +71,32 @@ public:
         _OldAge = age;
     }
 
-    const inline uint32_t GetOldAge() const noexcept
+    inline uint32_t GetOldAge() const noexcept
     {
         return _OldAge;
     }
 
-    const inline uint32_t GetDeadCount() const noexcept
+    inline uint32_t GetDeadCount() const noexcept
     {
         return _numDead;
     }
 
-    const inline uint32_t GetLiveCount() const noexcept
+    inline uint32_t GetLiveCount() const noexcept
     {
         return _numLive;
     }
 
-    const inline uint32_t GetBornCount() const noexcept
+    inline uint32_t GetBornCount() const noexcept
     {
         return _numBorn;
     }
 
-    const inline uint32_t GetOldCount() const noexcept
+    inline uint32_t GetOldCount() const noexcept
     {
         return _numOld;
     }
 
-    const inline uint32_t GetDyingCount() const noexcept
+    inline uint32_t GetDyingCount() const noexcept
     {
         return _numDying;
     }
@@ -110,22 +110,22 @@ public:
         _numOld = 0;
     }
 
-    const inline uint32_t Generation() const noexcept
+    inline uint32_t Generation() const noexcept
     {
         return _generation;
     }
 
-    const inline uint16_t Width() const noexcept
+    inline uint16_t Width() const noexcept
     {
         return _width;
     }
 
-    const inline uint16_t Height() const noexcept
+    inline uint16_t Height() const noexcept
     {
         return _height;
     }
 
-    const inline uint32_t GetSize() const noexcept
+    inline uint32_t GetSize() const noexcept
     {
         return _height * _width;
     }

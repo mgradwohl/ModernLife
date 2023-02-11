@@ -10,7 +10,7 @@
 
 #undef GetCurrentTime
 
-#include <winuser.h>
+#include <WinUser.h>
 
 #include <string>
 #include <algorithm>
@@ -37,12 +37,6 @@
 
 namespace winrt::ModernLife::implementation
 {
-    MainWindow::MainWindow() noexcept
-    {
-        //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
-        //InitializeComponent(); 
-    }
-
     void MainWindow::InitializeComponent()
     {
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
@@ -137,7 +131,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
-        // todo might want to do the code in the if-block in all cases (for all args.Reason()s
+        // TODO might want to do the code in the if-block in all cases (for all args.Reason()s
 
         if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
         {
@@ -286,25 +280,25 @@ namespace winrt::ModernLife::implementation
         // technically the board could be changing underneath us, but we're only reading the cells not writing to them
 		// TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
         
-        std::vector<std::thread> threads;
+        std::vector<std::jthread> threads;
         int t = 0;
         for (t = 0; t < _threadcount-1; t++)
         {
-            threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
+            threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
             startRow += _rowsPerSlice;
         }
-        threads.push_back(std::thread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
+        threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
 
         // join the threads which waits for them to complete their work
-        for (auto& th : threads)
-		{
-			th.join();
-		}
+  //      for (auto& th : threads)
+		//{
+		//	th.join();
+		//}
 
         _dsList.clear();
     }
 
-    const Windows::Foundation::Rect MainWindow::GetSpriteCell(uint16_t index) const noexcept
+    Windows::Foundation::Rect MainWindow::GetSpriteCell(uint16_t index) const noexcept
     {
         const uint16_t i = std::clamp(index, gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(MaxAge() + 1));
 		const Windows::Foundation::Rect rect{ (i % _spritesPerRow) * _dipsPerCellDimension, (i / _spritesPerRow) * _dipsPerCellDimension, _dipsPerCellDimension, _dipsPerCellDimension };
@@ -392,7 +386,7 @@ namespace winrt::ModernLife::implementation
         args.DrawingSession().Clear(colorBack);
 
         // create the strings to draw
-        std::wstring strTitle{ (L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads") };
+        std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
         std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize(), _dpi, _bestcanvassize, _bestbackbuffersize, _dipsPerCellDimension, _threadcount);
 
         // draw the text left aligned
@@ -582,14 +576,14 @@ namespace winrt::ModernLife::implementation
         // TODO test
     }
 
-    inline hstring MainWindow::GetRandomPercentText(double_t value)
+    inline hstring MainWindow::GetRandomPercentText(double_t value) const
     {
-        std::wstring text = std::format(L"{0}% random", gsl::narrow_cast<int>(value));
+        std::wstring text = std::format(L"{}% random", gsl::narrow_cast<int>(value));
         hstring htext{ text };
         return htext;
     }
 
-    inline hstring MainWindow::GetBoardWidthText(double_t value)
+    inline hstring MainWindow::GetBoardWidthText(double_t value) const
     {
         std::wstring text = std::format(L"Width {0} x Height {0}", gsl::narrow_cast<int>(value));
         hstring htext{ text };
@@ -656,7 +650,7 @@ namespace winrt::ModernLife::implementation
     }
 
     // color helpers used by spritesheet
-    const Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age) const
+    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age) const
     {
         if (age >= MaxAge())
         {
@@ -667,7 +661,7 @@ namespace winrt::ModernLife::implementation
         return HSVColorHelper::HSVtoColor(h, 0.6f, 0.7f);
     }
 
-    const Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age) const
+    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age) const
     {
         if (age >= MaxAge())
         {

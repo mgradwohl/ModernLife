@@ -63,7 +63,7 @@ public:
         return _timer.IsRepeating();
     }
 
-    inline int FPS() noexcept
+    inline int FPS() const noexcept
     {
 		return _fps;
     }

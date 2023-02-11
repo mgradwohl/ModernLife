@@ -10,10 +10,6 @@ public:
 	{
 		_start = std::chrono::high_resolution_clock::now();
 		_end = std::chrono::high_resolution_clock::now();
-
-		_frames = 0;
-		_framebaseline = 0;
-		_fps = 0;
 	}
 
 	FPScounter(FPScounter&& b) = delete;
@@ -32,7 +28,7 @@ public:
 		_end = std::chrono::high_resolution_clock::now();
 	}
 
-	const inline double FPS() noexcept
+	inline double FPS() noexcept
 	{
 		return _fps;
 	}

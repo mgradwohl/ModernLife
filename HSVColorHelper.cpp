@@ -5,7 +5,7 @@
 #include "gsl/include/gsl"
 
 // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB
-const winrt::Windows::UI::Color HSVColorHelper::HSVtoColor(float h, float s, float v)
+winrt::Windows::UI::Color HSVColorHelper::HSVtoColor(float h, float s, float v)
 {
     if (h > 360.0f)
     {

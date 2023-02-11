@@ -25,7 +25,7 @@ namespace winrt::ModernLife::implementation
     struct MainWindow : MainWindowT<MainWindow>
     {
     public:
-        MainWindow() noexcept;
+        MainWindow() = default;
         void OnWindowActivate(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
         void InitializeComponent();
         void SetMyTitleBar();
@@ -47,14 +47,14 @@ namespace winrt::ModernLife::implementation
         }
         uint16_t RandomPercent() const noexcept;
         void RandomPercent(uint16_t value);
-        inline uint16_t MaxAge() const noexcept;
+        uint16_t MaxAge() const noexcept;
         void MaxAge(uint16_t value);
-        inline bool ShowLegend() const noexcept;
+        bool ShowLegend() const noexcept;
         void ShowLegend(bool value);
         void BoardWidth(uint16_t value);
-        inline uint16_t BoardWidth() const noexcept;
-        inline hstring GetRandomPercentText(double_t value);
-        inline hstring GetBoardWidthText(double_t value);
+        uint16_t BoardWidth() const noexcept;
+        hstring GetRandomPercentText(double_t value) const;
+        hstring GetBoardWidthText(double_t value) const;
         void speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void CanvasBoard_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -62,7 +62,7 @@ namespace winrt::ModernLife::implementation
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void BuildSpriteSheet();
-        const Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
+        Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
 
         void CanvasBoard_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void RenderOffscreen(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender);
@@ -71,7 +71,7 @@ namespace winrt::ModernLife::implementation
         void SetupRenderTargets();
         void InvalidateIfNeeded();
         void CanvasBoard_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
-        inline HWND GetWindowHandle() const;
+        HWND GetWindowHandle() const;
         void OnDPIChanged();
         void OnCanvasDeviceChanged();
         void SetBestCanvasandWindowSizes();
@@ -80,8 +80,8 @@ namespace winrt::ModernLife::implementation
         void OnMaxAgeChanged();
         void OnFirstRun();
 
-        const Windows::UI::Color GetCellColorHSV(uint16_t age) const;
-        const Windows::UI::Color GetOutlineColorHSV(uint16_t age) const;
+        Windows::UI::Color GetCellColorHSV(uint16_t age) const;
+        Windows::UI::Color GetOutlineColorHSV(uint16_t age) const;
 
     private:
         FPScounter fps{};
