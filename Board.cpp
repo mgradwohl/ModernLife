@@ -144,7 +144,6 @@ void Board::ApplyNextStateToBoard() noexcept
 {
 	_generation++;
 	ResetCounts();
-	// TODO check size of board before iterating over board
 	for (Cell& cell : _board)
 	{
 		if (cell.GetState() == Cell::State::Born)
@@ -173,7 +172,6 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 	std::uniform_int_distribution<int> adis(0, maxage);
 
 	_maxage = maxage;
-	// TODO check size of board before iterating over board
 	{
 		std::scoped_lock lock { _lockboard };
 		for (Cell& cell : _board)
@@ -305,9 +303,7 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 	// every dead cell that has exactly 3 live neighbors becomes alive itself
 	// and every other dead cell remains dead. B3/S012345678
 
-	const uint16_t count = cell.Neighbors();
-
-	if (cell.IsDead() && count == 3)
+	if (cell.IsDead() && cell.Neighbors() == 3)
 	{
 		cell.SetState(Cell::State::Born);
 	}
@@ -316,7 +312,6 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 		// should never happen
 		cell.SetState(Cell::State::Live);
 	}
-	
 }
 
 void Board::HighlifeRules(Cell& cell) const noexcept
@@ -350,9 +345,7 @@ void Board::SeedsRules(Cell& cell) const noexcept
 	// but had exactly two neighbors that were on
 	// all other cells turn off. It is described by the rule B2 / S
 
-	const uint16_t count = cell.Neighbors();
-
-	if (cell.IsDead() && count == 2)
+	if (cell.IsDead() && cell.Neighbors() == 2)
 	{
 		cell.SetState(Cell::State::Born);
 	}
@@ -370,8 +363,6 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	// which is not counted as an "on" cell in the neighbor count, and prevents any cell from
 	// being born there. Cells that were in the dying state go into the off state.
 
-	const uint16_t count = cell.Neighbors();
-	
 	// Cell::State::BrianDying is a special case for this ruleset
 	// so that Dying cells draw as well as Live cells
 	if (cell.GetState() == Cell::State::BrianDying)
@@ -385,7 +376,7 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 		cell.SetState(Cell::State::BrianDying);
 	}
 	else
-	if (cell.IsDead() && count == 2)
+	if (cell.IsDead() && cell.Neighbors() == 2)
 	{
 		cell.SetState(Cell::State::Born);
 	}

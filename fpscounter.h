@@ -6,12 +6,7 @@ class FPScounter
 {
 public:
 	// construct
-	FPScounter() noexcept
-	{
-		_start = std::chrono::high_resolution_clock::now();
-		_end = std::chrono::high_resolution_clock::now();
-	}
-
+	FPScounter() = default;
 	FPScounter(FPScounter&& b) = delete;
 	FPScounter(FPScounter& b) = delete;
 
@@ -28,7 +23,7 @@ public:
 		_end = std::chrono::high_resolution_clock::now();
 	}
 
-	inline double FPS() noexcept
+	inline double FPS() const noexcept
 	{
 		return _fps;
 	}
