@@ -280,20 +280,17 @@ namespace winrt::ModernLife::implementation
         // technically the board could be changing underneath us, but we're only reading the cells not writing to them
 		// TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
         
-        std::vector<std::jthread> threads;
-        int t = 0;
-        for (t = 0; t < _threadcount-1; t++)
         {
-            threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice)});
-            startRow += _rowsPerSlice;
+            // create a scope block so the vector dtor will be called and auto join the threads
+            std::vector<std::jthread> threads;
+            int t = 0;
+            for (t = 0; t < _threadcount - 1; t++)
+            {
+                threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
+                startRow += _rowsPerSlice;
+            }
+            threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height() });
         }
-        threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height()});
-
-        // join the threads which waits for them to complete their work
-  //      for (auto& th : threads)
-		//{
-		//	th.join();
-		//}
 
         _dsList.clear();
     }
