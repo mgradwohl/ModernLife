@@ -17,7 +17,7 @@ public:
 
     ~Cell() = default;
 
-    inline uint8_t Neighbors() const noexcept
+    [[nodiscard]] inline uint8_t Neighbors() const noexcept
     {
         return _neighbors;
     }
@@ -32,13 +32,13 @@ public:
         _age = age;
     }
 
-    inline uint16_t Age() const noexcept
+    [[nodiscard]] inline uint16_t Age() const noexcept
     {
         return _age;
     }
 
 
-    inline State GetState() const noexcept
+    [[nodiscard]] inline State GetState() const noexcept
     {
         return _state;
     }
@@ -52,7 +52,7 @@ public:
         }
     }
 
-    inline bool ShouldDraw() const noexcept
+    [[nodiscard]] inline bool ShouldDraw() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::BrianDying)
         {
@@ -61,7 +61,7 @@ public:
         return false;
     }
     
-    inline bool IsAlive() const noexcept
+    [[nodiscard]] inline bool IsAlive() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
         {
@@ -70,7 +70,7 @@ public:
         return false;
     }
 
-    inline bool IsAliveNotDying() const noexcept
+    [[nodiscard]] inline bool IsAliveNotDying() const noexcept
     {
         if (_state == Cell::State::Live)
         {
@@ -79,7 +79,7 @@ public:
         return false;
     }
 
-    inline bool IsDying() const noexcept
+    [[nodiscard]] inline bool IsDying() const noexcept
     {
         if (_state == Cell::State::Dying)
         {
@@ -88,16 +88,7 @@ public:
         return false;
     }
 
-    inline bool IsBrianDying() const noexcept
-    {
-        if (_state == Cell::State::BrianDying)
-        {
-            return true;
-        }
-        return false;
-    }
-
-    inline bool IsDead() const noexcept
+    [[nodiscard]] inline bool IsDead() const noexcept
     {
         if (_state == Cell::State::Dead || _state == Cell::State::Born)
         {
@@ -106,9 +97,9 @@ public:
         return false;
     }
 
-    const char* GetStateString() const noexcept;
+    [[nodiscard]] const char* GetStateString() const noexcept;
 
-    const std::wstring& GetEmojiStateString() const;
+    [[nodiscard]] const std::wstring& GetEmojiStateString() const;
 
     //void KillOldCell();
 };
