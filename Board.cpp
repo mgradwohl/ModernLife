@@ -89,7 +89,7 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	}
 }
 
-void Board::FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	static const std::vector<int16_t> dx { -1,  0,  1, -1, 1, -1, 0, 1 };
 	static const std::vector<int16_t> dy { -1, -1, -1,  0, 0,  1, 1, 1 };
@@ -107,9 +107,10 @@ void Board::FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	}
 
 	GetCell(x, y).SetNeighbors(count);
+	return count;
 }
 
-void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -131,6 +132,33 @@ void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	if (GetCell(x + xoright, y).IsAlive()) count++;
 
 	GetCell(x,y).SetNeighbors(count);
+
+	return count;
+}
+
+uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
+{
+	// calculate offsets that wrap
+	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
+	const uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;
+	const uint16_t yoabove = (y == 0) ? _height - 1 : -1;
+	const uint16_t yobelow = (y == (_height - 1)) ? -(_height - 1) : 1;
+
+	uint8_t count{ 0 };
+
+	if (GetCell(x + xoleft, y + yobelow).IsAliveNotDying()) count++;
+	if (GetCell(x, y + yobelow).IsAliveNotDying()) count++;
+	if (GetCell(x + xoright, y + yobelow).IsAliveNotDying()) count++;
+
+	if (GetCell(x + xoleft, y + yoabove).IsAliveNotDying()) count++;
+	if (GetCell(x, y + yoabove).IsAliveNotDying()) count++;
+	if (GetCell(x + xoright, y + yoabove).IsAliveNotDying()) count++;
+
+	if (GetCell(x + xoleft, y).IsAliveNotDying()) count++;
+	if (GetCell(x + xoright, y).IsAliveNotDying()) count++;
+
+	GetCell(x,y).SetNeighbors(count);
+	return count;
 }
 
 void Board::Update(int32_t ruleset)
@@ -169,7 +197,7 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution pdis(0.0, 1.0);
+	std::uniform_real_distribution<> pdis(0.0, 1.0);
 	std::uniform_int_distribution<int> adis(0, maxage);
 
 	_maxage = maxage;
