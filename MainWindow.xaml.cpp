@@ -57,9 +57,10 @@ namespace winrt::ModernLife::implementation
         SetThreadCount();
         OnDPIChanged();                 // initializes _dpi
         OnCanvasDeviceChanged();	    // initializes _canvasDevice
+
         OnBoardResized();               // initializes _boardSize
+
         SetBestCanvasandWindowSizes();  // initializes _canvasSize and _windowSize
-        SetupRenderTargets();           // initializes _renderTarget and _renderTargetBitmap
         InvalidateIfNeeded();
     }
 
