@@ -328,11 +328,10 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">
-    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
-    <ClangTidyChecks>*, -abseil-*, -altera-*, -android-*, -darwin-*, -fuchsia-*, -google-*, -llvm*, -linuxkernel-*, -objc-*, -openmp-*, -modernize-use-trailing-return-type, -zircon-*, -clang-analyzer-osx.*, -clang-analyzer-optin.osx*, -cppcoreguidelines-avoid-magic-numbers, -readability-magic-numbers, -readability-avoid-const-params-in-decls,</ClangTidyChecks>
-    <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
