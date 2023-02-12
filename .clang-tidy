@@ -1,0 +1,24 @@
+---
+Checks: "*,
+        -abseil-*,
+        -altera-*,
+        -android-*,
+        -darwin-*,
+        -fuchsia-*,
+        -google-*,
+        -llvm*,
+        -linuxkernel-*,
+        -objc-*,
+        -openmp-*,
+        -modernize-use-trailing-return-type,
+        -zircon-*,
+        -clang-analyzer-osx.
+        -clang-analyzer-optin.osx,
+        -clang-analyzer-osx,
+        -cppcoreguidelines-avoid-magic-numbers,
+        -readability-magic-numbers,
+        -readability-avoid-const-params-in-decls,
+"
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle:     none

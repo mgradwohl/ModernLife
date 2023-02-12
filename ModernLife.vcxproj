@@ -331,20 +331,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Analyze|x64'">
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
-    <ClangTidyChecks>bugprone-*,readability-*,performance-*,modernize-*,misc-*,hicpp-*,cppcoreguidelines-*,clang-analyzer-valist,clang-analyzer-security,clang-analyzer-cplusplus,clang-analyzer-optin.cplusplus,clang-analyzer-nullability,clang-analyzer-core,clang-analyzer-apiModeling,clang-analyzer-deadcode,cert-*,</ClangTidyChecks>
+    <ClangTidyChecks>
+    </ClangTidyChecks>
     <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClangTidyChecks>
-    </ClangTidyChecks>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <ClangTidyChecks>
-    </ClangTidyChecks>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
