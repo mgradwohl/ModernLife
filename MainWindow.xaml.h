@@ -36,7 +36,7 @@ namespace winrt::ModernLife::implementation
         void SetThreadCount() noexcept;
 
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
-        winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
+        [[nodiscard]] winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
         {
             return _propertyChanged.add(value);
         }
@@ -45,16 +45,16 @@ namespace winrt::ModernLife::implementation
         {
             _propertyChanged.remove(token);
         }
-        uint16_t RandomPercent() const noexcept;
+        [[nodiscard]] uint16_t RandomPercent() const noexcept;
         void RandomPercent(uint16_t value);
-        uint16_t MaxAge() const noexcept;
+        [[nodiscard]] uint16_t MaxAge() const noexcept;
         void MaxAge(uint16_t value);
         bool ShowLegend() const noexcept;
         void ShowLegend(bool value);
         void BoardWidth(uint16_t value);
-        uint16_t BoardWidth() const noexcept;
-        hstring GetRandomPercentText(double_t value) const;
-        hstring GetBoardWidthText(double_t value) const;
+        [[nodiscard]] uint16_t BoardWidth() const noexcept;
+        [[nodiscard]] hstring GetRandomPercentText(double_t value) const;
+        [[nodiscard]] hstring GetBoardWidthText(double_t value) const;
         void speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void CanvasBoard_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -62,7 +62,7 @@ namespace winrt::ModernLife::implementation
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void BuildSpriteSheet();
-        Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
+        [[nodiscard]] Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
 
         void CanvasBoard_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
         void RenderOffscreen(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender);
@@ -71,7 +71,7 @@ namespace winrt::ModernLife::implementation
         void SetupRenderTargets();
         void InvalidateIfNeeded();
         void CanvasBoard_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
-        HWND GetWindowHandle() const;
+        [[nodiscard]] HWND GetWindowHandle() const;
         void OnDPIChanged();
         void OnCanvasDeviceChanged();
         void SetBestCanvasandWindowSizes();
@@ -80,8 +80,8 @@ namespace winrt::ModernLife::implementation
         void OnMaxAgeChanged();
         void OnFirstRun();
 
-        Windows::UI::Color GetCellColorHSV(uint16_t age) const;
-        Windows::UI::Color GetOutlineColorHSV(uint16_t age) const;
+        [[nodiscard]] Windows::UI::Color GetCellColorHSV(uint16_t age) const;
+        [[nodiscard]] Windows::UI::Color GetOutlineColorHSV(uint16_t age) const;
 
     private:
         FPScounter fps{};
