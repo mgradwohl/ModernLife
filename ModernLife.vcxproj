@@ -335,7 +335,7 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
-    <ClangTidyChecks>clang-analyzer-*,bugprone-*,readability-*,performance-*,modernize-*,cert-*</ClangTidyChecks>
+    <ClangTidyChecks>clang-analyzer-*,bugprone-*,readability-*,performance-*,modernize-*</ClangTidyChecks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>

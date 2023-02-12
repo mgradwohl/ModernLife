@@ -14,7 +14,6 @@ private:
 
 public:
     Cell() = default;
-
     ~Cell() = default;
 
     [[nodiscard]] inline uint8_t Neighbors() const noexcept

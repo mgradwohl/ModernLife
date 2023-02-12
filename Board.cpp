@@ -89,28 +89,7 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	}
 }
 
-uint8_t Board::FastCountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
-{
-	static const std::vector<int16_t> dx { -1,  0,  1, -1, 1, -1, 0, 1 };
-	static const std::vector<int16_t> dy { -1, -1, -1,  0, 0,  1, 1, 1 };
-
-	uint8_t count{ 0 };
-
-	for (size_t i = 0; i < dx.size(); ++i)
-	{
-		const uint16_t xx = (x + gsl::at(dx,i) + _width) % _width;
-		const uint16_t yy = (y + gsl::at(dy,i) + _height) % _height;
-		if (GetCell(xx, yy).IsAlive())
-		{
-			count++;
-		}
-	}
-
-	GetCell(x, y).SetNeighbors(count);
-	return count;
-}
-
-uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
+void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -132,8 +111,6 @@ uint8_t Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	if (GetCell(x + xoright, y).IsAlive()) count++;
 
 	GetCell(x,y).SetNeighbors(count);
-
-	return count;
 }
 
 uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
