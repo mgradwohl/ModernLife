@@ -107,7 +107,7 @@ namespace winrt::ModernLife::implementation
         uint16_t _randompercent{30};
         uint16_t _maxage{ 1000 };
         int32_t _ruleset{ 1 };
-        uint16_t _boardwidth{ 200 };
+        int16_t _boardwidth{ 200 };
         float _bestcanvassize{ 1000.0f };
         // ensure at least 6 dips per cell max board size which is 500 cells per row
         float _idealbackbuffersize{ 2000.0f };
