@@ -48,7 +48,7 @@ public:
         _timer.Start();
     }
 
-    [[nodiscard]] inline bool IsRunning() const
+    inline bool IsRunning() const
     {
         return _timer.IsRunning();
     }
@@ -58,12 +58,12 @@ public:
         _timer.IsRepeating(repeating);
     }
 
-    [[nodiscard]] inline bool Repeating() const
+    inline bool Repeating() const
     {
         return _timer.IsRepeating();
     }
 
-    [[nodiscard]] inline int FPS() const noexcept
+    inline int FPS() const noexcept
     {
 		return _fps;
     }

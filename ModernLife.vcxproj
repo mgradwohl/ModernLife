@@ -125,7 +125,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -144,7 +144,6 @@
       <EnablePREfast Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">true</EnablePREfast>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">false</SupportJustMyCode>
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">true</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -332,8 +331,7 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
-    <ClangTidyChecks>
-    </ClangTidyChecks>
+    <ClangTidyChecks>*, -abseil-*, -altera-*, -android-*, -darwin-*, -fuchsia-*, -google-*, -llvm*, -linuxkernel-*, -objc-*, -openmp-*, -modernize-use-trailing-return-type, -zircon-*, -clang-analyzer-osx.*, -clang-analyzer-optin.osx*, -cppcoreguidelines-avoid-magic-numbers, -readability-magic-numbers, -readability-avoid-const-params-in-decls,</ClangTidyChecks>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
