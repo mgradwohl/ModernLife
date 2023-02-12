@@ -18,14 +18,14 @@ class Board
     void SetThreadCount();
     void Resize(uint16_t width, uint16_t height, uint16_t maxage);
 
-    void SetCell(Cell &cell, Cell::State state) noexcept;
+    void SetCell(Cell& cell, Cell::State state) noexcept;
 
-    inline const Cell &GetCell(uint16_t x, uint16_t y) const
+    inline const Cell& GetCell(uint16_t x, uint16_t y) const
     {
         return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
-    inline Cell &GetCell(uint16_t x, uint16_t y)
+    inline Cell& GetCell(uint16_t x, uint16_t y)
     {
         return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
@@ -45,13 +45,13 @@ class Board
     void ApplyNextStateToBoard() noexcept;
 
     // rulesets
-    void ConwayRules(Cell &cell) const noexcept;
-    void FastConwayRules(Cell &cell) const noexcept;
-    void DayAndNightRules(Cell &cell) const noexcept;
-    void LifeWithoutDeathRules(Cell &cell) const noexcept;
-    void HighlifeRules(Cell &cell) const noexcept;
-    void SeedsRules(Cell &cell) const noexcept;
-    void BriansBrainRules(Cell &cell) const noexcept;
+    void ConwayRules(Cell& cell) const noexcept;
+    void FastConwayRules(Cell& cell) const noexcept;
+    void DayAndNightRules(Cell& cell) const noexcept;
+    void LifeWithoutDeathRules(Cell& cell) const noexcept;
+    void HighlifeRules(Cell& cell) const noexcept;
+    void SeedsRules(Cell& cell) const noexcept;
+    void BriansBrainRules(Cell& cell) const noexcept;
 
     void PrintBoard();
 
