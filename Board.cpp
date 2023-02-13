@@ -70,7 +70,7 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 		case Cell::State::Born:
 		{
 			_numBorn++;
-			cell.SetAge(0);
+			cell.Age(0);
 			break;
 		}
 		case Cell::State::Old:
@@ -110,7 +110,7 @@ void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	if (GetCell(x + xoleft, y).IsAlive()) count++;
 	if (GetCell(x + xoright, y).IsAlive()) count++;
 
-	GetCell(x,y).SetNeighbors(count);
+	GetCell(x,y).Neighbors(count);
 }
 
 uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
@@ -134,7 +134,7 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 	if (GetCell(x + xoleft, y).IsAliveNotDying()) count++;
 	if (GetCell(x + xoright, y).IsAliveNotDying()) count++;
 
-	GetCell(x,y).SetNeighbors(count);
+	GetCell(x,y).Neighbors(count);
 	return count;
 }
 
@@ -155,7 +155,7 @@ void Board::ApplyNextStateToBoard() noexcept
 		if (cell.GetState() == Cell::State::Born)
 		{
 			SetCell(cell, Cell::State::Live);
-			cell.SetAge(0);
+			cell.Age(0);
 			continue;
 		}
 
@@ -166,7 +166,7 @@ void Board::ApplyNextStateToBoard() noexcept
 		}
 
 		SetCell(cell, cell.GetState());
-		cell.SetAge(cell.Age() + 1);
+		cell.Age(cell.Age() + 1);
 	}
 }
 
@@ -191,7 +191,7 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 			if (rp <= alivepct)
 			{
 				SetCell(cell, Cell::State::Live);
-				cell.SetAge(gsl::narrow_cast<uint16_t>(ra));
+				cell.Age(gsl::narrow_cast<uint16_t>(ra));
 			}
 			else
 			{
@@ -386,7 +386,7 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 	else
 	if (cell.GetState() == Cell::State::Live)
 	{
-		cell.SetAge(_maxage +1);
+		cell.Age(_maxage +1);
 		cell.SetState(Cell::State::BrianDying);
 	}
 	else

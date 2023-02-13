@@ -8,12 +8,13 @@ class TimerHelper
 {
 public:
     // construct
-    TimerHelper() = delete;
-    TimerHelper(const TimerHelper&) = delete;
+    TimerHelper() = default;
+    TimerHelper(TimerHelper&) = delete;
+    TimerHelper(TimerHelper&&) = delete;
 
     // copy/move
-    TimerHelper& operator=(const TimerHelper&) = delete;
-    TimerHelper(TimerHelper&&) = delete;
+    TimerHelper& operator=(TimerHelper&) = delete;
+    TimerHelper& operator=(TimerHelper&&) = delete;
 
     // destruct
     ~TimerHelper() = default;
@@ -48,7 +49,7 @@ public:
         _timer.Start();
     }
 
-    inline bool IsRunning() const
+    [[nodiscard]] inline bool IsRunning() const
     {
         return _timer.IsRunning();
     }
@@ -58,12 +59,12 @@ public:
         _timer.IsRepeating(repeating);
     }
 
-    inline bool Repeating() const
+    [[nodiscard]] inline bool Repeating() const
     {
         return _timer.IsRepeating();
     }
 
-    inline int FPS() const noexcept
+    [[nodiscard]] inline int FPS() const noexcept
     {
 		return _fps;
     }
