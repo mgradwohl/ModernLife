@@ -43,7 +43,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 void Board::SetThreadCount()
 {
 	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
-	_threadcount = std::clamp(_threadcount, 1, 8);
+	_threadcount = std::clamp(_threadcount, 2, 8);
 }
 
 void Board::PrintBoard()
