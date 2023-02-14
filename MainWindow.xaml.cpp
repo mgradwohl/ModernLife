@@ -59,14 +59,17 @@ namespace winrt::ModernLife::implementation
         _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
 
         // initializes _canvasDevice
-        _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();	    // initializes _canvasDevice
+        _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
+        // initialize the board
         _board.Resize(BoardWidth(), BoardWidth(), MaxAge());
         RandomizeBoard();
 
+        // Attach() requires that _dpi, _cancasDevice, and _board are initialized
         _renderer.Attach(_canvasDevice, _dpi, MaxAge());
 
-        SetBestCanvasandWindowSizes();  // initializes _canvasSize and _windowSize
+        // initializes _canvasSize and _windowSize
+        SetBestCanvasandWindowSizes();
 
         InvalidateIfNeeded();
     }
@@ -110,10 +113,14 @@ namespace winrt::ModernLife::implementation
         Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
         const Windows::Graphics::RectInt32 rez = displayArea.OuterBounds();
 
+        // have the renderer figure out the best canvas size, which initializes CanvasSize
         _renderer.FindBestCanvasSize(rez.Height);
+
         // setup offsets for sensible default window size
-        constexpr int border = 20;
-        constexpr int stackpanelwidth = 200;
+        constexpr int border = 20; // from XAML TODO can we call 'measure' and just retrieve the border width?
+        constexpr int stackpanelwidth = 200; // from XAML TODO can we call 'measure' and just retrieve the stackpanel width?
+
+        // ResizeClient wants pixels, not DIPs
         const int wndWidth = gsl::narrow_cast<int>((_renderer.CanvasSize() + stackpanelwidth + border) * _dpi / 96.0f);
         const int wndHeight = gsl::narrow_cast<int>((_renderer.CanvasSize() + border) * _dpi / 96.0f);
 
@@ -126,7 +133,6 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        // TODO refactor this
         if (ShowLegend())
         {
             // TODO don't stretch or shrink the _spritesheet if we don't need to
@@ -136,29 +142,32 @@ namespace winrt::ModernLife::implementation
         else
         {
             _renderer.Render(args.DrawingSession(), _board);
-            fps.AddFrame();
         }
+        fps.AddFrame();
     }
 
     void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
+        // ok to do this in function local scope
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
-        // copy colors, font details etc from other controls
-        // to make this canvas aligned with styles
+        // copy colors, font details etc from other controls to make this canvas visually consistent with the rest of the app
         Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
         canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
 
-        Brush backBrush{ splitView().PaneBackground() };
-        Brush textBrush{ PaneHeader().Foreground() };
+        const Windows::UI::Color colorBack{ splitView().PaneBackground().try_as<SolidColorBrush>().Color() };
+        const Windows::UI::Color colorText{ PaneHeader().Foreground().try_as<SolidColorBrush>().Color() };
 
-        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
-        SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
+        //Brush backBrush{ splitView().PaneBackground() };
+        //Brush textBrush{ PaneHeader().Foreground() };
 
-        const Windows::UI::Color colorBack{ scbBack.Color() };
-        const Windows::UI::Color colorText{ scbText.Color() };
+        //SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
+        //SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
+
+        //const Windows::UI::Color colorBack{ scbBack.Color() };
+        //const Windows::UI::Color colorText{ scbText.Color() };
 
         args.DrawingSession().Clear(colorBack);
 
@@ -246,6 +255,7 @@ namespace winrt::ModernLife::implementation
     {
         _board.MaxAge(MaxAge());
         _renderer.SpriteMaxIndex(MaxAge());
+
         InvalidateIfNeeded();
     }
 

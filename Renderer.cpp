@@ -136,6 +136,7 @@ void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawi
                 rectDest.Y = (y - startRow) * _dipsPerCellDimension;
                 if (cell.ShouldDraw())
                 {
+                    // this is where all the time goes:
                     spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, GetSpriteCell(cell.Age()));
                 }
             }
@@ -249,7 +250,7 @@ void Renderer::Dpi(float dpi)
 {
     if (_dpi != dpi)
     {
-        // handle
+        // TODO if the dpi changes we need to rebuild the spritesheet and much more
         _dpi = dpi;
     }
 }
