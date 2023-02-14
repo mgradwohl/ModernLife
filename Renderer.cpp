@@ -156,7 +156,7 @@ void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawi
     ds.Close();
 }
 
-Windows::Foundation::Rect Renderer::GetSpriteCell(uint16_t index) const noexcept
+[[nodiscard]] Windows::Foundation::Rect Renderer::GetSpriteCell(uint16_t index) const noexcept
 {
     const uint16_t i = std::clamp(index, gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(_spriteMaxIndex + 1));
     const Windows::Foundation::Rect rect{ (i % _spritesPerRow) * _dipsPerCellDimension, (i / _spritesPerRow) * _dipsPerCellDimension, _dipsPerCellDimension, _dipsPerCellDimension };
@@ -286,7 +286,7 @@ void Renderer::FindBestCanvasSize(size_t windowHeight)
 }
 
 // color helpers used by spritesheet
-Windows::UI::Color Renderer::GetOutlineColorHSV(uint16_t age) const
+[[nodiscard]] Windows::UI::Color Renderer::GetOutlineColorHSV(uint16_t age) const
 {
     if (age >= _spriteMaxIndex)
     {
@@ -297,7 +297,7 @@ Windows::UI::Color Renderer::GetOutlineColorHSV(uint16_t age) const
     return HSVColorHelper::HSVtoColor(h, 0.6f, 0.7f);
 }
 
-Windows::UI::Color Renderer::GetCellColorHSV(uint16_t age) const
+[[nodiscard]] Windows::UI::Color Renderer::GetCellColorHSV(uint16_t age) const
 {
     if (age >= _spriteMaxIndex)
     {

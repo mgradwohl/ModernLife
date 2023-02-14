@@ -6,6 +6,7 @@
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
 #include "Board.h"
+
 using namespace winrt;
 
 class Renderer
