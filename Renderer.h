@@ -30,7 +30,6 @@ public:
 
 	void FindBestCanvasSize(size_t windowHeight);
 
-
 	void Render(Microsoft::Graphics::Canvas::CanvasDrawingSession const& ds, const Board& board);
 
 	[[nodiscard]] inline float DipsPerCell() noexcept
