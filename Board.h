@@ -132,7 +132,7 @@ class Board
         return _height;
     }
 
-    [[nodiscard]] inline uint32_t GetSize() const noexcept
+    [[nodiscard]] inline uint32_t Size() const noexcept
     {
         return _height * _width;
     }

@@ -47,32 +47,6 @@ void Renderer::SetupRenderTargets(Board& board)
     BuildSpriteSheet();
 }
 
-void Renderer::FindBestCanvasSize(size_t windowHeight)
-{
-    // determine the right size for the canvas
-    // lock these because they could change underneath a draw
-    {
-        std::scoped_lock lock{ _lockbackbuffer };
-
-        float best = 400.0f;
-        while (true)
-        {
-            if ((best * _dpi / 96.0f) >= windowHeight) break;
-            best += 100.0f;
-        }
-        best -= 200.0f;
-
-        _bestcanvassize = best;
-
-        // make the backbuffer bigger than the front buffer, and a multiple of it
-        _bestbackbuffersize = _bestcanvassize;
-        while (_bestbackbuffersize < _idealbackbuffersize)
-        {
-            _bestbackbuffersize += _bestcanvassize;
-        }
-    }
-}
-
 // How Render works
 // 1.   Calls RenderOffScreen, the only method that needs the board
 //      Which splits the board into horizontal slices, and creates a CanvasDrawingSession for each backbuffer slice
@@ -237,6 +211,16 @@ void Renderer::BuildSpriteSheet()
     ds.Close();
 }
 
+void Renderer::Dpi(float dpi)
+{
+    if (_dpi != dpi)
+    {
+        // TODO if the dpi changes we need to rebuild the spritesheet and much more
+        _dpi = dpi;
+        BuildSpriteSheet();
+    }
+}
+
 void Renderer::SpriteMaxIndex(uint16_t index)
 {
     if (_spriteMaxIndex != index)
@@ -246,12 +230,29 @@ void Renderer::SpriteMaxIndex(uint16_t index)
 	}
 }
 
-void Renderer::Dpi(float dpi)
+void Renderer::FindBestCanvasSize(size_t windowHeight)
 {
-    if (_dpi != dpi)
+    // determine the right size for the canvas
+    // lock these because they could change underneath a draw
     {
-        // TODO if the dpi changes we need to rebuild the spritesheet and much more
-        _dpi = dpi;
+        std::scoped_lock lock{ _lockbackbuffer };
+
+        float best = 400.0f;
+        while (true)
+        {
+            if ((best * _dpi / 96.0f) >= windowHeight) break;
+            best += 100.0f;
+        }
+        best -= 200.0f;
+
+        _bestcanvassize = best;
+
+        // make the backbuffer bigger than the front buffer, and a multiple of it
+        _bestbackbuffersize = _bestcanvassize;
+        while (_bestbackbuffersize < _idealbackbuffersize)
+        {
+            _bestbackbuffersize += _bestcanvassize;
+        }
     }
 }
 

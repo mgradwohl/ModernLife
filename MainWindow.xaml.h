@@ -64,6 +64,7 @@ namespace winrt::ModernLife::implementation
         void ShowLegend(bool value);
         void BoardWidth(uint16_t value);
         uint16_t BoardWidth() const noexcept;
+        uint16_t BoardHeight() const noexcept;
         hstring GetRandomPercentText(double_t value) const;
         hstring GetBoardWidthText(double_t value) const;
 
@@ -100,6 +101,7 @@ namespace winrt::ModernLife::implementation
         uint16_t _maxage{ 1000 };
         int32_t _ruleset{ 1 };
         uint16_t _boardwidth{ 200 };
+        uint16_t _boardheight{ 200 };
 
         winrt::event_token _propertyToken;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> _propertyChanged;

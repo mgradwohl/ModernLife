@@ -62,7 +62,7 @@ namespace winrt::ModernLife::implementation
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
         // initialize the board
-        _board.Resize(BoardWidth(), BoardWidth(), MaxAge());
+        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         RandomizeBoard();
 
         // Attach() requires that _dpi, _cancasDevice, and _board are initialized
@@ -174,7 +174,7 @@ namespace winrt::ModernLife::implementation
         // create the strings to draw
         std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
         std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}",
-            timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize(),
+            timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.Size(),
             _dpi, _renderer.CanvasSize(), _renderer.BackbufferSize(), _renderer.DipsPerCell(), _renderer.ThreadCount());
 
         // draw the text left aligned
@@ -233,7 +233,8 @@ namespace winrt::ModernLife::implementation
         if (_dpi != dpi)
         {
             _dpi = dpi;
-            // TODO if dpi changes there's a lot of work to do
+            _renderer.Dpi(_dpi);
+            // TODO if dpi changes there's a lot of work to do in the renderer
         }
     }
 
@@ -242,7 +243,7 @@ namespace winrt::ModernLife::implementation
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
         timer.Stop();
-        _board.Resize(BoardWidth(), BoardWidth(), MaxAge());
+        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
 
         RandomizeBoard();
         _renderer.SetupRenderTargets(_board);
@@ -365,11 +366,17 @@ namespace winrt::ModernLife::implementation
         return _boardwidth;
     }
 
+    [[nodiscard]] inline uint16_t MainWindow::BoardHeight() const noexcept
+    {
+        return _boardheight;
+    }
+
     void MainWindow::BoardWidth(uint16_t value)
     {
         if (_boardwidth != value)
         {
             _boardwidth = value;
+            _boardheight = value;
             _propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
         }
     }
