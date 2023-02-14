@@ -13,37 +13,39 @@ using namespace winrt;
 
 void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, float dpi, uint16_t maxindex)
 {
+    // these can change externally
     _canvasDevice = device;
     _dpi = dpi;
     _spriteMaxIndex = maxindex;
+
+    // determined internally
     _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
     _threadcount = std::clamp(_threadcount, 2, 8);
 }
 
 void Renderer::SetupRenderTargets(Board& board)
 {
-    std::scoped_lock lock{ _lockbackbuffer };
-
-    // Calculate important vales for the spritesheet and backbuffer slices
-
-    _dipsPerCellDimension = _bestbackbuffersize / board.Width();
-    _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
-    _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
-    _rowsPerSlice = gsl::narrow_cast<uint16_t>(board.Height() / _threadcount);
-    _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
-
-    // create backbuffers that are sliced horizontally
-    // they will be as evenly divided as possible
-    // with the final slice potentially being larger
-    _backbuffers.clear();
-    int j = 0;
-    for (j = 0; j < _threadcount - 1; j++)
     {
-        _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, _sliceHeight, _dpi });
-    }
-    const int remainingRows = board.Height() - (j * _rowsPerSlice);
-    _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
+        std::scoped_lock lock{ _lockbackbuffer };
 
+        // Calculate important internal vales for the spritesheet and backbuffer slices
+        _dipsPerCellDimension = _bestbackbuffersize / board.Width();
+        _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
+        _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
+        _rowsPerSlice = gsl::narrow_cast<uint16_t>(board.Height() / _threadcount);
+        _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
+
+        // create backbuffers that are sliced horizontally they will be as evenly divided as possible
+        // with the final slice potentially being larger
+        _backbuffers.clear();
+        int j = 0;
+        for (j = 0; j < _threadcount - 1; j++)
+        {
+            _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, _sliceHeight, _dpi });
+        }
+        const int remainingRows = board.Height() - (j * _rowsPerSlice);
+        _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
+    }
     BuildSpriteSheet();
 }
 
@@ -165,15 +167,6 @@ void Renderer::BuildSpriteSheet()
     // TODO gray is h=0, s=0, and v from 1 to 0
     // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
 
-    // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
-    _spritesheet = Microsoft::Graphics::Canvas::CanvasRenderTarget(_canvasDevice, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
-
-    Microsoft::Graphics::Canvas::CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
-    ds.Clear(Windows::UI::Colors::WhiteSmoke());
-    ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
-    ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-
-
     // Since we're using pixels, but the _dipsPerCellAxis is in dips there is already "whitespace padding"
     // in the sprite so we'll take advantage of that
     // TODO maybe this is unneccessary
@@ -193,22 +186,36 @@ void Renderer::BuildSpriteSheet()
     uint16_t index = 0;
     float posx{ 0.0f };
     float posy{ 0.0f };
-    for (uint16_t y = 0; y < _spritesPerRow; y++)
+
+    // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
     {
-        for (uint16_t x = 0; x < _spritesPerRow; x++)
+        std::scoped_lock lock{ _lockbackbuffer };
+
+        _spritesheet = Microsoft::Graphics::Canvas::CanvasRenderTarget(_canvasDevice, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
+
+        Microsoft::Graphics::Canvas::CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
+        ds.Clear(Windows::UI::Colors::WhiteSmoke());
+        ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
+        ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
+
+
+        for (uint16_t y = 0; y < _spritesPerRow; y++)
         {
-            ds.FillRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetOutlineColorHSV(index));
-            ds.FillRoundedRectangle(posx + inset, posy + inset, _dipsPerCellDimension - (2 * inset), _dipsPerCellDimension - (2 * inset), round, round, GetCellColorHSV(index));
+            for (uint16_t x = 0; x < _spritesPerRow; x++)
+            {
+                ds.FillRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetOutlineColorHSV(index));
+                ds.FillRoundedRectangle(posx + inset, posy + inset, _dipsPerCellDimension - (2 * inset), _dipsPerCellDimension - (2 * inset), round, round, GetCellColorHSV(index));
 
-            posx += _dipsPerCellDimension;
-            index++;
+                posx += _dipsPerCellDimension;
+                index++;
+            }
+            posy += _dipsPerCellDimension;
+            posx = 0.0f;
         }
-        posy += _dipsPerCellDimension;
-        posx = 0.0f;
-    }
 
-    ds.Flush();
-    ds.Close();
+        ds.Flush();
+        ds.Close();
+    }
 }
 
 void Renderer::Dpi(float dpi)
@@ -226,7 +233,7 @@ void Renderer::SpriteMaxIndex(uint16_t index)
     if (_spriteMaxIndex != index)
     {
 		_spriteMaxIndex = index;
-		BuildSpriteSheet();
+        BuildSpriteSheet();
 	}
 }
 
