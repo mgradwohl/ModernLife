@@ -114,6 +114,7 @@ namespace winrt::ModernLife::implementation
         const Windows::Graphics::RectInt32 rez = displayArea.OuterBounds();
 
         // have the renderer figure out the best canvas size, which initializes CanvasSize
+        // TODO on WindowResize should call the below
         _renderer.FindBestCanvasSize(rez.Height);
 
         // setup offsets for sensible default window size
@@ -133,10 +134,10 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
+        const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _renderer.CanvasWidth(), _renderer.CanvasHeight() };
         if (ShowLegend())
         {
             // TODO don't stretch or shrink the _spritesheet if we don't need to
-            const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _renderer.CanvasWidth(), _renderer.CanvasHeight() };
             args.DrawingSession().DrawImage(_renderer.SpriteSheet(), destRect);
         }
         else
@@ -223,7 +224,7 @@ namespace winrt::ModernLife::implementation
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         OnDPIChanged();
         SetBestCanvasandWindowSizes();
-        _renderer.SetupRenderTargets(_board);
+        _renderer.Device(_canvasDevice);
         InvalidateIfNeeded();
     }
 
@@ -246,7 +247,7 @@ namespace winrt::ModernLife::implementation
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
 
         RandomizeBoard();
-        _renderer.SetupRenderTargets(_board);
+        _renderer.Size(BoardWidth(), BoardHeight());
         InvalidateIfNeeded();
 
         StartGameLoop();
@@ -388,7 +389,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
-        _renderer.SetupRenderTargets( _board);
+        _renderer.Size(BoardWidth(), BoardHeight());
         // might need to BuildSpriteSheet here
         // TODO test
     }
@@ -474,4 +475,10 @@ namespace winrt::ModernLife::implementation
     {
         //PropertyChangedRevoker();
     }
+
+    void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args)
+    {
+        // TODO lots to do here
+    }
 }
+

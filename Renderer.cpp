@@ -23,16 +23,19 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
     _threadcount = std::clamp(_threadcount, 2, 8);
 }
 
-void Renderer::SetupRenderTargets(Board& board)
+void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
 {
+    _boardwidth = width;
+    _boardheight = height;
+
     {
         std::scoped_lock lock{ _lockbackbuffer };
 
         // Calculate important internal vales for the spritesheet and backbuffer slices
-        _dipsPerCellDimension = _bestbackbuffersize / board.Width();
+        _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
         _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
         _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
-        _rowsPerSlice = gsl::narrow_cast<uint16_t>(board.Height() / _threadcount);
+        _rowsPerSlice = gsl::narrow_cast<uint16_t>(_boardheight / _threadcount);
         _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
 
         // create backbuffers that are sliced horizontally they will be as evenly divided as possible
@@ -43,7 +46,7 @@ void Renderer::SetupRenderTargets(Board& board)
         {
             _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, _sliceHeight, _dpi });
         }
-        const int remainingRows = board.Height() - (j * _rowsPerSlice);
+        const int remainingRows = _boardheight - (j * _rowsPerSlice);
         _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
     }
     BuildSpriteSheet();
@@ -92,6 +95,36 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
     }
 }
 
+// This renders the board to the backbuffers
+void Renderer::RenderOffscreen(const Board& board)
+{
+    //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
+
+    // create a drawing session for each backbuffer horizontal slice
+    uint16_t startRow = 0;
+
+    for (int j = 0; j < _threadcount; j++)
+    {
+        _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
+    }
+
+    // technically the board could be changing underneath us, but we're only reading the cells not writing to them
+    // TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
+    {
+        // create a scope block so the vector dtor will be called and auto join the threads
+        std::vector<std::jthread> threads;
+        int t = 0;
+        for (t = 0; t < _threadcount - 1; t++)
+        {
+            threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
+            startRow += _rowsPerSlice;
+        }
+        threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
+    }
+
+    _dsList.clear();
+}
+
 void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board, uint16_t startRow, uint16_t endRow) const
 {
     // only read from the board/the cells in this method
@@ -121,36 +154,6 @@ void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawi
     spriteBatch.Close();
     ds.Flush();
     ds.Close();
-}
-
-// This renders the board to the backbuffers
-void Renderer::RenderOffscreen(const Board& board)
-{
-    //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
-
-    // create a drawing session for each backbuffer horizontal slice
-    uint16_t startRow = 0;
-
-    for (int j = 0; j < _threadcount; j++)
-    {
-        _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
-    }
-
-    // technically the board could be changing underneath us, but we're only reading the cells not writing to them
-    // TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
-    {
-        // create a scope block so the vector dtor will be called and auto join the threads
-        std::vector<std::jthread> threads;
-        int t = 0;
-        for (t = 0; t < _threadcount - 1; t++)
-        {
-            threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
-            startRow += _rowsPerSlice;
-        }
-        threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height()});
-    }
-
-    _dsList.clear();
 }
 
 Windows::Foundation::Rect Renderer::GetSpriteCell(uint16_t index) const noexcept
@@ -218,6 +221,25 @@ void Renderer::BuildSpriteSheet()
     }
 }
 
+void Renderer::Size(uint16_t width, uint16_t height)
+{
+    if (_boardwidth != width || _boardheight != height)
+    {
+		_boardwidth = width;
+		_boardheight = height;
+		SetupRenderTargets(_boardwidth, _boardheight);
+	}
+}
+
+void Renderer::Device(const Microsoft::Graphics::Canvas::CanvasDevice& device)
+{
+    if (_canvasDevice != device)
+    {
+		_canvasDevice = device;
+		SetupRenderTargets(_boardwidth, _boardheight);
+	}
+}
+
 void Renderer::Dpi(float dpi)
 {
     if (_dpi != dpi)
@@ -233,7 +255,7 @@ void Renderer::SpriteMaxIndex(uint16_t index)
     if (_spriteMaxIndex != index)
     {
 		_spriteMaxIndex = index;
-        BuildSpriteSheet();
+        SetupRenderTargets(_boardwidth, _boardheight);
 	}
 }
 

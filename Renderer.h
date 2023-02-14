@@ -25,8 +25,9 @@ public:
 	// setters for render property changes
 	void Dpi(float dpi);
 	void SpriteMaxIndex(uint16_t index);
+	void Size(uint16_t width, uint16_t height);
+	void Device(const Microsoft::Graphics::Canvas::CanvasDevice& device);
 
-	void SetupRenderTargets(Board& board);
 	void FindBestCanvasSize(size_t windowHeight);
 
 
@@ -69,12 +70,12 @@ public:
 
 private:
 	Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
+	void SetupRenderTargets(uint16_t width, uint16_t height);
 	void BuildSpriteSheet();
 	void DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board, uint16_t startRow, uint16_t endRow) const;
 	void RenderOffscreen(const Board& board);
 	Windows::UI::Color GetCellColorHSV(uint16_t age) const;
 	Windows::UI::Color GetOutlineColorHSV(uint16_t age) const;
-
 
 private:
 	std::mutex _lockbackbuffer;
@@ -91,7 +92,8 @@ private:
 	float _sliceHeight{ 0.0f };
 	uint16_t _spritesPerRow{ 0 };
 	float _spriteDipsPerRow{ 0.0f };
-
+	uint16_t _boardwidth{ 0 };
+	uint16_t _boardheight{ 0 };
 	uint16_t _spriteMaxIndex{ 0 };
 	float _bestcanvassize{ 1000.0f };
 	float _idealbackbuffersize{ 2000.0f };

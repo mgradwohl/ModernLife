@@ -105,6 +105,8 @@ namespace winrt::ModernLife::implementation
 
         winrt::event_token _propertyToken;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> _propertyChanged;
+    public:
+        void OnWindowResized(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args);
     };
 }
 
