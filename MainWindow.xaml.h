@@ -32,9 +32,10 @@ namespace winrt::ModernLife::implementation
 
         // standard window stuff
         void OnWindowActivate(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
-        void SetMyTitleBar();
+        void OnWindowResized(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept;
         void OnWindowClosed(IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept;
         void InvalidateIfNeeded();
+        void SetMyTitleBar();
 
         // starting the game and handling the timer
         void StartGameLoop();
@@ -105,8 +106,6 @@ namespace winrt::ModernLife::implementation
 
         winrt::event_token _propertyToken;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> _propertyChanged;
-    public:
-        void OnWindowResized(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args);
     };
 }
 

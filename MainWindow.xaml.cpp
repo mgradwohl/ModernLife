@@ -230,7 +230,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnDPIChanged()
     {
-        float dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
+        const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         if (_dpi != dpi)
         {
             _dpi = dpi;
@@ -476,7 +476,7 @@ namespace winrt::ModernLife::implementation
         //PropertyChangedRevoker();
     }
 
-    void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args)
+    void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept
     {
         // TODO lots to do here
     }
