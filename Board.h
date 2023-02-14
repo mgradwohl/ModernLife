@@ -30,12 +30,12 @@ class Board
 
     [[nodiscard]] inline const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
+        return gsl::at(_cells, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
     [[nodiscard]] inline Cell& GetCell(uint16_t x, uint16_t y)
     {
-        return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
+        return gsl::at(_cells, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
     void RandomizeBoard(float alivepct, uint16_t maxage);
@@ -138,7 +138,7 @@ class Board
     }
 
   private:
-    std::vector<Cell> _board;
+    std::vector<Cell> _cells;
     std::mutex _lockboard;
 
     uint16_t _width{0};

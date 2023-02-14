@@ -35,7 +35,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_height = height;
 	_width = width;
 	_maxage = maxage;
-	_board.resize(gsl::narrow_cast<size_t>(_height * _width));
+	_cells.resize(gsl::narrow_cast<size_t>(_height * _width));
 
 	SetThreadCount();
 }
@@ -150,7 +150,7 @@ void Board::ApplyNextStateToBoard() noexcept
 	_generation++;
 	ResetCounts();
 	// TODO check size of board before iterating over board
-	for (Cell& cell : _board)
+	for (Cell& cell : _cells)
 	{
 		if (cell.GetState() == Cell::State::Born)
 		{
@@ -181,7 +181,7 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 	// TODO check size of board before iterating over board
 	{
 		std::scoped_lock lock { _lockboard };
-		for (Cell& cell : _board)
+		for (Cell& cell : _cells)
 		{
 			static int ra;
 			static double rp;
