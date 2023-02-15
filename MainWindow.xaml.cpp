@@ -116,13 +116,13 @@ namespace winrt::ModernLife::implementation
 
         for (const Microsoft::UI::Input::PointerPoint& point : e.GetIntermediatePoints(canvasBoard().try_as<Microsoft::UI::Xaml::UIElement>()))
         {
-            //int32_t x = canvasBoard().ConvertDipsToPixels(point.Position().X, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
-            //int32_t y = canvasBoard().ConvertDipsToPixels(point.Position().Y, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
+            int32_t x = canvasBoard().ConvertDipsToPixels(point.Position().X, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
+            int32_t y = canvasBoard().ConvertDipsToPixels(point.Position().Y, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
 
-            //Windows::Foundation::Point pt = { gsl::narrow_cast<float>(x), gsl::narrow_cast<float>(y) };
+            Windows::Foundation::Point pt = { gsl::narrow_cast<float>(x), gsl::narrow_cast<float>(y) };
 
 
-            Windows::Foundation::Point pt = { point.Position().X, point.Position().Y };
+            //Windows::Foundation::Point pt = { point.Position().X, point.Position().Y };
 
             GridPoint g = _renderer.GetCellAtPoint(pt);
 
