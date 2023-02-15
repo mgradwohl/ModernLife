@@ -33,7 +33,7 @@ void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
 
         // Calculate important internal vales for the spritesheet and backbuffer slices
         _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
-        _pxPerCellDimension = gsl::narrow_cast<unsigned int>(_dipsPerCellDimension);
+        //_pxPerCellDimension = gsl::narrow_cast<unsigned int>(_dipsPerCellDimension);
 
         _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
         _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
@@ -59,7 +59,7 @@ void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
 {
     // figure out where point is on the board
     // and return it
-    GridPoint pt{ gsl::narrow_cast<uint16_t>(point.X), gsl::narrow_cast<uint16_t>(point.Y) };
+    GridPoint pt{ gsl::narrow_cast<uint16_t>(point.X / _dipsPerCellDimension), gsl::narrow_cast<uint16_t>(point.Y / _dipsPerCellDimension) };
     return pt;
 }
 
