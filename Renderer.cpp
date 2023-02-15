@@ -33,6 +33,8 @@ void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
 
         // Calculate important internal vales for the spritesheet and backbuffer slices
         _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
+        _pxPerCellDimension = gsl::narrow_cast<unsigned int>(_dipsPerCellDimension);
+
         _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
         _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
         _rowsPerSlice = gsl::narrow_cast<uint16_t>(_boardheight / _threadcount);
@@ -49,7 +51,16 @@ void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
         const int remainingRows = _boardheight - (j * _rowsPerSlice);
         _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
     }
+
     BuildSpriteSheet();
+}
+
+[[nodiscard]] GridPoint Renderer::GetCellAtPoint(Windows::Foundation::Point point)
+{
+    // figure out where point is on the board
+    // and return it
+    GridPoint pt{ gsl::narrow_cast<uint16_t>(point.X), gsl::narrow_cast<uint16_t>(point.Y) };
+    return pt;
 }
 
 // How Render works

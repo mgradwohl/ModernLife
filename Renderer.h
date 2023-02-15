@@ -31,6 +31,8 @@ public:
 
 	void FindBestCanvasSize(size_t windowHeight);
 
+	GridPoint GetCellAtPoint(Windows::Foundation::Point point);
+
 	void Render(Microsoft::Graphics::Canvas::CanvasDrawingSession const& ds, const Board& board);
 
 	[[nodiscard]] inline float DipsPerCell() noexcept
@@ -86,6 +88,7 @@ private:
 	Microsoft::Graphics::Canvas::CanvasRenderTarget _spritesheet{ nullptr };
 	Microsoft::Graphics::Canvas::CanvasDevice _canvasDevice{ nullptr };
 
+	unsigned int _pxPerCellDimension{ 0 };
 	float _dpi{ 0.0f };
 	float _dipsPerCellDimension{ 0.0f };
 	uint16_t _rowsPerSlice{ 0 };

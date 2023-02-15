@@ -30,6 +30,18 @@ public:
         return _neighbors;
     }
 
+    inline void ToggleCell() noexcept
+    {
+        if (_state == Cell::State::Dead)
+        {
+			_state = Cell::State::Live;
+		}
+        else
+        {
+			_state = Cell::State::Dead;
+		}
+	}
+
     inline void Neighbors(uint8_t n) noexcept
     {
         _neighbors = n;

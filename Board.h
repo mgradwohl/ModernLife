@@ -7,6 +7,12 @@
 
 #include "Cell.h"
 
+struct GridPoint
+{
+    uint16_t x;
+    uint16_t y;
+};
+
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
 class Board

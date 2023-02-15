@@ -18,6 +18,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Microsoft.UI.h>
+#include <winrt/Microsoft.UI.Input.h>
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
@@ -25,6 +26,8 @@
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 #include <winrt/Microsoft.UI.Xaml.Media.h>
+//#include <winrt/Windows.UI.Input.h>
+//#include <winrt/Windows.UI.Xaml.Input.h>
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
@@ -36,6 +39,7 @@
 #include "fpscounter.h"
 #include "HSVColorHelper.h"
 
+using namespace winrt;
 namespace winrt::ModernLife::implementation
 {
     void MainWindow::InitializeComponent()
@@ -46,6 +50,7 @@ namespace winrt::ModernLife::implementation
         SetMyTitleBar();
 
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
+
         timer.Tick({ this, &MainWindow::OnTick });
 
         OnFirstRun();
@@ -104,6 +109,32 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    void winrt::ModernLife::implementation::MainWindow::OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    {
+        if (sender != canvasBoard())
+        {
+            return;
+        }
+
+        for (const Microsoft::UI::Input::PointerPoint& point : e.GetIntermediatePoints(canvasBoard().try_as<Microsoft::UI::Xaml::UIElement>()))
+        {
+            int32_t x = canvasBoard().ConvertDipsToPixels(point.Position().X, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
+            int32_t y = canvasBoard().ConvertDipsToPixels(point.Position().X, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
+
+            Windows::Foundation::Point pt = { gsl::narrow_cast<float>(x), gsl::narrow_cast<float>(y) };
+            GridPoint g = _renderer.GetCellAtPoint(pt);
+
+            Cell& cell = _board.GetCell(g.x, g.y);
+            cell.ToggleCell();
+        }
+        InvalidateIfNeeded();
+    }
+
+    void winrt::ModernLife::implementation::MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    {
+
+    }
+    
     void MainWindow::SetBestCanvasandWindowSizes()
     {
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());
@@ -472,4 +503,3 @@ namespace winrt::ModernLife::implementation
         // TODO lots to do here
     }
 }
-
