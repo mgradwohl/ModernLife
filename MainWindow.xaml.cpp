@@ -161,15 +161,6 @@ namespace winrt::ModernLife::implementation
         const Windows::UI::Color colorBack{ splitView().PaneBackground().try_as<SolidColorBrush>().Color() };
         const Windows::UI::Color colorText{ PaneHeader().Foreground().try_as<SolidColorBrush>().Color() };
 
-        //Brush backBrush{ splitView().PaneBackground() };
-        //Brush textBrush{ PaneHeader().Foreground() };
-
-        //SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
-        //SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
-
-        //const Windows::UI::Color colorBack{ scbBack.Color() };
-        //const Windows::UI::Color colorText{ scbText.Color() };
-
         args.DrawingSession().Clear(colorBack);
 
         // create the strings to draw
