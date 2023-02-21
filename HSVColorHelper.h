@@ -5,5 +5,5 @@
 class HSVColorHelper
 {
 public:
-	static winrt::Windows::UI::Color HSVtoColor(float h, float s, float v);
+	[[nodiscard]] static winrt::Windows::UI::Color HSVtoColor(float h, float s, float v);
 };

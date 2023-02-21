@@ -48,27 +48,27 @@ public:
         _timer.Start();
     }
 
-    inline bool IsRunning() const
+    [[nodiscard]] inline bool IsRunning() const
     {
         return _timer.IsRunning();
     }
 
-    inline void Repeating(bool repeating)
+    void Repeating(bool repeating)
     {
         _timer.IsRepeating(repeating);
     }
 
-    inline bool Repeating() const
+    [[nodiscard]] inline bool Repeating() const
     {
         return _timer.IsRepeating();
     }
 
-    inline int FPS() const noexcept
+    [[nodiscard]] inline int FPS() const noexcept
     {
 		return _fps;
     }
     
-    inline void FPS(int fps)
+    [[nodiscard]] inline void FPS(int fps)
     {
         using namespace  std::literals::chrono_literals;
         if (fps > 0 && fps <= 240)

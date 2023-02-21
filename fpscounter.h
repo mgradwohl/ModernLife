@@ -28,7 +28,7 @@ public:
 		_end = std::chrono::high_resolution_clock::now();
 	}
 
-	inline double FPS() noexcept
+	[[nodiscard]] inline double FPS() noexcept
 	{
 		return _fps;
 	}
