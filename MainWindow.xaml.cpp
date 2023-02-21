@@ -31,6 +31,7 @@
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
+#include "Renderer.h"
 #include "TimerHelper.h"
 #include "fpscounter.h"
 #include "HSVColorHelper.h"
@@ -54,22 +55,25 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnFirstRun()
     {
-        SetThreadCount();
-        OnDPIChanged();                 // initializes _dpi
-        OnCanvasDeviceChanged();	    // initializes _canvasDevice
+        // initializes _dpi
+        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
 
-        OnBoardResized();               // initializes _boardSize
+        // initializes _canvasDevice
+        _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
-        SetBestCanvasandWindowSizes();  // initializes _canvasSize and _windowSize
+        // initialize the board
+        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
+        RandomizeBoard();
+
+        // Attach() requires that _dpi, _cancasDevice, and _board are initialized
+        _renderer.Attach(_canvasDevice, _dpi, MaxAge());
+
+        // initializes _canvasSize and _windowSize
+        SetBestCanvasandWindowSizes();
+
         InvalidateIfNeeded();
     }
 
-    void MainWindow::SetThreadCount() noexcept
-    {
-        const int count = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
-		_threadcount = std::clamp(count, 1, 8);
-    }
-    
     void MainWindow::StartGameLoop()
     {
         // prep the play button
@@ -91,36 +95,6 @@ namespace winrt::ModernLife::implementation
         canvasStats().Invalidate();
     }
 
-    void MainWindow::SetupRenderTargets()
-    {
-        {
-            // Calculate important vales for the spritesheet and backbuffer slices
-            std::scoped_lock lock{ _lockbackbuffer };
-
-            _dipsPerCellDimension = _bestbackbuffersize / BoardWidth();
-            _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(MaxAge())) + 1;
-            _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
-            _rowsPerSlice = gsl::narrow_cast<uint16_t>(_board.Height() / _threadcount);
-            _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
-
-
-            // create backbuffers that are sliced horizontally
-            // they will be as evenly divided as possible
-            // with the final slice potentially being larger
-            _backbuffers.clear();
-            int j = 0;
-            for (j = 0; j < _threadcount - 1; j++)
-            {
-                _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, _sliceHeight, _dpi });
-            }
-            const int remainingRows = BoardWidth() - (j * _rowsPerSlice);
-            _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
-        }
-        
-        BuildSpriteSheet();
-        InvalidateIfNeeded();
-    }
-
     void MainWindow::InvalidateIfNeeded()
     {
         if (!timer.IsRunning())
@@ -128,26 +102,6 @@ namespace winrt::ModernLife::implementation
             canvasBoard().Invalidate();
             canvasStats().Invalidate();
         }
-    }
-
-    void MainWindow::CanvasBoard_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
-    {
-        // TODO might want to do the code in the if-block in all cases (for all args.Reason()s
-
-        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
-        {
-            _propertyChanged(*this, PropertyChangedEventArgs{ L"DPIChanged" });
-        }
-
-        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::NewDevice)
-        {
-            _propertyChanged(*this, PropertyChangedEventArgs{ L"NewCanvasDevice" });
-        }
-
-        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::FirstTime)
-        {
-			_propertyChanged(*this, PropertyChangedEventArgs{ L"FirstTime" });
-		}
     }
 
     void MainWindow::SetBestCanvasandWindowSizes()
@@ -159,33 +113,17 @@ namespace winrt::ModernLife::implementation
         Microsoft::UI::Windowing::DisplayArea displayArea = Microsoft::UI::Windowing::DisplayArea::GetFromWindowId(idWnd, Microsoft::UI::Windowing::DisplayAreaFallback::Nearest);
         const Windows::Graphics::RectInt32 rez = displayArea.OuterBounds();
 
-        // determine the right size for the canvas
-        // lock these because they could change underneath a draw
-        {
-            std::scoped_lock lock{ _lockbackbuffer };
+        // have the renderer figure out the best canvas size, which initializes CanvasSize
+        // TODO on WindowResize should call the below
+        _renderer.FindBestCanvasSize(rez.Height);
 
-            float best = 400.0f;
-            while (true)
-            {
-                if ((best * _dpi / 96.0f) >= rez.Height) break;
-                best += 100.0f;
-            }
-            best -= 200.0f;
-
-            _bestcanvassize = best;
-
-            // make the backbuffer bigger than the front buffer, and a multiple of it
-            _bestbackbuffersize = _bestcanvassize;
-            while (_bestbackbuffersize < _idealbackbuffersize)
-            {
-                _bestbackbuffersize += _bestcanvassize;
-            }
-        }
         // setup offsets for sensible default window size
-        constexpr int border = 20;
-        constexpr int stackpanelwidth = 200;
-        const int wndWidth = gsl::narrow_cast<int>((_bestcanvassize + stackpanelwidth + border) * _dpi / 96.0f);
-        const int wndHeight = gsl::narrow_cast<int>((_bestcanvassize + border) * _dpi / 96.0f);
+        constexpr int border = 20; // from XAML TODO can we call 'measure' and just retrieve the border width?
+        constexpr int stackpanelwidth = 200; // from XAML TODO can we call 'measure' and just retrieve the stackpanel width?
+
+        // ResizeClient wants pixels, not DIPs
+        const int wndWidth = gsl::narrow_cast<int>((_renderer.CanvasSize() + stackpanelwidth + border) * _dpi / 96.0f);
+        const int wndHeight = gsl::narrow_cast<int>((_renderer.CanvasSize() + border) * _dpi / 96.0f);
 
         // resize the window
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
@@ -194,198 +132,42 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::CanvasBoard_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    void MainWindow::CanvasBoard_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        RenderOffscreen(sender);
-        args.DrawingSession().Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
-        args.DrawingSession().Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-        const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _bestcanvassize, _bestcanvassize };
-
+        const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _renderer.CanvasWidth(), _renderer.CanvasHeight() };
         if (ShowLegend())
         {
             // TODO don't stretch or shrink the _spritesheet if we don't need to
-            args.DrawingSession().DrawImage(_spritesheet, destRect);
+            args.DrawingSession().DrawImage(_renderer.SpriteSheet(), destRect);
         }
         else
         {
-            // lock the full size backbuffer and copy each slice into it
-            const float canvasSliceHeight = _sliceHeight / (_bestbackbuffersize / _bestcanvassize);
-            Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _sliceHeight };
-            Windows::Foundation::Rect dest{ 0.0f, 0.0f, _bestcanvassize,  canvasSliceHeight};
-            {
-                std::scoped_lock lock{ _lockbackbuffer };
-
-                args.DrawingSession().Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
-                args.DrawingSession().Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-
-                int k = 0;
-                for (k = 0; k < _threadcount - 1; k++)
-                {
-                    args.DrawingSession().DrawImage(gsl::at(_backbuffers, k), dest, source);
-                    dest.Y += canvasSliceHeight;
-                }
-                dest.Height = _bestcanvassize - ( canvasSliceHeight * k);
-                source.Height = _bestbackbuffersize - ( _sliceHeight* k) ;
-                args.DrawingSession().DrawImage(gsl::at(_backbuffers, k), dest, source);
-
-                args.DrawingSession().Flush();
-                args.DrawingSession().Close();
-            }
+            _renderer.Render(args.DrawingSession(), _board);
         }
-
         fps.AddFrame();
-    }
-
-    void MainWindow::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, uint16_t startRow, uint16_t endRow) const
-    {
-        // only read from the board/the cells in this method
-        ds.Clear(Windows::UI::Colors::WhiteSmoke());
-        ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
-        ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-        Microsoft::Graphics::Canvas::CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(Microsoft::Graphics::Canvas::CanvasSpriteSortMode::Bitmap, Microsoft::Graphics::Canvas::CanvasImageInterpolation::NearestNeighbor, Microsoft::Graphics::Canvas::CanvasSpriteOptions::None);
-
-        Windows::Foundation::Rect rectDest{ 0.0f, 0.0f, _dipsPerCellDimension, _dipsPerCellDimension };
-        {
-            for (uint16_t y = startRow; y < endRow; y++)
-            {
-                for (uint16_t x = 0; x < _board.Width(); x++)
-                {
-                    const Cell& cell = _board.GetCell(x, y);
-
-                    rectDest.X = x * _dipsPerCellDimension;
-                    rectDest.Y = (y - startRow) * _dipsPerCellDimension;
-                    if (cell.ShouldDraw())
-                    {
-                        spriteBatch.DrawFromSpriteSheet(_spritesheet, rectDest, GetSpriteCell(cell.Age()));
-                    }
-                }
-            }
-        }
-        spriteBatch.Close();
-        ds.Flush();
-        ds.Close();
-    }
-
-    void MainWindow::RenderOffscreen([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender)
-    {
-        //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
-
-        // create a drawing session for each backbuffer horizontal slice
-        uint16_t startRow = 0;
-
-        for (int j = 0; j < _threadcount; j++)
-        {
-            _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
-        }
-
-        // technically the board could be changing underneath us, but we're only reading the cells not writing to them
-		// TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
-        
-        {
-            // create a scope block so the vector dtor will be called and auto join the threads
-            std::vector<std::jthread> threads;
-            int t = 0;
-            for (t = 0; t < _threadcount - 1; t++)
-            {
-                threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
-                startRow += _rowsPerSlice;
-            }
-            threads.push_back(std::jthread{ &MainWindow::DrawHorizontalRows, this, gsl::at(_dsList , t), startRow, _board.Height() });
-        }
-
-        _dsList.clear();
-    }
-
-    Windows::Foundation::Rect MainWindow::GetSpriteCell(uint16_t index) const noexcept
-    {
-        const uint16_t i = std::clamp(index, gsl::narrow_cast<uint16_t>(0), gsl::narrow_cast<uint16_t>(MaxAge() + 1));
-		const Windows::Foundation::Rect rect{ (i % _spritesPerRow) * _dipsPerCellDimension, (i / _spritesPerRow) * _dipsPerCellDimension, _dipsPerCellDimension, _dipsPerCellDimension };
-       
-        return rect;
-    }
-
-    void MainWindow::BuildSpriteSheet()
-    {
-        // TODO only fill most of the cells with color. Reserve maybe the last 10% or so for gray
-        // TODO gray is h=0, s=0, and v from 1 to 0
-        // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
-
-        // create a square render target that will hold all the tiles (this will avoid a partial 'tile' at the end which we won't use)
-        _spritesheet = Microsoft::Graphics::Canvas::CanvasRenderTarget(_canvasDevice, _spriteDipsPerRow, _spriteDipsPerRow, _dpi);
-
-        Microsoft::Graphics::Canvas::CanvasDrawingSession ds = _spritesheet.CreateDrawingSession();
-        ds.Clear(Windows::UI::Colors::WhiteSmoke());
-        ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
-        ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-        
-
-        // since we're using pixels, but the _dipsPerCellAxis is in dips
-        // there is already "padding" in the sprite
-        // so we'll take advantage of that
-        // TODO maybe this is unneccessary
-
-        // start filling tiles at age 0
-        float offset = 1.0f;
-        if (_dipsPerCellDimension < 14.0f)
-        {
-            offset = 0.5f;
-
-        }
-
-        if (_dipsPerCellDimension < 7.0f)
-        {
-            offset = 0.25f;
-
-        }
-
-        constexpr float round = 4.0f;
-        const float inset = _dipsPerCellDimension / 4.0f;
-        uint16_t index = 0;
-        float posx{ 0.0f };
-        float posy{ 0.0f };
-        for (uint16_t y = 0; y < _spritesPerRow; y++)
-        {
-            for (uint16_t x = 0; x < _spritesPerRow; x++)
-            {
-                ds.FillRoundedRectangle(posx + offset, posy + offset, _dipsPerCellDimension - (2 * offset), _dipsPerCellDimension - (2 * offset), round, round, GetOutlineColorHSV(index));
-                ds.FillRoundedRectangle(posx + inset, posy + inset, _dipsPerCellDimension - (2 * inset), _dipsPerCellDimension - (2 * inset), round, round, GetCellColorHSV(index));
-
-                posx += _dipsPerCellDimension;
-                index++;
-            }
-            posy += _dipsPerCellDimension;
-            posx = 0.0f;
-        }
-      
-        ds.Flush();
-        ds.Close();
     }
 
     void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
+        // ok to do this in function local scope
         using namespace Microsoft::UI::Xaml::Controls;
         using namespace Microsoft::UI::Xaml::Media;
 
-        // copy colors, font details etc from other controls
-        // to make this canvas aligned with styles
+        // copy colors, font details etc from other controls to make this canvas visually consistent with the rest of the app
         Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
         canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
 
-        Brush backBrush{ splitView().PaneBackground() };
-        Brush textBrush{ PaneHeader().Foreground() };
-
-        SolidColorBrush scbBack = backBrush.try_as<SolidColorBrush>();
-        SolidColorBrush scbText = textBrush.try_as<SolidColorBrush>();
-
-        const Windows::UI::Color colorBack{ scbBack.Color() };
-        const Windows::UI::Color colorText{ scbText.Color() };
+        const Windows::UI::Color colorBack{ splitView().PaneBackground().try_as<SolidColorBrush>().Color() };
+        const Windows::UI::Color colorText{ PaneHeader().Foreground().try_as<SolidColorBrush>().Color() };
 
         args.DrawingSession().Clear(colorBack);
 
         // create the strings to draw
         std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}", timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.GetSize(), _dpi, _bestcanvassize, _bestbackbuffersize, _dipsPerCellDimension, _threadcount);
+        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}",
+            timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.Size(),
+            _dpi, _renderer.CanvasSize(), _renderer.BackbufferSize(), _renderer.DipsPerCell(), _renderer.ThreadCount());
 
         // draw the text left aligned
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
@@ -395,13 +177,31 @@ namespace winrt::ModernLife::implementation
         canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
         args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
         args.DrawingSession().Flush();
-
     }
 
-    // property handlers
+    // property & event handlers
+    void MainWindow::GoButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        if (timer.IsRunning())
+        {
+            timer.Stop();
+            GoButton().Label(L"Play");
+            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
+
+        }
+        else
+        {
+            timer.Start();
+            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
+            GoButton().Label(L"Pause");
+        }
+    }
+
     void MainWindow::OnRandomizeBoard()
     {
         RandomizeBoard();
+        InvalidateIfNeeded();
+
         StartGameLoop();
     }
 
@@ -410,47 +210,49 @@ namespace winrt::ModernLife::implementation
         _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
     }
 
-    inline HWND MainWindow::GetWindowHandle() const
-    {
-        // get window handle, window ID
-        auto windowNative{ this->try_as<::IWindowNative>() };
-        HWND hWnd{ nullptr };
-        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
-        return hWnd;
-    }
-
     void MainWindow::OnCanvasDeviceChanged()
     {
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         OnDPIChanged();
         SetBestCanvasandWindowSizes();
-        SetupRenderTargets();
+        _renderer.Device(_canvasDevice);
         InvalidateIfNeeded();
     }
 
     void MainWindow::OnDPIChanged()
     {
-        _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
+        const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
+        if (_dpi != dpi)
+        {
+            _dpi = dpi;
+            _renderer.Dpi(_dpi);
+            // TODO if dpi changes there's a lot of work to do in the renderer
+        }
     }
-    
+
     void MainWindow::OnBoardResized()
     {
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
         timer.Stop();
-        _board.Resize( BoardWidth(), BoardWidth(), MaxAge() );
-        
+        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
+
         RandomizeBoard();
-        SetupRenderTargets();
+        _renderer.Size(BoardWidth(), BoardHeight());
+        InvalidateIfNeeded();
+
         StartGameLoop();
     }
 
     void MainWindow::OnMaxAgeChanged()
     {
         _board.MaxAge(MaxAge());
-        SetupRenderTargets();
+        _renderer.SpriteMaxIndex(MaxAge());
+
+        InvalidateIfNeeded();
     }
-    
+
+    // boilerplate and standard Windows stuff below
     void MainWindow::OnPropertyChanged([[maybe_unused]] IInspectable const& sender, PropertyChangedEventArgs const& args)
     {
         if (args.PropertyName() == L"MaxAge")
@@ -489,6 +291,26 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    void MainWindow::CanvasBoard_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
+    {
+        // TODO might want to do the code in the if-block in all cases (for all args.Reason()s
+
+        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
+        {
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"DPIChanged" });
+        }
+
+        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::NewDevice)
+        {
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"NewCanvasDevice" });
+        }
+
+        if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::FirstTime)
+        {
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"FirstTime" });
+        }
+    }
+
     inline uint16_t MainWindow::MaxAge() const noexcept
     {
         return _maxage;
@@ -503,21 +325,21 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    inline bool MainWindow::ShowLegend() const noexcept
+    [[nodiscard]] inline bool MainWindow::ShowLegend() const noexcept
     {
-		return _drawLegend;
+        return _drawLegend;
     }
-    
-	void MainWindow::ShowLegend(bool value)
-	{
-		if (_drawLegend != value)
-		{
-			_drawLegend = value;
-			_propertyChanged(*this, PropertyChangedEventArgs{ L"ShowLegend" });
-		}
-	}
-    
-    uint16_t MainWindow::RandomPercent() const noexcept
+
+    void MainWindow::ShowLegend(bool value)
+    {
+        if (_drawLegend != value)
+        {
+            _drawLegend = value;
+            _propertyChanged(*this, PropertyChangedEventArgs{ L"ShowLegend" });
+        }
+    }
+
+    [[nodiscard]] inline uint16_t MainWindow::RandomPercent() const noexcept
     {
         return _randompercent;
     }
@@ -531,9 +353,14 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    inline uint16_t MainWindow::BoardWidth() const noexcept
+    [[nodiscard]] inline uint16_t MainWindow::BoardWidth() const noexcept
     {
         return _boardwidth;
+    }
+
+    [[nodiscard]] inline uint16_t MainWindow::BoardHeight() const noexcept
+    {
+        return _boardheight;
     }
 
     void MainWindow::BoardWidth(uint16_t value)
@@ -541,24 +368,8 @@ namespace winrt::ModernLife::implementation
         if (_boardwidth != value)
         {
             _boardwidth = value;
+            _boardheight = value;
             _propertyChanged(*this, PropertyChangedEventArgs{ L"BoardWidth" });
-        }
-    }
-
-    void MainWindow::GoButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
-    {
-        if (timer.IsRunning())
-        {
-            timer.Stop();
-            GoButton().Label(L"Play");
-            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
-
-        }
-        else
-        {
-            timer.Start();
-            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
-            GoButton().Label(L"Pause");
         }
     }
 
@@ -569,19 +380,19 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
-        SetupRenderTargets();
+        _renderer.Size(BoardWidth(), BoardHeight());
         // might need to BuildSpriteSheet here
         // TODO test
     }
 
-    inline hstring MainWindow::GetRandomPercentText(double_t value) const
+    [[nodiscard]] inline hstring MainWindow::GetRandomPercentText(double_t value) const
     {
         std::wstring text = std::format(L"{}% random", gsl::narrow_cast<int>(value));
         hstring htext{ text };
         return htext;
     }
 
-    inline hstring MainWindow::GetBoardWidthText(double_t value) const
+    [[nodiscard]] inline hstring MainWindow::GetBoardWidthText(double_t value) const
     {
         std::wstring text = std::format(L"Width {0} x Height {0}", gsl::narrow_cast<int>(value));
         hstring htext{ text };
@@ -626,6 +437,15 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    [[nodiscard]] inline HWND MainWindow::GetWindowHandle() const
+    {
+        // get window handle, window ID
+        auto windowNative{ this->try_as<::IWindowNative>() };
+        HWND hWnd{ nullptr };
+        winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+        return hWnd;
+    }
+
     void MainWindow::OnWindowActivate([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] WindowActivatedEventArgs const& args)
     {
         if (args.WindowActivationState() == Microsoft::UI::Xaml::WindowActivationState::Deactivated)
@@ -647,26 +467,9 @@ namespace winrt::ModernLife::implementation
         //PropertyChangedRevoker();
     }
 
-    // color helpers used by spritesheet
-    Windows::UI::Color MainWindow::GetOutlineColorHSV(uint16_t age) const
+    void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept
     {
-        if (age >= MaxAge())
-        {
-            return Windows::UI::Colors::DarkGray();
-        }
-
-        const float h{ (age * 360.f) / MaxAge()};
-        return HSVColorHelper::HSVtoColor(h, 0.6f, 0.7f);
-    }
-
-    Windows::UI::Color MainWindow::GetCellColorHSV(uint16_t age) const
-    {
-        if (age >= MaxAge())
-        {
-            return Windows::UI::Colors::Gray();
-        }
-
-        const float h{ (age * 360.f) / MaxAge()};
-        return HSVColorHelper::HSVtoColor(h, 0.7f, 0.9f);
+        // TODO lots to do here
     }
 }
+

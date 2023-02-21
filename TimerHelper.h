@@ -8,12 +8,13 @@ class TimerHelper
 {
 public:
     // construct
-    TimerHelper() = delete;
-    TimerHelper(const TimerHelper&) = delete;
+    TimerHelper() = default;
+    TimerHelper(TimerHelper&) = delete;
+    TimerHelper(TimerHelper&&) = delete;
 
     // copy/move
-    TimerHelper& operator=(const TimerHelper&) = delete;
-    TimerHelper(TimerHelper&&) = delete;
+    TimerHelper& operator=(TimerHelper&) = delete;
+    TimerHelper& operator=(TimerHelper&&) = delete;
 
     // destruct
     ~TimerHelper() = default;

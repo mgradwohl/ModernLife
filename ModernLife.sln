@@ -9,6 +9,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Analyze|ARM64 = Analyze|ARM64
 		Analyze|x64 = Analyze|x64
+		ASAN (debug)|ARM64 = ASAN (debug)|ARM64
+		ASAN (debug)|x64 = ASAN (debug)|x64
 		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
 		Profile|ARM64 = Profile|ARM64
@@ -23,6 +25,12 @@ Global
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Analyze|x64.ActiveCfg = CodeAnalysis|x64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Analyze|x64.Build.0 = CodeAnalysis|x64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Analyze|x64.Deploy.0 = CodeAnalysis|x64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.ASAN (debug)|ARM64.ActiveCfg = ASAN (debug)|ARM64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.ASAN (debug)|ARM64.Build.0 = ASAN (debug)|ARM64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.ASAN (debug)|ARM64.Deploy.0 = ASAN (debug)|ARM64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.ASAN (debug)|x64.ActiveCfg = ASAN (debug)|x64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.ASAN (debug)|x64.Build.0 = ASAN (debug)|x64
+		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.ASAN (debug)|x64.Deploy.0 = ASAN (debug)|x64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Debug|ARM64.Build.0 = Debug|ARM64
 		{C6873EAC-5CAC-4B24-A1E8-867E877C7643}.Debug|ARM64.Deploy.0 = Debug|ARM64

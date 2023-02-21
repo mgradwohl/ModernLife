@@ -16,17 +16,26 @@ public:
     Cell() = default;
     ~Cell() = default;
 
+    // move/copy constuct
+    Cell(Cell&& b) = default;
+    Cell(Cell& b) = default;
+
+    // no need to assign one cell to another cell
+    // TODO future, compare by age or Live/Dead
+    Cell& operator=(Cell&& b) = delete;
+    Cell& operator=(Cell& b) = delete;
+
     [[nodiscard]] inline uint8_t Neighbors() const noexcept
     {
         return _neighbors;
     }
 
-    inline void SetNeighbors(uint8_t n) noexcept
+    inline void Neighbors(uint8_t n) noexcept
     {
         _neighbors = n;
     }
 
-    inline void SetAge(uint16_t age) noexcept
+    inline void Age(uint16_t age) noexcept
     {
         _age = age;
     }

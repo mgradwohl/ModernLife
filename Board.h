@@ -15,6 +15,14 @@ class Board
     Board() = default;
     ~Board() = default;
 
+    // move/copy constuct
+    Board(Board&& b) = delete;
+    Board(Board& b) = delete;
+
+    // no need to assign one board to another board
+    Board& operator=(Board&& b) = delete;
+    Board& operator=(Board& b) = delete;
+
     void SetThreadCount();
     void Resize(uint16_t width, uint16_t height, uint16_t maxage);
 
@@ -22,12 +30,12 @@ class Board
 
     [[nodiscard]] inline const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
+        return gsl::at(_cells, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
     [[nodiscard]] inline Cell& GetCell(uint16_t x, uint16_t y)
     {
-        return gsl::at(_board, gsl::narrow_cast<uint16_t>(x + (y * _width)));
+        return gsl::at(_cells, gsl::narrow_cast<uint16_t>(x + (y * _width)));
     }
 
     void RandomizeBoard(float alivepct, uint16_t maxage);
@@ -124,13 +132,13 @@ class Board
         return _height;
     }
 
-    [[nodiscard]] inline uint32_t GetSize() const noexcept
+    [[nodiscard]] inline uint32_t Size() const noexcept
     {
         return _height * _width;
     }
 
   private:
-    std::vector<Cell> _board;
+    std::vector<Cell> _cells;
     std::mutex _lockboard;
 
     uint16_t _width{0};
