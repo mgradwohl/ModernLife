@@ -65,6 +65,11 @@ public:
 
     inline void SetState(State state) noexcept
     {
+        if (_state == state)
+        {
+			return;
+		}
+
         _state = state;
         if (state == Cell::State::Born)
         {

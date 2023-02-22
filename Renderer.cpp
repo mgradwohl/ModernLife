@@ -21,7 +21,7 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
     // determined internally
     _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
     _threadcount = std::clamp(_threadcount, 2, 8);
-    _threadcount = 1;
+    //_threadcount = 1;
 }
 
 void Renderer::SetupRenderTargets()
@@ -29,7 +29,7 @@ void Renderer::SetupRenderTargets()
     // Calculate important internal vales for the spritesheet and backbuffer slices
     _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
 
-    _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
+    _spritesPerRow = gsl::narrow_cast<uint16_t>(1 + std::sqrt(_spriteMaxIndex));
     _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
     _rowsPerSlice = gsl::narrow_cast<uint16_t>(_boardheight / _threadcount);
     _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
@@ -87,7 +87,7 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
         {
             std::scoped_lock lock{ _lockbackbuffer };
 
-            Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _bestbackbuffersize };
+            const Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _bestbackbuffersize };
             const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _bestcanvassize, _bestcanvassize };
             ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
             ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);

@@ -45,6 +45,11 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_width = width;
 	_maxage = maxage;
 	_cells.clear();
+
+	if (_height * width > _cells.capacity())
+	{
+		__debugbreak();
+	}
 	_cells.resize(gsl::narrow_cast<size_t>(_height * _width));
 }
 
@@ -55,24 +60,31 @@ void Board::PrintBoard()
 
 void Board::SetCell(Cell& cell, Cell::State state) noexcept
 {
+	if (cell.GetState() == state)
+	{
+		return;
+	}
+
 	cell.SetState(state);
 
+	// update counts
 	switch (state)
 	{
 		case Cell::State::Dead:
 		{
 			_numDead++;
+			_numLive--;
 			break;
 		}
 		case Cell::State::Live:
 		{
 			_numLive++;
+			_numDead--;
 			break;
 		}
 		case Cell::State::Born:
 		{
 			_numBorn++;
-			cell.Age(0);
 			break;
 		}
 		case Cell::State::Old:
@@ -192,12 +204,14 @@ void Board::ApplyNextStateToBoard() noexcept
 
 void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 {
+	ResetCounts();
+	_maxage = maxage;
+
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> pdis(0.0, 1.0);
 	std::uniform_int_distribution<int> adis(0, maxage);
 
-	_maxage = maxage;
 	// TODO check size of board before iterating over board
 	{
 		std::scoped_lock lock { _lockboard };

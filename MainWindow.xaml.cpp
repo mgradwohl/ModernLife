@@ -25,6 +25,7 @@
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Microsoft.UI.Xaml.Data.h>
+#include <winrt/Microsoft.UI.Xaml.Input.h>
 #include <winrt/Microsoft.UI.Xaml.Media.h>
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Windows.Graphics.Display.h>
@@ -60,29 +61,30 @@ namespace winrt::ModernLife::implementation
     {
         //initializes _dpi
         _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
-        float dpi2 = canvasBoard().Dpi();
+        const float dpi2 = canvasBoard().Dpi();
 
         if (dpi2 < _dpi)
         {
             canvasBoard().DpiScale(_dpi / dpi2);
         }
-        float dpi3 = canvasBoard().Dpi();
-        //_dpi = 96.0f;
+        const float dpi3 = canvasBoard().Dpi();
+        if (_dpi != dpi3)
+        {
+            __debugbreak();
+		}
 
         // initializes _canvasDevice
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
-
-        // initialize the board
-        _board.Reserve(gsl::narrow_cast<uint16_t>(sliderBoardWidth().Maximum()), gsl::narrow_cast<uint16_t>(sliderBoardWidth().Maximum()));
-        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
-        RandomizeBoard();
-
-        // Attach() requires that _dpi, _canvasDevice, and _board are initialized
         _renderer.Attach(_canvasDevice, _dpi, MaxAge());
-        _renderer.Size(BoardWidth(), BoardHeight());
 
         // initializes _canvasSize and _windowSize
         SetBestCanvasandWindowSizes();
+
+        // initialize the board
+        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
+        _renderer.Size(BoardWidth(), BoardHeight());
+        RandomizeBoard();
+
 
         InvalidateIfNeeded();
     }
@@ -139,7 +141,7 @@ namespace winrt::ModernLife::implementation
 
     }
 
-    void MainWindow::OnPointerMoved(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    void MainWindow::OnPointerMoved([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
     {
         if (_PointerMode == PointerMode::None || _PointerMode == PointerMode::Middle)
         {
@@ -325,7 +327,7 @@ namespace winrt::ModernLife::implementation
     // boilerplate and standard Windows stuff below
     void MainWindow::OnPropertyChanged([[maybe_unused]] IInspectable const& sender, PropertyChangedEventArgs const& args)
     {
-        if (args.PropertyName() == L"MaxAge")
+        if (args.PropertyName() == L"DPIChanged")
         {
             OnDPIChanged();
         }
