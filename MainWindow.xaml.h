@@ -12,8 +12,7 @@
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
-#include <winrt/Microsoft.UI.Xaml.h>
-#include <winrt/Microsoft.UI.Xaml.Input.h>
+#include <winrt/Microsoft.UI.Xaml.Data.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
@@ -24,14 +23,6 @@
 
 namespace winrt::ModernLife::implementation
 {
-    enum class PointerMode
-    {
-        Left,
-        Middle,
-        Right,
-        None
-    };
-
     struct MainWindow : MainWindowT<MainWindow>
     {
     public:
@@ -55,7 +46,6 @@ namespace winrt::ModernLife::implementation
 
         // property change handlers
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
-
         winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
         {
             return _propertyChanged.add(value);
@@ -80,10 +70,6 @@ namespace winrt::ModernLife::implementation
         hstring GetBoardWidthText(double_t value) const;
 
         // event handlers
-        void OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-        void OnPointerMoved(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-        void OnPointerReleased(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept;
-        void OnPointerExited(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept;
         void speedClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void CanvasBoard_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -103,6 +89,7 @@ namespace winrt::ModernLife::implementation
 
     private:
         Microsoft::Graphics::Canvas::CanvasDevice _canvasDevice{ nullptr };
+
         Renderer _renderer;
         Board _board;
         FPScounter fps{};
@@ -114,12 +101,11 @@ namespace winrt::ModernLife::implementation
         uint16_t _randompercent{30};
         uint16_t _maxage{ 1000 };
         int32_t _ruleset{ 1 };
-        uint16_t _boardwidth{ 40 };
-        uint16_t _boardheight{ 40 };
+        uint16_t _boardwidth{ 200 };
+        uint16_t _boardheight{ 200 };
 
         winrt::event_token _propertyToken;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> _propertyChanged;
-        PointerMode _PointerMode = PointerMode::None;
     };
 }
 
