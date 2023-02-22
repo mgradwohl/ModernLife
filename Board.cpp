@@ -44,6 +44,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_height = height;
 	_width = width;
 	_maxage = maxage;
+	_cells.clear();
 	_cells.resize(gsl::narrow_cast<size_t>(_height * _width));
 }
 
@@ -87,6 +88,24 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 		default:
 			// do nothing
 			break;
+	}
+}
+
+void Board::TurnCellOn(GridPoint g, bool on) noexcept
+{
+	if (g.x > Width() || g.y > Height())
+	{
+		return;
+	}
+
+	Cell& cell = GetCell(g.x, g.y);
+	if (on)
+	{
+		SetCell(cell, Cell::State::Live);
+	}
+	else
+	{
+		SetCell(cell, Cell::State::Dead);
 	}
 }
 
@@ -235,17 +254,15 @@ void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 	const uint16_t rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
 	const uint16_t remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
 
+	// create a scope block so the vector dtor will be called and auto join the threads
+	std::vector<std::jthread> threads;
+	for (int t = 0; t < _threadcount - 1; t++)
 	{
-		// create a scope block so the vector dtor will be called and auto join the threads
-		std::vector<std::jthread> threads;
-		for (int t = 0; t < _threadcount - 1; t++)
-		{
-			threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
-			rowStart += rowsPerThread;
+		threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
+		rowStart += rowsPerThread;
 
-		}
-		threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 	}
+	threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept
@@ -322,7 +339,6 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 		// should never happen
 		cell.SetState(Cell::State::Live);
 	}
-	
 }
 
 void Board::HighlifeRules(Cell& cell) const noexcept

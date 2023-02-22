@@ -7,6 +7,12 @@
 
 #include "Cell.h"
 
+struct GridPoint
+{
+    uint16_t x;
+    uint16_t y;
+};
+
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
 class Board
@@ -27,6 +33,7 @@ class Board
     void Resize(uint16_t width, uint16_t height, uint16_t maxage);
 
     void SetCell(Cell& cell, Cell::State state) noexcept;
+    void TurnCellOn(GridPoint g, bool on) noexcept;
 
     [[nodiscard]] inline const Cell& GetCell(uint16_t x, uint16_t y) const
     {
