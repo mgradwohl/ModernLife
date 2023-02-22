@@ -173,7 +173,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">stdcpp20</LanguageStandard>
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatWarningAsError>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Tools\MSVC\14.35.32213\bin\Hostx64\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -184,7 +184,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='ASAN (debug)|x64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='ASAN (debug)|ARM64'">stdcpp20</LanguageStandard>
-      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='ASAN (debug)|x64'">true</TreatWarningAsError>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='ASAN (debug)|x64'">false</TreatWarningAsError>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ASAN (debug)|x64'">C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Tools\MSVC\14.35.32213\bin\Hostx64\x64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='ASAN (debug)|x64'">Default</BasicRuntimeChecks>
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='ASAN (debug)|x64'">MultiThreadedDebug</RuntimeLibrary>

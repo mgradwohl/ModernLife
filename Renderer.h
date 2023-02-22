@@ -31,7 +31,7 @@ public:
 
 	void FindBestCanvasSize(size_t windowHeight);
 
-	GridPoint GetCellAtPoint(Windows::Foundation::Point point);
+	GridPoint GetCellAtPoint(Windows::Foundation::Point point) noexcept;
 
 	void Render(Microsoft::Graphics::Canvas::CanvasDrawingSession const& ds, const Board& board);
 
@@ -90,6 +90,7 @@ private:
 
 	unsigned int _pxPerCellDimension{ 0 };
 	float _dpi{ 0.0f };
+	float _imagescale{ 0.0f };
 	float _dipsPerCellDimension{ 0.0f };
 	uint16_t _rowsPerSlice{ 0 };
 	float _sliceHeight{ 0.0f };
