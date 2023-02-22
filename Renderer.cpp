@@ -21,24 +21,31 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
     // determined internally
     _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
     _threadcount = std::clamp(_threadcount, 2, 8);
+    _threadcount = 1;
 }
 
-void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
+void Renderer::SetupRenderTargets()
 {
+    // Calculate important internal vales for the spritesheet and backbuffer slices
+    _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
+
+    _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
+    _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
+    _rowsPerSlice = gsl::narrow_cast<uint16_t>(_boardheight / _threadcount);
+    _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
+
+    if (_threadcount == 1)
+    {
+        {
+            std::scoped_lock lock{ _lockbackbuffer };
+            _backbuffersingle = Microsoft::Graphics::Canvas::CanvasRenderTarget(_canvasDevice, _bestbackbuffersize, _bestbackbuffersize, _dpi);
+        }
+        BuildSpriteSheet();
+        return;
+    }
+
     {
         std::scoped_lock lock{ _lockbackbuffer };
-
-        _boardwidth = width;
-        _boardheight = height;
-
-        // Calculate important internal vales for the spritesheet and backbuffer slices
-        _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
-
-        _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
-        _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
-        _rowsPerSlice = gsl::narrow_cast<uint16_t>(_boardheight / _threadcount);
-        _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
-
         // create backbuffers that are sliced horizontally they will be as evenly divided as possible
         // with the final slice potentially being larger
         _backbuffers.clear();
@@ -75,33 +82,46 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
 {
     RenderOffscreen(board);
 
+    if (_threadcount == 1)
+    {
+        {
+            std::scoped_lock lock{ _lockbackbuffer };
+
+            Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _bestbackbuffersize };
+            const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _bestcanvassize, _bestcanvassize };
+            ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
+            ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
+            ds.DrawImage(_backbuffersingle, destRect, source);
+
+            ds.Flush();
+            ds.Close();
+        }
+        return;
+    }
+
     const float canvasSliceHeight = _sliceHeight / (_bestbackbuffersize / _bestcanvassize);
     Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _sliceHeight };
     Windows::Foundation::Rect dest{ 0.0f, 0.0f, _bestcanvassize,  canvasSliceHeight };
     const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _bestcanvassize, _bestcanvassize };
 
-    // lock the full size backbuffer and copy each slice into it
     ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
     ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
+
+    // lock the full size backbuffer and copy each slice into it
+    std::scoped_lock lock{ _lockbackbuffer };
+
+    int k = 0;
+    for (k = 0; k < _threadcount - 1; k++)
     {
-        std::scoped_lock lock{ _lockbackbuffer };
-
-        ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
-        ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-
-        int k = 0;
-        for (k = 0; k < _threadcount - 1; k++)
-        {
-            ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
-            dest.Y += canvasSliceHeight;
-        }
-        dest.Height = _bestcanvassize - (canvasSliceHeight * k);
-        source.Height = _bestbackbuffersize - (_sliceHeight * k);
         ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
-
-        ds.Flush();
-        ds.Close();
+        dest.Y += canvasSliceHeight;
     }
+    dest.Height = _bestcanvassize - (canvasSliceHeight * k);
+    source.Height = _bestbackbuffersize - (_sliceHeight * k);
+    ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
+
+    ds.Flush();
+    ds.Close();
 }
 
 // This renders the board to the backbuffers
@@ -109,9 +129,15 @@ void Renderer::RenderOffscreen(const Board& board)
 {
     //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
-    uint16_t startRow = 0;
+    if (_threadcount == 1)
+    {
+        Microsoft::Graphics::Canvas::CanvasDrawingSession dsSingle = _backbuffersingle.CreateDrawingSession();
+        DrawHorizontalRows(dsSingle, board, 0, _boardheight);
+        return;
+    }
 
     // create a drawing session for each backbuffer horizontal slice
+    _dsList.clear();
     for (int j = 0; j < _threadcount; j++)
     {
         _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
@@ -119,19 +145,15 @@ void Renderer::RenderOffscreen(const Board& board)
 
     // technically the board could be changing underneath us, but we're only reading the cells not writing to them
     // TODO may need to lock the board here eg std::scoped_lock lock{ _board.GetLock() };
+    uint16_t startRow = 0;
+    std::vector<std::jthread> threads;
+    int t = 0;
+    for (t = 0; t < _threadcount - 1; t++)
     {
-        // create a scope block so the vector dtor will be called and auto join the threads
-        std::vector<std::jthread> threads;
-        int t = 0;
-        for (t = 0; t < _threadcount - 1; t++)
-        {
-            threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
-            startRow += _rowsPerSlice;
-        }
-        threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
+        threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
+        startRow += _rowsPerSlice;
     }
-
-    _dsList.clear();
+    threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
 }
 
 void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board, uint16_t startRow, uint16_t endRow) const
@@ -234,7 +256,9 @@ void Renderer::Size(uint16_t width, uint16_t height)
 {
     if (_boardwidth != width || _boardheight != height)
     {
-		SetupRenderTargets(width, height);
+        _boardwidth = width;
+        _boardheight = height;
+        SetupRenderTargets();
 	}
 }
 
@@ -243,7 +267,7 @@ void Renderer::Device(const Microsoft::Graphics::Canvas::CanvasDevice& device)
     if (_canvasDevice != device)
     {
 		_canvasDevice = device;
-		SetupRenderTargets(_boardwidth, _boardheight);
+		SetupRenderTargets();
 	}
 }
 
@@ -262,7 +286,7 @@ void Renderer::SpriteMaxIndex(uint16_t index)
     if (_spriteMaxIndex != index)
     {
 		_spriteMaxIndex = index;
-        SetupRenderTargets(_boardwidth, _boardheight);
+        SetupRenderTargets();
 	}
 }
 
@@ -280,7 +304,6 @@ void Renderer::FindBestCanvasSize(size_t windowHeight)
             best += 100.0f;
         }
         best -= 200.0f;
-
         _bestcanvassize = best;
 
         // make the backbuffer bigger than the front buffer, and a multiple of it

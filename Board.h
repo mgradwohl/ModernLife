@@ -30,6 +30,11 @@ class Board
     Board& operator=(Board& b) = delete;
 
     void SetThreadCount();
+    void Reserve(uint16_t maxwidth, uint16_t maxheight)
+    {
+        _cells.reserve(maxwidth * maxheight);
+    }
+
     void Resize(uint16_t width, uint16_t height, uint16_t maxage);
 
     void SetCell(Cell& cell, Cell::State state) noexcept;

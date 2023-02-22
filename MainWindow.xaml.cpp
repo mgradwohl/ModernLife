@@ -58,18 +58,28 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnFirstRun()
     {
-        // initializes _dpi
+        //initializes _dpi
         _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
+        float dpi2 = canvasBoard().Dpi();
+
+        if (dpi2 < _dpi)
+        {
+            canvasBoard().DpiScale(_dpi / dpi2);
+        }
+        float dpi3 = canvasBoard().Dpi();
+        //_dpi = 96.0f;
 
         // initializes _canvasDevice
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
         // initialize the board
+        _board.Reserve(gsl::narrow_cast<uint16_t>(sliderBoardWidth().Maximum()), gsl::narrow_cast<uint16_t>(sliderBoardWidth().Maximum()));
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         RandomizeBoard();
 
         // Attach() requires that _dpi, _canvasDevice, and _board are initialized
         _renderer.Attach(_canvasDevice, _dpi, MaxAge());
+        _renderer.Size(BoardWidth(), BoardHeight());
 
         // initializes _canvasSize and _windowSize
         SetBestCanvasandWindowSizes();
@@ -296,9 +306,9 @@ namespace winrt::ModernLife::implementation
         // we lock it because changing board parameters will call StartGameLoop()
         timer.Stop();
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
+        _renderer.Size(BoardWidth(), BoardHeight());
 
         RandomizeBoard();
-        _renderer.Size(BoardWidth(), BoardHeight());
         InvalidateIfNeeded();
 
         StartGameLoop();
@@ -415,11 +425,19 @@ namespace winrt::ModernLife::implementation
 
     [[nodiscard]] inline uint16_t MainWindow::BoardWidth() const noexcept
     {
+        //if (_boardwidth != _board.Width())
+        //{
+        //    __debugbreak;
+        //}
         return _boardwidth;
     }
 
     [[nodiscard]] inline uint16_t MainWindow::BoardHeight() const noexcept
     {
+        //if (_boardheight != _board.Height())
+        //{
+        //    __debugbreak;
+        //}
         return _boardheight;
     }
 

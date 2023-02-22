@@ -72,7 +72,7 @@ public:
 
 private:
 	Windows::Foundation::Rect GetSpriteCell(uint16_t index) const noexcept;
-	void SetupRenderTargets(uint16_t width, uint16_t height);
+	void SetupRenderTargets();
 	void BuildSpriteSheet();
 	void DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board, uint16_t startRow, uint16_t endRow) const;
 	void RenderOffscreen(const Board& board);
@@ -83,6 +83,8 @@ private:
 	std::mutex _lockbackbuffer;
 
 	int _threadcount{ 0 };
+	Microsoft::Graphics::Canvas::CanvasRenderTarget _backbuffersingle{nullptr};
+
 	std::vector<Microsoft::Graphics::Canvas::CanvasRenderTarget> _backbuffers;
 	std::vector<Microsoft::Graphics::Canvas::CanvasDrawingSession> _dsList;
 	Microsoft::Graphics::Canvas::CanvasRenderTarget _spritesheet{ nullptr };
