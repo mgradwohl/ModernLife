@@ -68,7 +68,7 @@ namespace winrt::ModernLife::implementation
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         RandomizeBoard();
 
-        // Attach() requires that _dpi, _cancasDevice, and _board are initialized
+        // Attach() requires that _dpi, _canvasDevice, and _board are initialized
         _renderer.Attach(_canvasDevice, _dpi, MaxAge());
 
         // initializes _canvasSize and _windowSize
@@ -114,21 +114,56 @@ namespace winrt::ModernLife::implementation
             return;
         }
 
-        for (const Microsoft::UI::Input::PointerPoint& point : e.GetIntermediatePoints(canvasBoard().try_as<Microsoft::UI::Xaml::UIElement>()))
+        if (e.GetCurrentPoint(canvasBoard().as<Microsoft::UI::Xaml::UIElement>()).Properties().IsLeftButtonPressed())
+        {
+            _PointerMode = PointerMode::Left;
+        }
+        else if (e.GetCurrentPoint(canvasBoard().as<Microsoft::UI::Xaml::UIElement>()).Properties().IsRightButtonPressed())
+        {
+			_PointerMode = PointerMode::Right;
+		}
+        else
+        {
+			_PointerMode = PointerMode::None;
+		}
+
+    }
+
+    void MainWindow::OnPointerMoved(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    {
+        if (_PointerMode == PointerMode::None || _PointerMode == PointerMode::Middle)
+        {
+			return;
+		}
+
+        bool on = false;
+        if (_PointerMode == PointerMode::Left)
+        {
+            on = true;
+		}
+        else if (_PointerMode == PointerMode::Right)
+        {
+            on = false;
+        }
+
+        for (const Microsoft::UI::Input::PointerPoint& point : e.GetIntermediatePoints(canvasBoard().as<Microsoft::UI::Xaml::UIElement>()))
         {
             const GridPoint g = _renderer.GetCellAtPoint(point.Position());
-
-            Cell& cell = _board.GetCell(g.x, g.y);
-            cell.ToggleCell();
+            _board.TurnCellOn(g, on);
         }
         InvalidateIfNeeded();
     }
 
-    void winrt::ModernLife::implementation::MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    void winrt::ModernLife::implementation::MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
     {
-
+        _PointerMode = PointerMode::None;
     }
     
+    void winrt::ModernLife::implementation::MainWindow::OnPointerExited([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
+    {
+        _PointerMode = PointerMode::None;
+    }
+
     void MainWindow::SetBestCanvasandWindowSizes()
     {
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());

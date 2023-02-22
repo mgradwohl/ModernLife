@@ -25,17 +25,14 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
 
 void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
 {
-    _boardwidth = width;
-    _boardheight = height;
-
     {
         std::scoped_lock lock{ _lockbackbuffer };
 
+        _boardwidth = width;
+        _boardheight = height;
+
         // Calculate important internal vales for the spritesheet and backbuffer slices
         _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
-        _imagescale = _bestbackbuffersize / _bestcanvassize;
-
-        //_pxPerCellDimension = gsl::narrow_cast<unsigned int>(_dipsPerCellDimension);
 
         _spritesPerRow = gsl::narrow_cast<uint16_t>(std::sqrt(_spriteMaxIndex)) + 1;
         _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
@@ -59,8 +56,7 @@ void Renderer::SetupRenderTargets(uint16_t width, uint16_t height)
 
 [[nodiscard]] GridPoint Renderer::GetCellAtPoint(Windows::Foundation::Point point) noexcept
 {
-    // figure out where point is on the board
-    // and return it
+    _imagescale = _bestbackbuffersize / _bestcanvassize;
 
     return { gsl::narrow_cast<uint16_t>(point.X / _dipsPerCellDimension * _imagescale), gsl::narrow_cast<uint16_t>(point.Y / _dipsPerCellDimension * _imagescale) };
 }
@@ -79,14 +75,14 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
 {
     RenderOffscreen(board);
 
-    ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
-    ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-    const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _bestcanvassize, _bestcanvassize };
-
-    // lock the full size backbuffer and copy each slice into it
     const float canvasSliceHeight = _sliceHeight / (_bestbackbuffersize / _bestcanvassize);
     Windows::Foundation::Rect source{ 0.0f, 0.0f, _bestbackbuffersize, _sliceHeight };
     Windows::Foundation::Rect dest{ 0.0f, 0.0f, _bestcanvassize,  canvasSliceHeight };
+    const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _bestcanvassize, _bestcanvassize };
+
+    // lock the full size backbuffer and copy each slice into it
+    ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
+    ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
     {
         std::scoped_lock lock{ _lockbackbuffer };
 
@@ -113,9 +109,9 @@ void Renderer::RenderOffscreen(const Board& board)
 {
     //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
-    // create a drawing session for each backbuffer horizontal slice
     uint16_t startRow = 0;
 
+    // create a drawing session for each backbuffer horizontal slice
     for (int j = 0; j < _threadcount; j++)
     {
         _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
@@ -238,9 +234,7 @@ void Renderer::Size(uint16_t width, uint16_t height)
 {
     if (_boardwidth != width || _boardheight != height)
     {
-		_boardwidth = width;
-		_boardheight = height;
-		SetupRenderTargets(_boardwidth, _boardheight);
+		SetupRenderTargets(width, height);
 	}
 }
 

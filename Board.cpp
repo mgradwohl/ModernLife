@@ -35,6 +35,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_height = height;
 	_width = width;
 	_maxage = maxage;
+	_cells.clear();
 	_cells.resize(gsl::narrow_cast<size_t>(_height * _width));
 
 	SetThreadCount();
@@ -86,6 +87,24 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 		default:
 			// do nothing
 			break;
+	}
+}
+
+void Board::TurnCellOn(GridPoint g, bool on) noexcept
+{
+	if (g.x > Width() || g.y > Height())
+	{
+		return;
+	}
+
+	Cell& cell = GetCell(g.x, g.y);
+	if (on)
+	{
+		SetCell(cell, Cell::State::Live);
+	}
+	else
+	{
+		SetCell(cell, Cell::State::Dead);
 	}
 }
 

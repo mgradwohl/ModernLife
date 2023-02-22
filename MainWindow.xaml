@@ -30,7 +30,11 @@
                PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="4">
 
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="4" >
-                <canvas:CanvasControl x:Name="canvasBoard" Margin="6,0,6,0" PointerReleased="OnPointerReleased" PointerPressed="OnPointerPressed" Draw="CanvasBoard_Draw" CreateResources="CanvasBoard_CreateResources" ClearColor="{StaticResource SystemChromeMediumColor}" SizeChanged="CanvasBoard_SizeChanged" />
+                <canvas:CanvasControl x:Name="canvasBoard" Margin="6,0,6,0"
+                                      PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased"
+                                      PointerPressed="OnPointerPressed" PointerExited="OnPointerExited"
+                                      Draw="CanvasBoard_Draw" CreateResources="CanvasBoard_CreateResources"
+                                      ClearColor="{StaticResource SystemChromeMediumColor}" SizeChanged="CanvasBoard_SizeChanged" />
             </Grid>
 
             <SplitView.Pane>
