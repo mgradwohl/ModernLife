@@ -29,6 +29,15 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 	return stream;
 }
 
+
+Board::Board() noexcept
+{
+	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
+	_threadcount = std::clamp(_threadcount, 2, 8);
+
+	_cells.reserve(500 * 500);
+}
+
 void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 {
 	std::scoped_lock lock { _lockboard };
@@ -36,14 +45,6 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_width = width;
 	_maxage = maxage;
 	_cells.resize(gsl::narrow_cast<size_t>(_height * _width));
-
-	SetThreadCount();
-}
-
-void Board::SetThreadCount()
-{
-	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
-	_threadcount = std::clamp(_threadcount, 2, 8);
 }
 
 void Board::PrintBoard()

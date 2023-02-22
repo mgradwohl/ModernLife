@@ -77,9 +77,6 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
     {
         std::scoped_lock lock{ _lockbackbuffer };
 
-        ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Aliased);
-        ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
-
         int k = 0;
         for (k = 0; k < _threadcount - 1; k++)
         {
@@ -103,6 +100,7 @@ void Renderer::RenderOffscreen(const Board& board)
     // create a drawing session for each backbuffer horizontal slice
     uint16_t startRow = 0;
 
+    _dsList.clear();
     for (int j = 0; j < _threadcount; j++)
     {
         _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
@@ -121,14 +119,17 @@ void Renderer::RenderOffscreen(const Board& board)
         }
         threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
     }
-
-    _dsList.clear();
 }
 
 void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board, uint16_t startRow, uint16_t endRow) const
 {
     // only read from the board/the cells in this method
     ds.Clear(Windows::UI::Colors::WhiteSmoke());
+#ifdef _DEBUG
+    // this makes the background of each backbuffer slice a band so you can see them
+    ds.Clear(Windows::UI::ColorHelper::FromArgb(255, 255 - gsl::narrow_cast<uint8_t>(startRow), 0, gsl::narrow_cast<uint8_t>(startRow)));
+#endif // DEBUG
+
     ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
     ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
     Microsoft::Graphics::Canvas::CanvasSpriteBatch spriteBatch = ds.CreateSpriteBatch(Microsoft::Graphics::Canvas::CanvasSpriteSortMode::Bitmap, Microsoft::Graphics::Canvas::CanvasImageInterpolation::NearestNeighbor, Microsoft::Graphics::Canvas::CanvasSpriteOptions::None);
