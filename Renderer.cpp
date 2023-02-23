@@ -27,12 +27,12 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
 void Renderer::SetupRenderTargets()
 {
     // Calculate important internal vales for the spritesheet and backbuffer slices
-    _dipsPerCellDimension = _bestbackbuffersize / _boardwidth;
+    _dipsPerCellDimension = gsl::narrow_cast<float>(_bestbackbuffersize / _boardwidth);
 
     _spritesPerRow = gsl::narrow_cast<uint16_t>(1 + std::sqrt(_spriteMaxIndex));
-    _spriteDipsPerRow = _dipsPerCellDimension * _spritesPerRow;
+    _spriteDipsPerRow = gsl::narrow_cast<float>(_dipsPerCellDimension * _spritesPerRow);
     _rowsPerSlice = gsl::narrow_cast<uint16_t>(_boardheight / _threadcount);
-    _sliceHeight = _rowsPerSlice * _dipsPerCellDimension;
+    _sliceHeight = gsl::narrow_cast<float>(_rowsPerSlice * _dipsPerCellDimension);
 
     if (_threadcount == 1)
     {
@@ -52,10 +52,10 @@ void Renderer::SetupRenderTargets()
         int j = 0;
         for (j = 0; j < _threadcount - 1; j++)
         {
-            _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, _sliceHeight, _dpi });
+            _backbuffers.emplace_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, _sliceHeight, _dpi });
         }
         const int remainingRows = _boardheight - (j * _rowsPerSlice);
-        _backbuffers.push_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, remainingRows * _dipsPerCellDimension, _dpi });
+        _backbuffers.emplace_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, gsl::narrow_cast<float>(remainingRows * _dipsPerCellDimension), _dpi });
     }
 
     BuildSpriteSheet();
@@ -116,8 +116,8 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
         ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
         dest.Y += canvasSliceHeight;
     }
-    dest.Height = _bestcanvassize - (canvasSliceHeight * k);
-    source.Height = _bestbackbuffersize - (_sliceHeight * k);
+    dest.Height = gsl::narrow_cast<float>(_bestcanvassize - (canvasSliceHeight * k));
+    source.Height = gsl::narrow_cast<float>(_bestbackbuffersize - (_sliceHeight * k));
     ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
 
     ds.Flush();
@@ -150,10 +150,10 @@ void Renderer::RenderOffscreen(const Board& board)
     int t = 0;
     for (t = 0; t < _threadcount - 1; t++)
     {
-        threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
+        threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
         startRow += _rowsPerSlice;
     }
-    threads.push_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
+    threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
 }
 
 void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board, uint16_t startRow, uint16_t endRow) const
@@ -177,8 +177,8 @@ void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawi
             {
                 const Cell& cell = board.GetCell(x, y);
 
-                rectDest.X = x * _dipsPerCellDimension;
-                rectDest.Y = (y - startRow) * _dipsPerCellDimension;
+                rectDest.X = gsl::narrow_cast<float>(x * _dipsPerCellDimension);
+                rectDest.Y = gsl::narrow_cast<float>((y - startRow) * _dipsPerCellDimension);
                 if (cell.ShouldDraw())
                 {
                     // this is where all the time goes:
@@ -305,7 +305,7 @@ void Renderer::FindBestCanvasSize(size_t windowHeight)
         float best = 400.0f;
         while (true)
         {
-            if ((best * _dpi / 96.0f) >= windowHeight) break;
+            if (gsl::narrow_cast<size_t>((best * _dpi / 96.0f)) >= windowHeight) break;
             best += 100.0f;
         }
         best -= 200.0f;
@@ -328,7 +328,7 @@ void Renderer::FindBestCanvasSize(size_t windowHeight)
         return Windows::UI::Colors::DarkGray();
     }
 
-    const float h{ (age * 360.f) / _spriteMaxIndex };
+    const float h{ gsl::narrow_cast<float>((age * 360.f) / _spriteMaxIndex) };
     return HSVColorHelper::HSVtoColor(h, 0.6f, 0.7f);
 }
 
@@ -339,6 +339,6 @@ void Renderer::FindBestCanvasSize(size_t windowHeight)
         return Windows::UI::Colors::Gray();
     }
 
-    const float h{ (age * 360.f) / _spriteMaxIndex };
+    const float h{ gsl::narrow_cast<float>((age * 360.f) / _spriteMaxIndex) };
     return HSVColorHelper::HSVtoColor(h, 0.7f, 0.9f);
 }

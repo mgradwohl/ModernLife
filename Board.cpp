@@ -35,7 +35,7 @@ Board::Board() noexcept
 	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 	_threadcount = std::clamp(_threadcount, 2, 8);
 
-	_cells.reserve(500 * 500);
+	_cells.reserve(250000);
 }
 
 void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
@@ -268,18 +268,18 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t 
 void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 {
 	uint16_t rowStart = 0;
-	const uint16_t rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
-	const uint16_t remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
+	const auto rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
+	const auto remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
 
 	// create a scope block so the vector dtor will be called and auto join the threads
 	std::vector<std::jthread> threads;
 	for (int t = 0; t < _threadcount - 1; t++)
 	{
-		threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
+		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
 		rowStart += rowsPerThread;
 
 	}
-	threads.push_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
+	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept

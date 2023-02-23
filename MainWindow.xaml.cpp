@@ -230,8 +230,8 @@ namespace winrt::ModernLife::implementation
         canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
         canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
 
-        const Windows::UI::Color colorBack{ splitView().PaneBackground().try_as<SolidColorBrush>().Color() };
-        const Windows::UI::Color colorText{ PaneHeader().Foreground().try_as<SolidColorBrush>().Color() };
+        const Windows::UI::Color colorBack{ splitView().PaneBackground().as<SolidColorBrush>().Color() };
+        const Windows::UI::Color colorText{ PaneHeader().Foreground().as<SolidColorBrush>().Color() };
 
         args.DrawingSession().Clear(colorBack);
 
@@ -293,7 +293,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnDPIChanged()
     {
-        const float dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
+        const auto dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         if (_dpi != dpi)
         {
             _dpi = dpi;
@@ -481,7 +481,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::speedClick(IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.try_as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
+        Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
 		dropdownSpeed().Content(winrt::box_value(item.Text()));
 
 		timer.FPS(item.Tag().as<int>());
@@ -489,7 +489,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::ruleClick(IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
-        Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.try_as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
+        Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
         dropdownRules().Content(winrt::box_value(item.Text()));
 
         _ruleset = item.Tag().as<int>();
