@@ -52,6 +52,7 @@ public:
 
     void SetState(State state) noexcept
     {
+        // if the state didn't change, do nothing
         if (_state == state)
         {
 			return;

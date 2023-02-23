@@ -71,12 +71,15 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 {
 	if (cell.GetState() == state)
 	{
+		// if the state didn't change, do nothing
 		return;
 	}
 
+	// set the state to the new state
+	// TODO we should also reduce the count of the previous state to keep them accurate
 	cell.SetState(state);
 
-	// update counts
+	// update counts for the new states
 	switch (state)
 	{
 		case Cell::State::Dead:
@@ -242,7 +245,6 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 		}
 	}
 }
-
 
 void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset)
 {
