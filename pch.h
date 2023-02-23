@@ -44,5 +44,5 @@
 #include <winrt/Microsoft.Graphics.Canvas.UI.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
-#include "gsl/include/gsl"
-#include <wil/cppwinrt_helpers.h>
+#include <deps/gsl/include/gsl/gsl>
+#include <deps/wil/include/wil/cppwinrt_helpers.h>

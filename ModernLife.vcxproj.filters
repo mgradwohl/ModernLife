@@ -214,7 +214,4 @@
     <None Include="gsl\include\string_span" />
     <None Include="gsl\include\util" />
   </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
-  </ItemGroup>
 </Project>

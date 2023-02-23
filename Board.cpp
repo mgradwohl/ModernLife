@@ -6,7 +6,7 @@
 #include <random>
 #include <iostream>
 
-#include "gsl/include/gsl"
+#include <deps/gsl/include/gsl/gsl>
 
 // optimized to never use std::endl until the full board is done printing
 std::wostream& operator<<(std::wostream& stream, Board& board)

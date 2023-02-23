@@ -3,7 +3,7 @@
 #include <mutex>
 #include <vector>
 
-#include "gsl/include/gsl"
+#include <deps/gsl/include/gsl/gsl>
 
 #include "Cell.h"
 
