@@ -38,6 +38,14 @@ Board::Board() noexcept
 	_cells.reserve(250000);
 }
 
+void Board::Update(int32_t ruleset)
+{
+	std::scoped_lock lock { _lockboard };
+	//ResetCounts();
+	FastUpdateBoardWithNextState(ruleset);
+	ApplyNextStateToBoard();
+}
+
 void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 {
 	std::scoped_lock lock { _lockboard };
@@ -73,6 +81,7 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	{
 		case Cell::State::Dead:
 		{
+			_numLive--;
 			_numDead++;
 			if (_numLive < 0)
 			{
@@ -83,6 +92,11 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 		case Cell::State::Live:
 		{
 			_numLive++;
+			_numDead--;
+			if (_numDead < 0)
+			{
+				_numDead = 0;
+			}
 			break;
 		}
 		case Cell::State::Born:
@@ -171,14 +185,6 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 
 	GetCell(x,y).Neighbors(count);
 	return count;
-}
-
-void Board::Update(int32_t ruleset)
-{
-	std::scoped_lock lock { _lockboard };
-	ResetCounts();
-	FastUpdateBoardWithNextState(ruleset);
-	ApplyNextStateToBoard();
 }
 
 void Board::ApplyNextStateToBoard() noexcept
