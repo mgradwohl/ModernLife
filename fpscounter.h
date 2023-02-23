@@ -19,13 +19,13 @@ public:
 	// destruct
 	~FPScounter() = default;
 
-	inline void Start() noexcept
+	void Start() noexcept
 	{
 		_start = std::chrono::high_resolution_clock::now();
 		_end = std::chrono::high_resolution_clock::now();
 	}
 
-	[[nodiscard]] inline double FPS() noexcept
+	[[nodiscard]] double FPS() noexcept
 	{
 		return _fps;
 	}

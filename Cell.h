@@ -25,45 +25,32 @@ public:
     Cell& operator=(Cell&& b) = delete;
     Cell& operator=(Cell& b) = delete;
 
-    [[nodiscard]] inline uint8_t Neighbors() const noexcept
+    [[nodiscard]] uint8_t Neighbors() const noexcept
     {
         return _neighbors;
     }
 
-    inline void ToggleCell() noexcept
-    {
-        if (_state == Cell::State::Dead)
-        {
-			_state = Cell::State::Live;
-		}
-        else
-        {
-			_state = Cell::State::Dead;
-		}
-	}
-
-    inline void Neighbors(uint8_t n) noexcept
+    void Neighbors(uint8_t n) noexcept
     {
         _neighbors = n;
     }
 
-    inline void Age(uint16_t age) noexcept
+    void Age(uint16_t age) noexcept
     {
         _age = age;
     }
 
-    [[nodiscard]] inline uint16_t Age() const noexcept
+    [[nodiscard]] uint16_t Age() const noexcept
     {
         return _age;
     }
 
-
-    [[nodiscard]] inline State GetState() const noexcept
+    [[nodiscard]] State GetState() const noexcept
     {
         return _state;
     }
 
-    inline void SetState(State state) noexcept
+    void SetState(State state) noexcept
     {
         if (_state == state)
         {
@@ -77,7 +64,7 @@ public:
         }
     }
 
-    [[nodiscard]] inline bool ShouldDraw() const noexcept
+    [[nodiscard]] bool ShouldDraw() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::BrianDying)
         {
@@ -86,7 +73,7 @@ public:
         return false;
     }
     
-    [[nodiscard]] inline bool IsAlive() const noexcept
+    [[nodiscard]] bool IsAlive() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
         {
@@ -95,7 +82,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] inline bool IsAliveNotDying() const noexcept
+    [[nodiscard]] bool IsAliveNotDying() const noexcept
     {
         if (_state == Cell::State::Live)
         {
@@ -104,7 +91,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] inline bool IsDying() const noexcept
+    [[nodiscard]] bool IsDying() const noexcept
     {
         if (_state == Cell::State::Dying)
         {
@@ -113,7 +100,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] inline bool IsDead() const noexcept
+    [[nodiscard]] bool IsDead() const noexcept
     {
         if (_state == Cell::State::Dead || _state == Cell::State::Born)
         {

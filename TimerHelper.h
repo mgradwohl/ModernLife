@@ -34,22 +34,22 @@ public:
         FPS(fps);
     }
     
-    inline void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
+    void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
     {
         _eventtoken = _timer.Tick(handler);
     }
 
-    inline void Stop()
+    void Stop()
     {
         _timer.Stop();
     }
 
-    inline void Start()
+    void Start()
     {
         _timer.Start();
     }
 
-    [[nodiscard]] inline bool IsRunning() const
+    [[nodiscard]] bool IsRunning() const
     {
         return _timer.IsRunning();
     }
@@ -59,17 +59,17 @@ public:
         _timer.IsRepeating(repeating);
     }
 
-    [[nodiscard]] inline bool Repeating() const
+    [[nodiscard]] bool Repeating() const
     {
         return _timer.IsRepeating();
     }
 
-    [[nodiscard]] inline int FPS() const noexcept
+    [[nodiscard]] int FPS() const noexcept
     {
 		return _fps;
     }
     
-    [[nodiscard]] inline void FPS(int fps)
+    [[nodiscard]] void FPS(int fps)
     {
         using namespace  std::literals::chrono_literals;
         if (fps > 0 && fps <= 240)

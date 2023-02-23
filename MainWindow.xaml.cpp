@@ -383,7 +383,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    inline uint16_t MainWindow::MaxAge() const noexcept
+    uint16_t MainWindow::MaxAge() const noexcept
     {
         return _maxage;
     }
@@ -397,7 +397,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    [[nodiscard]] inline bool MainWindow::ShowLegend() const noexcept
+    [[nodiscard]] bool MainWindow::ShowLegend() const noexcept
     {
         return _drawLegend;
     }
@@ -411,7 +411,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    [[nodiscard]] inline uint16_t MainWindow::RandomPercent() const noexcept
+    [[nodiscard]] uint16_t MainWindow::RandomPercent() const noexcept
     {
         return _randompercent;
     }
@@ -425,7 +425,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    [[nodiscard]] inline uint16_t MainWindow::BoardWidth() const noexcept
+    [[nodiscard]] uint16_t MainWindow::BoardWidth() const noexcept
     {
         //if (_boardwidth != _board.Width())
         //{
@@ -434,7 +434,7 @@ namespace winrt::ModernLife::implementation
         return _boardwidth;
     }
 
-    [[nodiscard]] inline uint16_t MainWindow::BoardHeight() const noexcept
+    [[nodiscard]] uint16_t MainWindow::BoardHeight() const noexcept
     {
         //if (_boardheight != _board.Height())
         //{
@@ -465,14 +465,14 @@ namespace winrt::ModernLife::implementation
         // TODO test
     }
 
-    [[nodiscard]] inline hstring MainWindow::GetRandomPercentText(double_t value) const
+    [[nodiscard]] hstring MainWindow::GetRandomPercentText(double_t value) const
     {
         std::wstring text = std::format(L"{}% random", gsl::narrow_cast<int>(value));
         hstring htext{ text };
         return htext;
     }
 
-    [[nodiscard]] inline hstring MainWindow::GetBoardWidthText(double_t value) const
+    [[nodiscard]] hstring MainWindow::GetBoardWidthText(double_t value) const
     {
         std::wstring text = std::format(L"Width {0} x Height {0}", gsl::narrow_cast<int>(value));
         hstring htext{ text };
@@ -517,7 +517,7 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    [[nodiscard]] inline HWND MainWindow::GetWindowHandle() const
+    [[nodiscard]] HWND MainWindow::GetWindowHandle() const
     {
         // get window handle, window ID
         auto windowNative{ this->try_as<::IWindowNative>() };

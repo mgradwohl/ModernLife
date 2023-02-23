@@ -35,37 +35,37 @@ public:
 
 	void Render(Microsoft::Graphics::Canvas::CanvasDrawingSession const& ds, const Board& board);
 
-	[[nodiscard]] inline float DipsPerCell() noexcept
+	[[nodiscard]] float DipsPerCell() noexcept
 	{
 		return _dipsPerCellDimension;
 	}
 
-	[[nodiscard]] inline int ThreadCount() noexcept
+	[[nodiscard]] int ThreadCount() noexcept
 	{
 		return _threadcount;
 	}
 
-	[[nodiscard]] inline float CanvasSize() noexcept
+	[[nodiscard]] float CanvasSize() noexcept
 	{
 		return _bestcanvassize;
 	}
 
-	[[nodiscard]] inline float CanvasHeight() noexcept
+	[[nodiscard]] float CanvasHeight() noexcept
 	{
 		return _bestcanvassize;
 	}
 
-	[[nodiscard]] inline float CanvasWidth() noexcept
+	[[nodiscard]] float CanvasWidth() noexcept
 	{
 		return _bestcanvassize;
 	}
 
-	[[nodiscard]] inline float BackbufferSize() noexcept		
+	[[nodiscard]] float BackbufferSize() noexcept		
 	{
 		return _bestbackbuffersize;
 	}
 
-	[[nodiscard]] inline Microsoft::Graphics::Canvas::CanvasRenderTarget& SpriteSheet() noexcept
+	[[nodiscard]] Microsoft::Graphics::Canvas::CanvasRenderTarget& SpriteSheet() noexcept
 	{
 		return _spritesheet;
 	}

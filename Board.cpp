@@ -45,6 +45,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_width = width;
 	_maxage = maxage;
 	_cells.clear();
+	ResetCounts();
 
 	if (_height * width > _cells.capacity())
 	{
@@ -73,13 +74,15 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 		case Cell::State::Dead:
 		{
 			_numDead++;
-			_numLive--;
+			if (_numLive < 0)
+			{
+				_numLive = 0;
+			}
 			break;
 		}
 		case Cell::State::Live:
 		{
 			_numLive++;
-			_numDead--;
 			break;
 		}
 		case Cell::State::Born:
@@ -103,7 +106,7 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	}
 }
 
-void Board::TurnCellOn(GridPoint g, bool on) noexcept
+void Board::TurnCellOn(GridPoint g, bool on)
 {
 	if (g.x > Width() || g.y > Height())
 	{
@@ -173,6 +176,7 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 void Board::Update(int32_t ruleset)
 {
 	std::scoped_lock lock { _lockboard };
+	ResetCounts();
 	FastUpdateBoardWithNextState(ruleset);
 	ApplyNextStateToBoard();
 }
@@ -180,27 +184,27 @@ void Board::Update(int32_t ruleset)
 void Board::ApplyNextStateToBoard() noexcept
 {
 	_generation++;
-	ResetCounts();
-	// TODO check size of board before iterating over board
-	for (Cell& cell : _cells)
+
+	for (auto& cell : _cells)
 	{
-		if (cell.GetState() == Cell::State::Born)
+		const auto state = cell.GetState();
+		if (state == Cell::State::Born)
 		{
 			SetCell(cell, Cell::State::Live);
 			cell.Age(0);
 			continue;
 		}
 
-		if (cell.GetState() == Cell::State::Dying)
+		if (state == Cell::State::Dying)
 		{
 			SetCell(cell, Cell::State::Dead);
 			continue;
 		}
 
-		SetCell(cell, cell.GetState());
 		cell.Age(cell.Age() + 1);
 	}
 }
+
 
 void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 {
@@ -212,19 +216,17 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 	std::uniform_real_distribution<> pdis(0.0, 1.0);
 	std::uniform_int_distribution<int> adis(0, maxage);
 
-	// TODO check size of board before iterating over board
+	double rp = 0.0f;
+	int ra = 0;
 	{
-		std::scoped_lock lock { _lockboard };
-		for (Cell& cell : _cells)
+		std::lock_guard<std::mutex> lock(_lockboard);
+		for (auto& cell : _cells)
 		{
-			static int ra;
-			static double rp;
-			ra = adis(gen);
 			rp = pdis(gen);
-
 			if (rp <= alivepct)
 			{
 				SetCell(cell, Cell::State::Live);
+				ra = adis(gen);
 				cell.Age(gsl::narrow_cast<uint16_t>(ra));
 			}
 			else
@@ -234,6 +236,7 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 		}
 	}
 }
+
 
 void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset)
 {
@@ -301,7 +304,7 @@ void Board::ConwayRules(Cell& cell) const noexcept
 	}
 }
 
-inline void Board::FastConwayRules(Cell& cell) const noexcept
+void Board::FastConwayRules(Cell& cell) const noexcept
 {
 	const uint16_t count = cell.Neighbors();
 
