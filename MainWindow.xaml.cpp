@@ -33,6 +33,7 @@
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
+#include "Log.h"
 #include "Renderer.h"
 #include "TimerHelper.h"
 #include "fpscounter.h"
@@ -43,8 +44,13 @@ namespace winrt::ModernLife::implementation
 {
     void MainWindow::InitializeComponent()
     {
+        Util::Log::Init();
+        ML_INFO("Log Initialized");
+        ML_METHOD;
+
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
+
 
         SetMyTitleBar();
 
@@ -59,6 +65,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnFirstRun()
     {
+        ML_METHOD;
         //initializes _dpi
         _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         const float dpi2 = canvasBoard().Dpi();
@@ -91,6 +98,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::StartGameLoop()
     {
+        ML_METHOD;
         // prep the play button
         timer.Stop();
         GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
@@ -178,6 +186,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::SetBestCanvasandWindowSizes()
     {
+        ML_METHOD;
+
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());
 
         // get the window size
@@ -279,11 +289,15 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::RandomizeBoard()
     {
+        ML_METHOD;
+
         _board.RandomizeBoard(RandomPercent() / 100.0f, MaxAge());
     }
 
     void MainWindow::OnCanvasDeviceChanged()
     {
+        ML_METHOD;
+
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         OnDPIChanged();
         SetBestCanvasandWindowSizes();
@@ -293,6 +307,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnDPIChanged()
     {
+        ML_METHOD;
+
         const auto dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         if (_dpi != dpi)
         {
@@ -304,6 +320,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnBoardResized()
     {
+        ML_METHOD;
+
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
         timer.Stop();
@@ -365,8 +383,9 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_CreateResources([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, [[maybe_unused]] Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args)
     {
-        // TODO might want to do the code in the if-block in all cases (for all args.Reason()s
+        ML_METHOD;
 
+        // TODO might want to do the code in the if-block in all cases (for all args.Reason()s
         if (args.Reason() == Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesReason::DpiChanged)
         {
             _propertyChanged(*this, PropertyChangedEventArgs{ L"DPIChanged" });

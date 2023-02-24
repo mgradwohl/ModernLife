@@ -285,6 +285,8 @@
     <ClInclude Include="Cell.h" />
     <ClInclude Include="fpscounter.h" />
     <ClInclude Include="HSVColorHelper.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="MLAssert.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -303,6 +305,7 @@
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="HSVColorHelper.cpp" />
+    <ClCompile Include="Log.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

@@ -6,6 +6,7 @@
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 
+#include "Log.h"
 #include "Board.h"
 #include "HSVColorHelper.h"
 
@@ -13,6 +14,8 @@ using namespace winrt;
 
 void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, float dpi, uint16_t maxindex)
 {
+    ML_METHOD;
+
     // these can change externally
     _canvasDevice = device;
     _dpi = dpi;
@@ -26,6 +29,8 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
 
 void Renderer::SetupRenderTargets()
 {
+    ML_METHOD;
+
     // Calculate important internal vales for the spritesheet and backbuffer slices
     _dipsPerCellDimension = gsl::narrow_cast<float>(_bestbackbuffersize / _boardwidth);
 
@@ -202,6 +207,8 @@ void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawi
 
 void Renderer::BuildSpriteSheet()
 {
+    ML_METHOD;
+
     // TODO only fill most of the cells with color. Reserve maybe the last 10% or so for gray
     // TODO gray is h=0, s=0, and v from 1 to 0
     // this will be used to iterate through the width and height of the rendertarget *without* adding a partial tile at the end of a row
@@ -297,6 +304,8 @@ void Renderer::SpriteMaxIndex(uint16_t index)
 
 void Renderer::FindBestCanvasSize(size_t windowHeight)
 {
+    ML_METHOD;
+
     // determine the right size for the canvas
     // lock these because they could change underneath a draw
     {

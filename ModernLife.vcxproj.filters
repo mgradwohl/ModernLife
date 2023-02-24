@@ -17,6 +17,7 @@
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="HSVColorHelper.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Log.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -26,6 +27,8 @@
     <ClInclude Include="TimerHelper.h" />
     <ClInclude Include="HSVColorHelper.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="MLAssert.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">

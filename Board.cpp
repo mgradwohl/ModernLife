@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <deps/gsl/include/gsl/gsl>
+#include "Log.h"
 
 // optimized to never use std::endl until the full board is done printing
 std::wostream& operator<<(std::wostream& stream, Board& board)
@@ -48,6 +49,7 @@ void Board::Update(int32_t ruleset)
 
 void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 {
+	ML_TRACE("New board size: {}x{} cell: {} size:{}", width, height, width * height, _cells.size());
 	std::scoped_lock lock { _lockboard };
 	_height = height;
 	_width = width;
