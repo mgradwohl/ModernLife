@@ -64,8 +64,10 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	{
 		__debugbreak();
 	}
-	_cells.resize(gsl::narrow_cast<size_t>(_height * _width));
-	ML_TRACE("New board size: {}x{} cell: {} size:{}", width, height, width * height, _cells.size());
+
+	size_t newsize = _width * _height;
+	_cells.resize(newsize);
+	ML_TRACE("New board size: {}x{} cellcount: {} _cells.size:{}", width, height, width * height, _cells.size());
 }
 
 void Board::PrintBoard()
@@ -149,6 +151,9 @@ void Board::TurnCellOn(GridPoint g, bool on)
 
 void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
+	// don't do this it happens for every cell every frame and will spam the Log
+	//ML_METHOD;
+
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
 	const uint16_t xoright = (x == (_width - 1)) ? -(_width - 1) : 1;

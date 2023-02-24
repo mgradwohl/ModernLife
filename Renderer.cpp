@@ -18,6 +18,7 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
 
     // these can change externally
     _canvasDevice = device;
+    ML_TRACE("Maximum Bitmap size {} pixels", _canvasDevice.MaximumBitmapSizeInPixels());
     _dpi = dpi;
     _spriteMaxIndex = maxindex;
 
@@ -62,6 +63,9 @@ void Renderer::SetupRenderTargets()
         const int remainingRows = _boardheight - (j * _rowsPerSlice);
         _backbuffers.emplace_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, gsl::narrow_cast<float>(remainingRows * _dipsPerCellDimension), _dpi });
     }
+
+    auto pixels = _backbuffers[0].ConvertDipsToPixels(_bestbackbuffersize, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
+    ML_TRACE("Backbuffer size {} pixels", pixels);
 
     BuildSpriteSheet();
 }
