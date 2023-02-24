@@ -65,9 +65,9 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 		__debugbreak();
 	}
 
-	size_t newsize = _width * _height;
+	const size_t newsize = _width * _height;
 	_cells.resize(newsize);
-	ML_TRACE("New board size: {}x{} cellcount: {} _cells.size:{}", width, height, width * height, _cells.size());
+	ML_TRACE("New board size: {}x{} cellcount: {} _cells.size:{}", _width, _height, newsize, _cells.size());
 }
 
 void Board::PrintBoard()
@@ -296,13 +296,13 @@ void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 	std::vector<std::jthread> threads;
 	for (int t = 0; t < _threadcount - 1; t++)
 	{
-		ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
+		//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
 
 		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
 		rowStart += rowsPerThread;
 
 	}
-	ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
+	//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
 	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 }
 

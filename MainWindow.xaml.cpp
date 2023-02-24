@@ -169,6 +169,8 @@ namespace winrt::ModernLife::implementation
         for (const Microsoft::UI::Input::PointerPoint& point : e.GetIntermediatePoints(canvasBoard().as<Microsoft::UI::Xaml::UIElement>()))
         {
             const GridPoint g = _renderer.GetCellAtPoint(point.Position());
+
+            //ML_TRACE("Point {},{} Cell grid {},{}", point.Position().X, point.Position().Y, g.x, g.y);
             _board.TurnCellOn(g, on);
         }
         InvalidateIfNeeded();

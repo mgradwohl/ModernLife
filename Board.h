@@ -37,12 +37,12 @@ class Board
 
     [[nodiscard]] const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        return gsl::at(_cells, gsl::narrow_cast<uint16_t>(x + (y * _width)));
+        return gsl::at(_cells, x + (y * _width));
     }
 
     [[nodiscard]] Cell& GetCell(uint16_t x, uint16_t y)
     {
-        return gsl::at(_cells, gsl::narrow_cast<uint16_t>(x + (y * _width)));
+        return gsl::at(_cells, x + (y * _width));
     }
 
     void RandomizeBoard(float alivepct, uint16_t maxage);

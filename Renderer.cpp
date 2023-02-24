@@ -64,8 +64,10 @@ void Renderer::SetupRenderTargets()
         _backbuffers.emplace_back(Microsoft::Graphics::Canvas::CanvasRenderTarget{ _canvasDevice, _bestbackbuffersize, gsl::narrow_cast<float>(remainingRows * _dipsPerCellDimension), _dpi });
     }
 
-    auto pixels = _backbuffers[0].ConvertDipsToPixels(_bestbackbuffersize, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
-    ML_TRACE("Backbuffer size {} pixels", pixels);
+    #ifdef _DEBUG
+        auto pixels = _backbuffers[0].ConvertDipsToPixels(_bestbackbuffersize, Microsoft::Graphics::Canvas::CanvasDpiRounding::Floor);
+        ML_TRACE("Backbuffer size {} pixels", pixels);
+    #endif
 
     BuildSpriteSheet();
 }
@@ -123,9 +125,7 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
     int k = 0;
     for (k = 0; k < _threadcount - 1; k++)
     {
-        ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}",
-            dest.X, dest.Y, dest.Width, dest.Height,
-            source.X, source.Y, source.Width, source.Height);
+        //ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}", dest.X, dest.Y, dest.Width, dest.Height, source.X, source.Y, source.Width, source.Height);
 
         ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
         dest.Y += canvasSliceHeight;
@@ -133,9 +133,7 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
     dest.Height = gsl::narrow_cast<float>(_bestcanvassize - (canvasSliceHeight * k));
     source.Height = gsl::narrow_cast<float>(_bestbackbuffersize - (_sliceHeight * k));
 
-    ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}",
-        dest.X, dest.Y, dest.Width, dest.Height,
-        source.X, source.Y, source.Width, source.Height);
+    //ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}", dest.X, dest.Y, dest.Width, dest.Height, source.X, source.Y, source.Width, source.Height);
 
     ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
 
@@ -171,13 +169,13 @@ void Renderer::RenderOffscreen(const Board& board)
     int t = 0;
     for (t = 0; t < _threadcount - 1; t++)
     {
-        ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, startRow + _rowsPerSlice);
+        //ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, startRow + _rowsPerSlice);
 
         threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
         startRow += _rowsPerSlice;
     }
 
-    ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, board.Height());
+    //ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, board.Height());
     threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
 }
 
