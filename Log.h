@@ -4,6 +4,10 @@
 #include <map>
 #include <utility>
 #include <source_location>
+#include <format>
+
+#define SPDLOG_USE_STD_FORMAT
+
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
@@ -90,13 +94,21 @@ namespace Util
 //#define ML_ERROR(...)   ::Util::Log::PrintMessage(::Util::Log::Level::Error, "", __VA_ARGS__)
 //#define ML_FATAL(...)   ::Util::Log::PrintMessage(::Util::Log::Level::Fatal, "", __VA_ARGS__)
 
+#ifdef _DEBUG
 #define ML_METHOD       ::Util::Log::MethodName()
 #define ML_TRACE(...)	::Util::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define ML_INFO(...)	::Util::Log::GetClientLogger()->info(__VA_ARGS__)
 #define ML_WARN(...)	::Util::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define ML_ERROR(...)	::Util::Log::GetClientLogger()->error(__VA_ARGS__)
-#define HZ_FATAL(...)	::Util::Log::GetClientLogger()->critical(__VA_ARGS__)
-
+#define ML_FATAL(...)	::Util::Log::GetClientLogger()->critical(__VA_ARGS__)
+#else
+#define ML_METHOD       
+#define ML_TRACE(...)	
+#define ML_INFO(...)	
+#define ML_WARN(...)	
+#define ML_ERROR(...)	
+#define HZ_FATAL(...)	
+#endif
 namespace Util
 {
 	//template<typename... Args>
@@ -131,7 +143,7 @@ namespace Util
 	inline void Log::MethodName(const std::source_location& location = std::source_location::current())
 	{
 		auto logger = GetClientLogger();
-		if (logger) logger->trace(location.function_name());
+		if (logger) logger->info(location.function_name());
 
 	}
 

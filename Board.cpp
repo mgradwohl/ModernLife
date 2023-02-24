@@ -33,6 +33,8 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 
 Board::Board() noexcept
 {
+	ML_METHOD;
+
 	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 	_threadcount = std::clamp(_threadcount, 2, 8);
 
@@ -49,7 +51,8 @@ void Board::Update(int32_t ruleset)
 
 void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 {
-	ML_TRACE("New board size: {}x{} cell: {} size:{}", width, height, width * height, _cells.size());
+	ML_METHOD;
+
 	std::scoped_lock lock { _lockboard };
 	_height = height;
 	_width = width;
@@ -62,6 +65,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 		__debugbreak();
 	}
 	_cells.resize(gsl::narrow_cast<size_t>(_height * _width));
+	ML_TRACE("New board size: {}x{} cell: {} size:{}", width, height, width * height, _cells.size());
 }
 
 void Board::PrintBoard()
@@ -277,6 +281,8 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t 
 
 void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 {
+	ML_METHOD;
+
 	uint16_t rowStart = 0;
 	const auto rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
 	const auto remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
@@ -285,10 +291,13 @@ void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 	std::vector<std::jthread> threads;
 	for (int t = 0; t < _threadcount - 1; t++)
 	{
+		ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
+
 		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
 		rowStart += rowsPerThread;
 
 	}
+	ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
 	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 }
 

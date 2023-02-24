@@ -16,7 +16,9 @@ namespace Util
 
 	void Log::Init()
 	{
+		#ifdef _DEBUG
 		AllocConsole();
+		#endif	
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 
 		s_ClientLogger = spdlog::stdout_color_mt("ML");

@@ -85,6 +85,7 @@ void Renderer::SetupRenderTargets()
  
 void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board)
 {
+    ML_METHOD;
     RenderOffscreen(board);
 
     if (_threadcount == 1)
@@ -118,11 +119,20 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
     int k = 0;
     for (k = 0; k < _threadcount - 1; k++)
     {
+        ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}",
+            dest.X, dest.Y, dest.Width, dest.Height,
+            source.X, source.Y, source.Width, source.Height);
+
         ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
         dest.Y += canvasSliceHeight;
     }
     dest.Height = gsl::narrow_cast<float>(_bestcanvassize - (canvasSliceHeight * k));
     source.Height = gsl::narrow_cast<float>(_bestbackbuffersize - (_sliceHeight * k));
+
+    ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}",
+        dest.X, dest.Y, dest.Width, dest.Height,
+        source.X, source.Y, source.Width, source.Height);
+
     ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
 
     ds.Flush();
@@ -132,6 +142,8 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
 // This renders the board to the backbuffers
 void Renderer::RenderOffscreen(const Board& board)
 {
+    ML_METHOD;
+
     //https://microsoft.github.io/Win2D/WinUI2/html/Offscreen.htm
 
     if (_threadcount == 1)
@@ -155,9 +167,13 @@ void Renderer::RenderOffscreen(const Board& board)
     int t = 0;
     for (t = 0; t < _threadcount - 1; t++)
     {
+        ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, startRow + _rowsPerSlice);
+
         threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
         startRow += _rowsPerSlice;
     }
+
+    ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, board.Height());
     threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
 }
 
@@ -165,10 +181,10 @@ void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawi
 {
     // only read from the board/the cells in this method
     ds.Clear(Windows::UI::Colors::WhiteSmoke());
-#ifdef _DEBUG
+#if 0// #ifdef _DEBUG
     // this makes the background of each backbuffer slice a band so you can see them
     ds.Clear(Windows::UI::ColorHelper::FromArgb(255, 255 - gsl::narrow_cast<uint8_t>(startRow), 0, gsl::narrow_cast<uint8_t>(startRow)));
-#endif // DEBUG
+#endif // _DEBUG
 
     ds.Antialiasing(Microsoft::Graphics::Canvas::CanvasAntialiasing::Antialiased);
     ds.Blend(Microsoft::Graphics::Canvas::CanvasBlend::Copy);
