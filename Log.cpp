@@ -16,7 +16,7 @@ namespace Util
 
 	void Log::Init()
 	{
-		#ifdef _DEBUG
+		#ifdef ML_LOGGING
 		AllocConsole();
 		#endif	
 		spdlog::set_pattern("%^[%T] %n: %v%$");

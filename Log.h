@@ -94,7 +94,7 @@ namespace Util
 //#define ML_ERROR(...)   ::Util::Log::PrintMessage(::Util::Log::Level::Error, "", __VA_ARGS__)
 //#define ML_FATAL(...)   ::Util::Log::PrintMessage(::Util::Log::Level::Fatal, "", __VA_ARGS__)
 
-#ifdef _DEBUG
+#ifdef ML_LOGGING
 #define ML_METHOD       ::Util::Log::MethodName()
 #define ML_TRACE(...)	::Util::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define ML_INFO(...)	::Util::Log::GetClientLogger()->info(__VA_ARGS__)

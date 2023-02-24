@@ -19,7 +19,7 @@ class Board
 {
   public:
 
-    Board() noexcept;
+    Board();
     ~Board() = default;
 
     // move/copy constuct
