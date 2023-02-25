@@ -70,6 +70,26 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	ML_TRACE("New board size: {}x{} cellcount: {} _cells.size:{}", _width, _height, newsize, _cells.size());
 }
 
+bool Board::CopyShape(Shape& shape, uint16_t startX, uint16_t startY)
+{
+	for (uint16_t y = 0; y < shape.Height(); y++)
+	{
+		for (uint16_t x = 0; x < shape.Width(); x++)
+		{
+			Cell& cell = GetCell(x + startX, y + startY);
+			if (shape.IsAlive(x, y))
+			{
+				SetCell(cell, Cell::State::Live);
+			}
+			else
+			{
+				SetCell(cell, Cell::State::Dead);
+			}
+		}
+	}
+	return true;
+}
+
 void Board::PrintBoard()
 {
 	std::wcout << (*this) << std::endl;

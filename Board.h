@@ -5,6 +5,7 @@
 
 #include <deps/gsl/include/gsl/gsl>
 
+#include "Shape.h"
 #include "Cell.h"
 
 struct GridPoint
@@ -46,6 +47,8 @@ class Board
     }
 
     void RandomizeBoard(float alivepct, uint16_t maxage);
+    bool CopyShape(Shape& shape, uint16_t startX, uint16_t startY);
+
 
     // board updating
     // Update calls UpdateRowsWithNextState and FastUpdateBoardWithNextState

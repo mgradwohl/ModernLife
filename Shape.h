@@ -25,47 +25,47 @@ public:
 	bool Load();
 	void Dump();
 
-	[[nodiscard]] size_t Width()
+	[[nodiscard]] uint16_t Width() noexcept
 	{
 		return _width;
 	}
 
-	[[nodiscard]] size_t Height()
+	[[nodiscard]] uint16_t Height() noexcept
 	{
 		return _height;
 	}
 
-	[[nodiscard]] size_t MaxDimension()
+	[[nodiscard]] uint16_t MaxDimension() noexcept
 	{
 		return _maxdim;
 	}
 
-	[[nodiscard]] std::string Name()
+	[[nodiscard]] std::string Name() noexcept
 	{
 		return _name;
 	}
 
-	[[nodiscard]] std::vector<std::string>& GetNotes()
+	[[nodiscard]] std::vector<std::string>& GetNotes() noexcept
 	{
 		return _notes;
 	}
 
-	[[nodiscard]] std::vector<Cell>& GetCells()
+	[[nodiscard]] std::vector<Cell>& GetCells() noexcept
 	{
 		return _cells;
 	}
 
-	[[nodiscard]] bool IsAlive(size_t x, size_t y)
+	[[nodiscard]] bool IsAlive(uint16_t x, uint16_t y)
 	{
-		return _cells[x + y * _width].IsAlive();
+		return gsl::at(_cells, x + y * _width).IsAlive();
 	}
 
 private:
 	void Parse();
 
-	size_t _width{ 0 };
-	size_t _height{ 0 };
-	size_t _maxdim{ 0 };
+	uint16_t _width{ 0 };
+	uint16_t _height{ 0 };
+	uint16_t _maxdim{ 0 };
 
 	std::filesystem::path _path;
 	std::ifstream _stream;

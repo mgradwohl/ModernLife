@@ -161,8 +161,9 @@ namespace winrt::ModernLife::implementation
         Shape shape(file);
         shape.Load();
 
+        const uint16_t maxsize = gsl::narrow_cast<uint16_t>(sliderBoardWidth().Maximum());
         // if it's too big, bail
-        if (shape.Width() > 500 || shape.Height() > 500)
+        if (shape.MaxDimension() > maxsize)
         {
             ML_TRACE("Board is too small for shape");
             co_return;
@@ -173,32 +174,23 @@ namespace winrt::ModernLife::implementation
         RandomPercent(0);
 
         // Resize the board to ensure the shape fits
-        int size = shape.MaxDimension() * 2;
-        size = std::clamp(size, size, 500);
-        BoardWidth(size);
+        // try to leave space around it
+        uint16_t size = shape.MaxDimension() * 2;
 
+        if (size > maxsize)
+        {
+            // if the shape + padding is too big, just max out the board size
+            size = maxsize;
+        }
+        BoardWidth(size);
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         _renderer.Size(BoardWidth(), BoardHeight());
 
         // Copy the shape to the board
-        int startX = (_board.Width() - shape.Width()) / 2;
-        int startY = (_board.Height() - shape.Height()) / 2;
+        const uint16_t startX = (_board.Width() - shape.Width()) / 2;
+        const uint16_t startY = (_board.Height() - shape.Height()) / 2;
+        _board.CopyShape(shape, startX, startY);
 
-        for (int y = 0; y < shape.Height(); y++)
-        {
-            for (int x = 0; x < shape.Width(); x++)
-            {
-                Cell& cell = _board.GetCell(x + startX, y + startY);
-                if (shape.IsAlive(x, y))
-                {
-                    _board.SetCell(cell, Cell::State::Live);
-                }
-                else
-                {
-                    _board.SetCell(cell, Cell::State::Dead);
-                }
-            }
-        }
         InvalidateIfNeeded();
         co_return;
     }

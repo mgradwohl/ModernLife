@@ -65,14 +65,17 @@ void Shape::Parse()
 {
 	ML_METHOD;
 
-	_height = _textcells.size();
+	// get the width and height of the shape
+	// since the file will not always contain full rows
+	_height = gsl::narrow_cast<uint16_t>(_textcells.size());
 	_width = 0;
 	for (const auto& row : _textcells)
 	{
 		if (row.size() > _width)
-			_width = row.size();
+			_width = gsl::narrow_cast<uint16_t>(row.size());
 	}
 
+	// set the max dimension (width or height)
 	if (_width > _height)
 	{
 		_maxdim = _width;
@@ -82,6 +85,7 @@ void Shape::Parse()
 		_maxdim = _height;
 	}
 
+	// create a vector of Cells that is the right size, initialize to all dead Cells
 	_cells.resize(_width * _height);
 
 	int x = 0;
@@ -92,7 +96,9 @@ void Shape::Parse()
 		{
 			if (cell == 'O')
 			{
-				_cells[y * _width + x].SetState(Cell::State::Live);
+				// only turn on Cells if they are alive in the file
+				// otherwise do nothing (leave them dead)
+				gsl::at(_cells, y * _width + x).SetState(Cell::State::Live);
 			}
 			x++;
 		}
