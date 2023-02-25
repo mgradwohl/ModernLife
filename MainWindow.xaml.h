@@ -87,6 +87,8 @@ namespace winrt::ModernLife::implementation
         void CanvasBoard_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RandomizeButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        fire_and_forget LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void CanvasBoard_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
         void OnRandomizeBoard();
@@ -114,8 +116,8 @@ namespace winrt::ModernLife::implementation
         uint16_t _randompercent{30};
         uint16_t _maxage{ 1000 };
         int32_t _ruleset{ 1 };
-        uint16_t _boardwidth{ 200 };
-        uint16_t _boardheight{ 200 };
+        uint16_t _boardwidth{ 300 };
+        uint16_t _boardheight{ 300 };
         PointerMode _PointerMode = PointerMode::None;
 
         winrt::event_token _propertyToken;

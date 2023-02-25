@@ -295,6 +295,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Shape.h" />
     <ClInclude Include="TimerHelper.h" />
   </ItemGroup>
   <ItemGroup>
@@ -317,6 +318,7 @@
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Shape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">

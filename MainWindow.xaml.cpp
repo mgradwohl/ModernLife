@@ -28,12 +28,16 @@
 #include <winrt/Microsoft.UI.Xaml.Input.h>
 #include <winrt/Microsoft.UI.Xaml.Media.h>
 #include "microsoft.ui.xaml.window.h"
+#include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
-
+#include <winrt/Windows.Storage.h>
+#include <winrt/Windows.Storage.Pickers.h>
+#include <Shobjidl.h>
 #include "Log.h"
+#include "Shape.h"
 #include "Renderer.h"
 #include "TimerHelper.h"
 #include "fpscounter.h"
@@ -45,8 +49,8 @@ namespace winrt::ModernLife::implementation
     void MainWindow::InitializeComponent()
     {
         Util::Log::Init();
-        ML_INFO("Log Initialized");
         ML_METHOD;
+        ML_INFO("Log Initialized");
 
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
@@ -92,7 +96,6 @@ namespace winrt::ModernLife::implementation
         _renderer.Size(BoardWidth(), BoardHeight());
         RandomizeBoard();
 
-
         InvalidateIfNeeded();
     }
 
@@ -127,7 +130,69 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void winrt::ModernLife::implementation::MainWindow::OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    fire_and_forget MainWindow::LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        ML_METHOD; 
+        timer.Stop();
+
+        RandomPercent(0);
+
+        auto lifetime = get_strong();
+
+        Windows::Storage::Pickers::FileOpenPicker openPicker;
+        auto initializeWithWindow{ openPicker.as<::IInitializeWithWindow>() };
+        initializeWithWindow->Initialize(GetWindowHandle());
+        openPicker.ViewMode(Windows::Storage::Pickers::PickerViewMode::List);
+        openPicker.SuggestedStartLocation(Windows::Storage::Pickers::PickerLocationId::Desktop);
+        openPicker.FileTypeFilter().ReplaceAll({ L".cells"});
+        Windows::Storage::StorageFile sfile = co_await openPicker.PickSingleFileAsync();
+        if (sfile == nullptr)
+        {
+            ML_TRACE("File failed to open or file picker canceled.");
+            co_return;
+        }
+
+        std::string file = winrt::to_string(sfile.Path());
+        Shape shape(file);
+        shape.Load();
+
+        if (shape.Width() > 500 || shape.Height() > 500)
+        {
+            ML_TRACE("Board is too small for shape");
+            co_return;
+        }
+
+        // Resize the board 
+        int size = shape.MaxDimension() * 2;
+        size = std::clamp(size, size, 500);
+        BoardWidth(size);
+
+        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
+        _renderer.Size(BoardWidth(), BoardHeight());
+
+        // Copy the shape to the board
+        int startX = (_board.Width() - shape.Width()) / 2;
+        int startY = (_board.Height() - shape.Height()) / 2;
+
+        for (int y = 0; y < shape.Height(); y++)
+        {
+            for (int x = 0; x < shape.Width(); x++)
+            {
+                Cell& cell = _board.GetCell(x + startX, y + startY);
+                if (shape.IsAlive(x, y))
+                {
+                    _board.SetCell(cell, Cell::State::Live);
+                }
+                else
+                {
+                    _board.SetCell(cell, Cell::State::Dead);
+                }
+            }
+        }
+        InvalidateIfNeeded();
+    }
+
+    void MainWindow::OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
     {
         if (sender != canvasBoard())
         {
@@ -176,12 +241,12 @@ namespace winrt::ModernLife::implementation
         InvalidateIfNeeded();
     }
 
-    void winrt::ModernLife::implementation::MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
+    void MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
     {
         _PointerMode = PointerMode::None;
     }
     
-    void winrt::ModernLife::implementation::MainWindow::OnPointerExited([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
+    void MainWindow::OnPointerExited([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
     {
         _PointerMode = PointerMode::None;
     }
@@ -448,19 +513,11 @@ namespace winrt::ModernLife::implementation
 
     [[nodiscard]] uint16_t MainWindow::BoardWidth() const noexcept
     {
-        //if (_boardwidth != _board.Width())
-        //{
-        //    __debugbreak;
-        //}
         return _boardwidth;
     }
 
     [[nodiscard]] uint16_t MainWindow::BoardHeight() const noexcept
     {
-        //if (_boardheight != _board.Height())
-        //{
-        //    __debugbreak;
-        //}
         return _boardheight;
     }
 
@@ -565,6 +622,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
+        ML_METHOD;
+        Util::Log::Shutdown();
         //PropertyChangedRevoker();
     }
 
