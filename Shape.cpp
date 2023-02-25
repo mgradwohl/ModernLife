@@ -33,6 +33,7 @@ bool Shape::Load()
 
 		_textcells.push_back(line);
 	}
+	_stream.close();
 
 	_name = _notes[0];
 	_notes.erase(_notes.begin());
@@ -46,6 +47,7 @@ bool Shape::Load()
 
 void Shape::Dump()
 {
+	#ifdef ML_LOGGING
 	ML_TRACE(_name);
 	for (const auto& note : _notes)
 	{
@@ -56,6 +58,7 @@ void Shape::Dump()
 	{
 		ML_TRACE(cell);
 	}
+	#endif
 }
 
 void Shape::Parse()
