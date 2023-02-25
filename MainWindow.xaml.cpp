@@ -130,39 +130,49 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    fire_and_forget MainWindow::LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    Windows::Foundation::IAsyncOperation<winrt::hstring> MainWindow::PickShapeFileAsync()
     {
-        ML_METHOD; 
-        timer.Stop();
-
-        RandomPercent(0);
-
-        auto lifetime = get_strong();
+        ML_METHOD;
 
         Windows::Storage::Pickers::FileOpenPicker openPicker;
         auto initializeWithWindow{ openPicker.as<::IInitializeWithWindow>() };
         initializeWithWindow->Initialize(GetWindowHandle());
         openPicker.ViewMode(Windows::Storage::Pickers::PickerViewMode::List);
         openPicker.SuggestedStartLocation(Windows::Storage::Pickers::PickerLocationId::Desktop);
-        openPicker.FileTypeFilter().ReplaceAll({ L".cells"});
+        openPicker.FileTypeFilter().ReplaceAll({ L".cells" });
         Windows::Storage::StorageFile sfile = co_await openPicker.PickSingleFileAsync();
         if (sfile == nullptr)
         {
             ML_TRACE("File failed to open or file picker canceled.");
-            co_return;
+            co_return winrt::hstring(L"");
         }
+        co_return sfile.Path();
+    }
 
-        std::string file = winrt::to_string(sfile.Path());
+    winrt::fire_and_forget MainWindow::LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        ML_METHOD; 
+
+        // keep the current board playing in the background while the user picks a file
+        auto filepicker = co_await PickShapeFileAsync();
+        std::string file = winrt::to_string(filepicker);
+
+        // load the shape
         Shape shape(file);
         shape.Load();
 
+        // if it's too big, bail
         if (shape.Width() > 500 || shape.Height() > 500)
         {
             ML_TRACE("Board is too small for shape");
             co_return;
         }
 
-        // Resize the board 
+        // stop the board and clear it
+        timer.Stop();
+        RandomPercent(0);
+
+        // Resize the board to ensure the shape fits
         int size = shape.MaxDimension() * 2;
         size = std::clamp(size, size, 500);
         BoardWidth(size);
@@ -190,6 +200,7 @@ namespace winrt::ModernLife::implementation
             }
         }
         InvalidateIfNeeded();
+        co_return;
     }
 
     void MainWindow::OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
