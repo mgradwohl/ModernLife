@@ -533,8 +533,6 @@ namespace winrt::ModernLife::implementation
     void MainWindow::CanvasBoard_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
         _renderer.Size(BoardWidth(), BoardHeight());
-        // might need to BuildSpriteSheet here
-        // TODO test
     }
 
     [[nodiscard]] hstring MainWindow::GetRandomPercentText(double_t value) const
@@ -623,6 +621,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept
     {
-        // TODO lots to do here
+        // TODO lots to do here if we let the user resize the window and that resizes the canvas
+        // right now the canvas size is fixed
     }
 }

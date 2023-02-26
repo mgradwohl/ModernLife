@@ -42,7 +42,7 @@
                     <TextBlock Text="MODERN LIFE" x:Name="PaneHeader" HorizontalAlignment="Center" Margin="0,12,0,12" Style="{StaticResource BaseTextBlockStyle}"/>
                     <AppBarButton HorizontalAlignment="Center" Icon="Pause" x:Name="GoButton"  Label="Pause" Click="GoButton_Click" />
                     <AppBarButton HorizontalAlignment="Center" Icon="Shuffle" x:Name="RandomizeButton"  Label="Reshuffle" Click="RandomizeButton_Click" />
-                    <AppBarButton HorizontalAlignment="Center" Icon="Edit" x:Name="LoadShape"  Label="Load Shape" Click="LoadShape_Click" />
+                    <AppBarButton HorizontalAlignment="Center" Icon="ViewAll" x:Name="LoadShape"  Label="Load Shape" Click="LoadShape_Click" />
 
                     <TextBlock Text="RULESET" Margin="0,24,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
                     <DropDownButton HorizontalAlignment="Center" x:Name="dropdownRules" Content="Conway's" >
