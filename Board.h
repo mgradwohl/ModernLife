@@ -50,6 +50,8 @@ class Board
     bool CopyShape(Shape& shape, uint16_t startX, uint16_t startY);
 
 
+    void Reserve(size_t max);
+
     // board updating
     // Update calls UpdateRowsWithNextState and FastUpdateBoardWithNextState
     // if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die

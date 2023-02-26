@@ -37,14 +37,19 @@ Board::Board()
 
 	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 	_threadcount = std::clamp(_threadcount, 2, 8);
+}
 
-	_cells.reserve(250000);
+void Board::Reserve(size_t max)
+{
+	ML_METHOD;
+
+	std::scoped_lock lock { _lockboard };
+	_cells.reserve(max);
 }
 
 void Board::Update(int32_t ruleset)
 {
 	std::scoped_lock lock { _lockboard };
-	//ResetCounts();
 	FastUpdateBoardWithNextState(ruleset);
 	ApplyNextStateToBoard();
 }

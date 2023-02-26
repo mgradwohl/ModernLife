@@ -55,21 +55,18 @@ namespace winrt::ModernLife::implementation
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
 
-
-        SetMyTitleBar();
-
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
+        SetMyTitleBar();
         timer.Tick({ this, &MainWindow::OnTick });
-
         OnFirstRun();
-
         StartGameLoop();
     }
 
     void MainWindow::OnFirstRun()
     {
         ML_METHOD;
+
         //initializes _dpi
         _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         const float dpi2 = canvasBoard().Dpi();
@@ -84,28 +81,38 @@ namespace winrt::ModernLife::implementation
             __debugbreak();
 		}
 
-        // initializes _canvasDevice
+        // initializes _canvasDevice and renderer
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         _renderer.Attach(_canvasDevice, _dpi, MaxAge());
 
         // initializes _canvasSize and _windowSize
         SetBestCanvasandWindowSizes();
 
-        // initialize the board
-        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
-        _renderer.Size(BoardWidth(), BoardHeight());
-        RandomizeBoard();
+        // initialize the board & renderer
+        _board.Reserve(gsl::narrow_cast<size_t>(sliderBoardWidth().Maximum() * sliderBoardWidth().Maximum()));
+        OnBoardResized();
+    }
 
-        InvalidateIfNeeded();
+    void MainWindow::Pause()
+    {
+        timer.Stop();
+        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
+        GoButton().Label(L"Play");
+    }
+
+    void MainWindow::Play()
+    {
+        timer.Start();
+        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
+        GoButton().Label(L"Pause");
     }
 
     void MainWindow::StartGameLoop()
     {
         ML_METHOD;
+
         // prep the play button
-        timer.Stop();
-        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
-        GoButton().Label(L"Play");
+        Pause();
 
         // start the FPSCounter
         fps.Start();
@@ -168,9 +175,7 @@ namespace winrt::ModernLife::implementation
             ML_TRACE("Board is too small for shape");
             co_return;
         }
-
-        // stop the board and clear it
-        timer.Stop();
+        Pause();
         RandomPercent(0);
 
         // Resize the board to ensure the shape fits
@@ -183,8 +188,6 @@ namespace winrt::ModernLife::implementation
             size = maxsize;
         }
         BoardWidth(size);
-        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
-        _renderer.Size(BoardWidth(), BoardHeight());
 
         // Copy the shape to the board
         const uint16_t startX = (_board.Width() - shape.Width()) / 2;
@@ -224,15 +227,7 @@ namespace winrt::ModernLife::implementation
 			return;
 		}
 
-        bool on = false;
-        if (_PointerMode == PointerMode::Left)
-        {
-            on = true;
-		}
-        else if (_PointerMode == PointerMode::Right)
-        {
-            on = false;
-        }
+        bool on = (_PointerMode == PointerMode::Left);
 
         for (const Microsoft::UI::Input::PointerPoint& point : e.GetIntermediatePoints(canvasBoard().as<Microsoft::UI::Xaml::UIElement>()))
         {
@@ -336,16 +331,11 @@ namespace winrt::ModernLife::implementation
     {
         if (timer.IsRunning())
         {
-            timer.Stop();
-            GoButton().Label(L"Play");
-            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
-
+            Pause();
         }
         else
         {
-            timer.Start();
-            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
-            GoButton().Label(L"Pause");
+            Play();
         }
     }
 
@@ -394,7 +384,8 @@ namespace winrt::ModernLife::implementation
 
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
-        timer.Stop();
+        Pause();
+
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         _renderer.Size(BoardWidth(), BoardHeight());
 

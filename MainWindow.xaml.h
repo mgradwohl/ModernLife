@@ -53,6 +53,9 @@ namespace winrt::ModernLife::implementation
         // drawing stats
         void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
 
+        void Pause();
+        void Play();
+
         // property change handlers
         void OnPropertyChanged(IInspectable const& sender, PropertyChangedEventArgs const& args);
         winrt::event_token PropertyChanged(Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& value)
