@@ -2,6 +2,7 @@
 #include "HSVColorHelper.h"
 
 #include <winrt/Windows.UI.h>
+#include <winrt/Microsoft.UI.h>
 #include <deps/gsl/include/gsl/gsl>
 
 // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB
@@ -70,6 +71,6 @@
     const uint8_t g{ gsl::narrow_cast<uint8_t>(dg * 255) };
     const uint8_t b{ gsl::narrow_cast<uint8_t>(db * 255) };
 
-    return winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+    return winrt::Microsoft::UI::ColorHelper::FromArgb(255, r, g, b);
 }
 

@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <iostream>
 
-
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace Util

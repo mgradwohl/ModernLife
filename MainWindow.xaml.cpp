@@ -11,7 +11,7 @@
 #undef GetCurrentTime
 
 #include <string>
-
+#include <sstream>
 #include <algorithm>
 #include <WinUser.h>
 
@@ -28,7 +28,6 @@
 #include <winrt/Microsoft.UI.Xaml.Input.h>
 #include <winrt/Microsoft.UI.Xaml.Media.h>
 #include "microsoft.ui.xaml.window.h"
-#include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
@@ -36,6 +35,7 @@
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Pickers.h>
 #include <Shobjidl.h>
+
 #include "Log.h"
 #include "Shape.h"
 #include "Renderer.h"
@@ -156,6 +156,21 @@ namespace winrt::ModernLife::implementation
         co_return sfile.Path();
     }
 
+    fire_and_forget MainWindow::ShowMessageBox(const hstring& title, const hstring& message)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::ContentDialog dialog;
+
+        // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+        dialog.XamlRoot(this->Content().XamlRoot());
+        dialog.Style( Microsoft::UI::Xaml::Application::Current().Resources().TryLookup(winrt::box_value(L"DefaultContentDialogStyle")).as<Microsoft::UI::Xaml::Style>() );
+        dialog.Title(winrt::box_value(title));
+        dialog.Content(winrt::box_value(message));
+        dialog.PrimaryButtonText(L"OK");
+        dialog.DefaultButton(winrt::Microsoft::UI::Xaml::Controls::ContentDialogButton::Primary);
+
+        auto result = co_await dialog.ShowAsync();
+    }
+
     winrt::fire_and_forget MainWindow::LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
         ML_METHOD; 
@@ -173,6 +188,14 @@ namespace winrt::ModernLife::implementation
         if (shape.MaxDimension() > maxsize)
         {
             ML_TRACE("Board is too small for shape");
+            hstring title = L"Shape too big";
+
+            std::ostringstream wss;
+            wss << shape.Name() << " is too big for ModernLife.\r\n\r\nWidth: " << shape.Width() << " Height: " << shape.Height() << std::endl;
+            hstring wmsg = winrt::to_hstring(wss.str());
+            //std::string msg = std::format("{0} is too big for ModernLife.\r\n\r\n{},{}", shape.Name(), shape.Width(), shape.Height());
+            //hstring hmsg = winrt::to_hstring(msg);
+            ShowMessageBox(title, wmsg);
             co_return;
         }
         Pause();
@@ -593,6 +616,7 @@ namespace winrt::ModernLife::implementation
         auto windowNative{ this->try_as<::IWindowNative>() };
         HWND hWnd{ nullptr };
         winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+                
         return hWnd;
     }
 

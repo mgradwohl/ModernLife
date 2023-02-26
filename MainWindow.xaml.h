@@ -91,6 +91,7 @@ namespace winrt::ModernLife::implementation
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RandomizeButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         Windows::Foundation::IAsyncOperation<winrt::hstring> PickShapeFileAsync();
+        fire_and_forget ShowMessageBox(const winrt::hstring& title, const winrt::hstring& message);
         winrt::fire_and_forget LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
