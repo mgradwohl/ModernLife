@@ -11,6 +11,18 @@ class TimerHelper
 public:
     // construct
     TimerHelper() = default;
+
+    TimerHelper(int fps, bool repeating)
+    {
+        //std::scoped_lock lock { _locktimer };
+        _controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
+        _queue = _controller.DispatcherQueue();
+        _timer = _queue.CreateTimer();
+        _timer.Stop();
+        _timer.IsRepeating(repeating);
+        FPS(fps);
+    }
+
     TimerHelper(TimerHelper&) = delete;
     TimerHelper(TimerHelper&&) = delete;
 
@@ -29,57 +41,49 @@ public:
     const void Revoke()
     {
 		ML_METHOD;
+        std::scoped_lock lock { _locktimer };
         if (!_needsRevoke)
         {
             return;
         }
-        Stop();
+        _timer.Stop();
 		_timer.Tick(_eventtoken);
         _needsRevoke = false;
 	}
 
-    TimerHelper(int fps, bool repeating)
-    {
-        if (_eventtoken)
-        {
-            _timer.Tick(_eventtoken);
-        }
-        
-        _controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
-        _queue = _controller.DispatcherQueue();
-        _timer = _queue.CreateTimer();
-        _timer.Stop();
-        Repeating(repeating);
-        FPS(fps);
-    }
-    
     void Tick(winrt::Windows::Foundation::TypedEventHandler<winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer, winrt::Windows::Foundation::IInspectable> const& handler)
     {
+        std::scoped_lock lock { _locktimer };
         _eventtoken = _timer.Tick(handler);
     }
 
     void Stop()
     {
+        std::scoped_lock lock { _locktimer };
         _timer.Stop();
     }
 
     void Start()
     {
+        std::scoped_lock lock { _locktimer };
         _timer.Start();
     }
 
-    [[nodiscard]] bool IsRunning() const
+    [[nodiscard]] bool IsRunning()
     {
+        std::scoped_lock lock { _locktimer };
         return _timer.IsRunning();
     }
 
     void Repeating(bool repeating)
     {
+        std::scoped_lock lock { _locktimer };
         _timer.IsRepeating(repeating);
     }
 
-    [[nodiscard]] bool Repeating() const
+    [[nodiscard]] bool Repeating()
     {
+        std::scoped_lock lock { _locktimer };
         return _timer.IsRepeating();
     }
 
@@ -90,6 +94,7 @@ public:
     
     [[nodiscard]] void FPS(int fps)
     {
+        std::scoped_lock lock { _locktimer };
         using namespace  std::literals::chrono_literals;
         if (fps > 0 && fps <= 240)
         {
@@ -99,6 +104,8 @@ public:
     }
 
 private:
+    std::mutex _locktimer;
+
     winrt::Microsoft::UI::Dispatching::DispatcherQueueController _controller{ nullptr };
     winrt::Microsoft::UI::Dispatching::DispatcherQueue _queue{ nullptr };
     winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer _timer{ nullptr };
