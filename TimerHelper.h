@@ -3,6 +3,8 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 
+#include "Log.h"
+
 // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
 class TimerHelper
 {
@@ -19,8 +21,22 @@ public:
     // destruct
     ~TimerHelper()
     {
-        _timer.Tick(_eventtoken);
+        ML_METHOD;
+
+        Revoke();
     }
+
+    const void Revoke()
+    {
+		ML_METHOD;
+        if (!_needsRevoke)
+        {
+            return;
+        }
+        Stop();
+		_timer.Tick(_eventtoken);
+        _needsRevoke = false;
+	}
 
     TimerHelper(int fps, bool repeating)
     {
@@ -88,4 +104,5 @@ private:
     winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer _timer{ nullptr };
     winrt::event_token _eventtoken{ 0 };
 	int _fps{ 30 };
+    bool _needsRevoke = true;
 };
