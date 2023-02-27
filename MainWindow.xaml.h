@@ -78,6 +78,7 @@ namespace winrt::ModernLife::implementation
         void MaxAge(uint16_t value);
         bool ShowLegend() const noexcept;
         void ShowLegend(bool value);
+        winrt::hstring StatusMain() const;
         winrt::hstring LiveCount() const;
         winrt::hstring GenerationCount() const;
         winrt::hstring FPSAverage() const;
@@ -100,6 +101,7 @@ namespace winrt::ModernLife::implementation
         winrt::fire_and_forget ShowMessageBox(const winrt::hstring& title, const winrt::hstring& message);
         winrt::fire_and_forget LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
+        void SetStatus(const std::string& message);
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void CanvasBoard_CreateResources(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, winrt::Microsoft::Graphics::Canvas::UI::CanvasCreateResourcesEventArgs const& args);
         void OnRandomizeBoard();
@@ -133,6 +135,7 @@ namespace winrt::ModernLife::implementation
 
         winrt::event_token _propertyToken;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> _propertyChanged;
+        std::string _statusMain{ "Ready" };
     };
 }
 

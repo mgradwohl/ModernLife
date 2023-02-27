@@ -163,7 +163,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Grid.Column="0">
                 <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE73E;"/>
-                <TextBlock Margin="6,0,6,0" x:Name="StatusPane_Message" Text="Ready." VerticalAlignment="Center" HorizontalAlignment="Left" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"></TextBlock>
+                <TextBlock Margin="6,0,6,0" x:Name="StatusPane_Message" Text="{x:Bind StatusMain, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Left" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"></TextBlock>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
                 <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEC92;"/>

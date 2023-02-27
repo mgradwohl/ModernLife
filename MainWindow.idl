@@ -11,6 +11,7 @@ namespace ModernLife
         UInt16 BoardWidth;
         UInt16 MaxAge;
         Boolean ShowLegend;
+        String StatusMain{ get; };
         String FPSAverage{ get; };
         String GenerationCount { get; };
         String LiveCount{ get; };

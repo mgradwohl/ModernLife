@@ -95,6 +95,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::Pause()
     {
+        SetStatus("Paused. Press Play to start. Left mouse button to draw. Right right mouse button to erase.");
         timer.Stop();
         GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
         GoButton().Label(L"Play");
@@ -102,6 +103,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::Play()
     {
+        SetStatus("Running... Left mouse button to draw. Right right mouse button to erase.");
         timer.Start();
         GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
         GoButton().Label(L"Pause");
@@ -198,9 +200,9 @@ namespace winrt::ModernLife::implementation
 
             std::ostringstream wss;
             wss << shape.Name() << " is too big for ModernLife.\r\n\r\nWidth: " << shape.Width() << " Height: " << shape.Height() << std::endl;
+            SetStatus(wss.str());
+
             hstring wmsg = winrt::to_hstring(wss.str());
-            //std::string msg = std::format("{0} is too big for ModernLife.\r\n\r\n{},{}", shape.Name(), shape.Width(), shape.Height());
-            //hstring hmsg = winrt::to_hstring(msg);
             ShowMessageBox(title, wmsg);
             co_return;
         }
@@ -222,6 +224,7 @@ namespace winrt::ModernLife::implementation
         const uint16_t startX = (_board.Width() - shape.Width()) / 2;
         const uint16_t startY = (_board.Height() - shape.Height()) / 2;
         _board.CopyShape(shape, startX, startY);
+        SetStatus("Loaded " + shape.Name());
 
         InvalidateIfNeeded();
         co_return;
@@ -246,7 +249,6 @@ namespace winrt::ModernLife::implementation
         {
 			_PointerMode = PointerMode::None;
 		}
-
     }
 
     void MainWindow::OnPointerMoved([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
@@ -263,6 +265,8 @@ namespace winrt::ModernLife::implementation
             const GridPoint g = _renderer.GetCellAtPoint(point.Position());
 
             //ML_TRACE("Point {},{} Cell grid {},{}", point.Position().X, point.Position().Y, g.x, g.y);
+            //SetStatus("Drawing. Left mouse button to draw. Right right mouse button to erase.");
+
             _board.TurnCellOn(g, on);
         }
         InvalidateIfNeeded();
@@ -270,11 +274,13 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
     {
+        //SetStatus("Drawing mode completed.");
         _PointerMode = PointerMode::None;
     }
     
     void MainWindow::OnPointerExited([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
     {
+        //SetStatus("Drawing mode completed.");
         _PointerMode = PointerMode::None;
     }
 
@@ -325,6 +331,12 @@ namespace winrt::ModernLife::implementation
         PumpProperties();
     }
 
+    void MainWindow::SetStatus(const std::string& message)
+    {
+        _statusMain = message;
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"StatusMain" });
+    }
+
     //void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     //{
     //    // ok to do this in function local scope
@@ -372,6 +384,8 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnRandomizeBoard()
     {
+        SetStatus("Board reset");
+
         RandomizeBoard();
         InvalidateIfNeeded();
 
@@ -388,6 +402,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnCanvasDeviceChanged()
     {
         ML_METHOD;
+        SetStatus("Canvas device changed");
 
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         OnDPIChanged();
@@ -399,6 +414,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnDPIChanged()
     {
         ML_METHOD;
+        SetStatus("DPI changed");
 
         const auto dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         if (_dpi != dpi)
@@ -412,7 +428,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnBoardResized()
     {
         ML_METHOD;
-
+        SetStatus("Board resized");
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
         Pause();
@@ -469,6 +485,7 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"FirstTime")
         {
+            //SetStatus("First run event.");
             //OnFirstRun();
         }
     }
@@ -522,6 +539,11 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    [[nodiscard]] hstring MainWindow::StatusMain() const
+    {
+        return winrt::to_hstring(_statusMain);
+    }
+
     [[nodiscard]] hstring MainWindow::LiveCount() const
     {
         return winrt::to_hstring(_board.GetLiveCount());
@@ -534,7 +556,7 @@ namespace winrt::ModernLife::implementation
 
     [[nodiscard]] hstring MainWindow::FPSAverage() const
     {
-        auto f = fps.FPS();
+        std::string f = std::format("{:.2f}", fps.FPS());
         return winrt::to_hstring(f);
     }
 
