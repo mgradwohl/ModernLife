@@ -11,6 +11,9 @@ namespace ModernLife
         UInt16 BoardWidth;
         UInt16 MaxAge;
         Boolean ShowLegend;
+        String FPSAverage{ get; };
+        String GenerationCount { get; };
+        String LiveCount{ get; };
         String GetRandomPercentText(Double value);
         String GetBoardWidthText(Double value);
         Microsoft.UI.Xaml.Controls.Slider sliderRandomPercent{get;};

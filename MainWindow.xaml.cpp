@@ -103,7 +103,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::Play()
     {
         timer.Start();
-        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
+        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
         GoButton().Label(L"Pause");
     }
 
@@ -125,7 +125,13 @@ namespace winrt::ModernLife::implementation
     {
         _board.Update(_ruleset);
         canvasBoard().Invalidate();
-        canvasStats().Invalidate();
+    }
+
+    void MainWindow::PumpProperties()
+    {
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"FPSAverage" });
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"GenerationCount" });
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"LiveCount" });
     }
 
     void MainWindow::InvalidateIfNeeded()
@@ -133,8 +139,8 @@ namespace winrt::ModernLife::implementation
         if (!timer.IsRunning())
         {
             canvasBoard().Invalidate();
-            canvasStats().Invalidate();
         }
+        PumpProperties();
     }
 
     Windows::Foundation::IAsyncOperation<winrt::hstring> MainWindow::PickShapeFileAsync()
@@ -315,39 +321,40 @@ namespace winrt::ModernLife::implementation
             _renderer.Render(args.DrawingSession(), _board);
         }
         fps.AddFrame();
+        PumpProperties();
     }
 
-    void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
-    {
-        // ok to do this in function local scope
-        using namespace Microsoft::UI::Xaml::Controls;
-        using namespace Microsoft::UI::Xaml::Media;
+    //void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    //{
+    //    // ok to do this in function local scope
+    //    using namespace Microsoft::UI::Xaml::Controls;
+    //    using namespace Microsoft::UI::Xaml::Media;
 
-        // copy colors, font details etc from other controls to make this canvas visually consistent with the rest of the app
-        Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
-        canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
-        canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
+    //    // copy colors, font details etc from other controls to make this canvas visually consistent with the rest of the app
+    //    Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
+    //    canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
+    //    canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
 
-        const Windows::UI::Color colorBack{ splitView().PaneBackground().as<SolidColorBrush>().Color() };
-        const Windows::UI::Color colorText{ PaneHeader().Foreground().as<SolidColorBrush>().Color() };
+    //    const Windows::UI::Color colorBack{ splitView().PaneBackground().as<SolidColorBrush>().Color() };
+    //    const Windows::UI::Color colorText{ PaneHeader().Foreground().as<SolidColorBrush>().Color() };
 
-        args.DrawingSession().Clear(colorBack);
+    //    args.DrawingSession().Clear(colorBack);
 
-        // create the strings to draw
-        std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}",
-            timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.Size(),
-            _dpi, _renderer.CanvasSize(), _renderer.BackbufferSize(), _renderer.DipsPerCell(), _renderer.ThreadCount());
+    //    // create the strings to draw
+    //    std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
+    //    std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}",
+    //        timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.Size(),
+    //        _dpi, _renderer.CanvasSize(), _renderer.BackbufferSize(), _renderer.DipsPerCell(), _renderer.ThreadCount());
 
-        // draw the text left aligned
-        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
-        args.DrawingSession().DrawText(strTitle, 0, 0, 160, 100, colorText, canvasFmt);
+    //    // draw the text left aligned
+    //    canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
+    //    args.DrawingSession().DrawText(strTitle, 0, 0, 160, 100, colorText, canvasFmt);
 
-        // draw the values right aligned
-        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
-        args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
-        args.DrawingSession().Flush();
-    }
+    //    // draw the values right aligned
+    //    canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
+    //    args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
+    //    //args.DrawingSession().Flush();
+    //}
 
     // property & event handlers
     void MainWindow::GoButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
@@ -512,6 +519,22 @@ namespace winrt::ModernLife::implementation
             _drawLegend = value;
             _propertyChanged(*this, PropertyChangedEventArgs{ L"ShowLegend" });
         }
+    }
+
+    [[nodiscard]] hstring MainWindow::LiveCount() const
+    {
+        return winrt::to_hstring(_board.GetLiveCount());
+    }
+
+    [[nodiscard]] hstring MainWindow::GenerationCount() const
+    {
+        return winrt::to_hstring(_board.Generation());
+    }
+
+    [[nodiscard]] hstring MainWindow::FPSAverage() const
+    {
+        auto f = fps.FPS();
+        return winrt::to_hstring(f);
     }
 
     [[nodiscard]] uint16_t MainWindow::RandomPercent() const noexcept

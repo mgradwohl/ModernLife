@@ -64,6 +64,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_maxage = maxage;
 	_cells.clear();
 	ResetCounts();
+	_generation = 0;
 
 	if (gsl::narrow_cast<size_t>(_height * width) > _cells.capacity())
 	{
@@ -118,21 +119,21 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 		case Cell::State::Dead:
 		{
 			_numLive--;
-			_numDead++;
-			if (_numLive < 0)
+			if (_numLive == MAXUINT32)
 			{
 				_numLive = 0;
 			}
+			_numDead++;
 			break;
 		}
 		case Cell::State::Live:
 		{
 			_numLive++;
 			_numDead--;
-			if (_numDead < 0)
-			{
-				_numDead = 0;
-			}
+			//if (_numDead < 0)
+			//{
+			//	_numDead = 0;
+			//}
 			break;
 		}
 		case Cell::State::Born:

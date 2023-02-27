@@ -122,6 +122,16 @@ class Board
 
     void ResetCounts() noexcept
     {
+        //uint32_t _generation{ 0 };
+        //uint32_t _numDead{ 0 };
+        //uint32_t _numLive{ 0 };
+        //uint32_t _numBorn{ 0 };
+        //uint32_t _numOld{ 0 };
+        //uint32_t _numDying{ 0 };
+        //uint32_t _OldAge{ 0xFFFFFFFF };
+        //uint16_t _maxage{ 100 };
+
+        //_generation = 0;
         _numDead = 0;
         _numLive = 0;
         _numBorn = 0;
@@ -155,8 +165,8 @@ class Board
 
     uint16_t _width{0};
     uint16_t _height{0};
-    uint32_t _generation{0};
 
+    uint32_t _generation{0};
     uint32_t _numDead{0};
     uint32_t _numLive{0};
     uint32_t _numBorn{0};

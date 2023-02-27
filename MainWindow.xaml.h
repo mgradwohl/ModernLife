@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
@@ -50,6 +51,8 @@ namespace winrt::ModernLife::implementation
         void StartGameLoop();
         void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
 
+        void PumpProperties();
+
         // drawing stats
         void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
 
@@ -75,11 +78,14 @@ namespace winrt::ModernLife::implementation
         void MaxAge(uint16_t value);
         bool ShowLegend() const noexcept;
         void ShowLegend(bool value);
+        winrt::hstring LiveCount() const;
+        winrt::hstring GenerationCount() const;
+        winrt::hstring FPSAverage() const;
         void BoardWidth(uint16_t value);
         uint16_t BoardWidth() const noexcept;
         uint16_t BoardHeight() const noexcept;
-        hstring GetRandomPercentText(double_t value) const;
-        hstring GetBoardWidthText(double_t value) const;
+        winrt::hstring GetRandomPercentText(double_t value) const;
+        winrt::hstring GetBoardWidthText(double_t value) const;
 
         // event handlers
         void OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
@@ -90,8 +96,8 @@ namespace winrt::ModernLife::implementation
         void CanvasBoard_SizeChanged(IInspectable const& sender, winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e);
         void GoButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void RandomizeButton_Click(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
-        Windows::Foundation::IAsyncOperation<winrt::hstring> PickShapeFileAsync();
-        fire_and_forget ShowMessageBox(const winrt::hstring& title, const winrt::hstring& message);
+        winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> PickShapeFileAsync();
+        winrt::fire_and_forget ShowMessageBox(const winrt::hstring& title, const winrt::hstring& message);
         winrt::fire_and_forget LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
         void ruleClick(IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
