@@ -196,7 +196,7 @@ void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	GetCell(x,y).Neighbors(count);
 }
 
-uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
+const uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -228,26 +228,28 @@ void Board::ApplyNextState() noexcept
 	for (auto& cell : _cells)
 	{
 		const auto state = cell.GetState();
-		if (state == Cell::State::Born || state == Cell::State::Live)
+		if (state == Cell::State::Live)
+		{
+			SetCell(cell, Cell::State::Live);
+		}
+		else if (state == Cell::State::Dying || state == Cell::State::Dead)
+		{
+			SetCell(cell, Cell::State::Dead);
+		}
+		else if (state == Cell::State::Born)
 		{
 			SetCell(cell, Cell::State::Live);
 			cell.Age(0);
-			continue;
 		}
 
-		if (state == Cell::State::Dying || state == Cell::State::Live)
-		{
-			SetCell(cell, Cell::State::Dead);
-			continue;
-		}
-
-		cell.Age(cell.Age() + 1);
+		cell.GetOlder();
 	}
 }
 
 void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 {
 	ResetCounts();
+	_generation = 0;
 	_maxage = maxage;
 
 	std::random_device rd;

@@ -25,27 +25,32 @@ public:
     Cell& operator=(Cell&& b) = delete;
     Cell& operator=(Cell& b) = delete;
 
-    [[nodiscard]] uint8_t Neighbors() const noexcept
+    [[nodiscard]] const uint8_t Neighbors() const noexcept
     {
         return _neighbors;
     }
 
-    void Neighbors(uint8_t n) noexcept
+    void const Neighbors(uint8_t n) noexcept
     {
         _neighbors = n;
     }
 
-    void Age(uint16_t age) noexcept
+    void const Age(uint16_t age) noexcept
     {
         _age = age;
     }
 
-    [[nodiscard]] uint16_t Age() const noexcept
+    [[nodiscard]] const void GetOlder() noexcept
+    {
+        _age++;
+    }
+
+    [[nodiscard]] const uint16_t Age() const noexcept
     {
         return _age;
     }
 
-    [[nodiscard]] State GetState() const noexcept
+    [[nodiscard]] const State GetState() const noexcept
     {
         return _state;
     }
@@ -65,7 +70,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool ShouldDraw() const noexcept
+    [[nodiscard]] const bool ShouldDraw() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::BrianDying)
         {
@@ -74,7 +79,7 @@ public:
         return false;
     }
     
-    [[nodiscard]] bool IsAlive() const noexcept
+    [[nodiscard]] const bool IsAlive() const noexcept
     {
         if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
         {
@@ -83,7 +88,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] bool IsAliveNotDying() const noexcept
+    [[nodiscard]] const bool IsAliveNotDying() const noexcept
     {
         if (_state == Cell::State::Live)
         {
@@ -92,7 +97,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] bool IsDying() const noexcept
+    [[nodiscard]] const bool IsDying() const noexcept
     {
         if (_state == Cell::State::Dying)
         {
@@ -101,7 +106,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] bool IsDead() const noexcept
+    [[nodiscard]] const bool IsDead() const noexcept
     {
         if (_state == Cell::State::Dead || _state == Cell::State::Born)
         {
