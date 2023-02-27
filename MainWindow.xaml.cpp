@@ -685,7 +685,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
         ML_METHOD;
-        timer.Stop();
+        timer.Revoke();
         Util::Log::Shutdown();
         //PropertyChangedRevoker();
     }
