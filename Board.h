@@ -5,6 +5,7 @@
 
 #include <deps/gsl/include/gsl/gsl>
 
+#include "Shape.h"
 #include "Cell.h"
 
 struct GridPoint
@@ -19,7 +20,7 @@ class Board
 {
   public:
 
-    Board();
+    Board() noexcept;
     ~Board() = default;
 
     // move/copy constuct
@@ -29,11 +30,6 @@ class Board
     // no need to assign one board to another board
     Board& operator=(Board&& b) = delete;
     Board& operator=(Board& b) = delete;
-
-    void Resize(uint16_t width, uint16_t height, uint16_t maxage);
-
-    void SetCell(Cell& cell, Cell::State state) noexcept;
-    void TurnCellOn(GridPoint g, bool on);
 
     [[nodiscard]] const Cell& GetCell(uint16_t x, uint16_t y) const
     {
@@ -45,28 +41,12 @@ class Board
         return gsl::at(_cells, x + (y * _width));
     }
 
+    void Reserve(size_t max);
+    void Resize(uint16_t width, uint16_t height, uint16_t maxage);
     void RandomizeBoard(float alivepct, uint16_t maxage);
-
-    // board updating
-    // Update calls UpdateRowsWithNextState and FastUpdateBoardWithNextState
-    // if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die
-    // in the next generation many of these are split up to support multithreading
+    void TurnCellOn(GridPoint g, bool on);
     void Update(int32_t ruleset);
-    void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
-    void FastUpdateBoardWithNextState(int32_t ruleset);
-    void CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
-    [[nodiscard]] uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
-    void ApplyNextStateToBoard() noexcept;
-
-    // rulesets
-    void ConwayRules(Cell& cell) const noexcept;
-    void FastConwayRules(Cell& cell) const noexcept;
-    void DayAndNightRules(Cell& cell) const noexcept;
-    void LifeWithoutDeathRules(Cell& cell) const noexcept;
-    void HighlifeRules(Cell& cell) const noexcept;
-    void SeedsRules(Cell& cell) const noexcept;
-    void BriansBrainRules(Cell& cell) const noexcept;
-
+    bool CopyShape(Shape& shape, uint16_t startX, uint16_t startY);
     void PrintBoard();
 
     // getters
@@ -115,15 +95,6 @@ class Board
         return _numDying;
     }
 
-    void ResetCounts() noexcept
-    {
-        _numDead = 0;
-        _numLive = 0;
-        _numBorn = 0;
-        _numDying = 0;
-        _numOld = 0;
-    }
-
     [[nodiscard]] uint32_t Generation() const noexcept
     {
         return _generation;
@@ -144,21 +115,50 @@ class Board
         return _height * _width;
     }
 
+private:
+    // board updating
+    // Update calls UpdateRowsWithNextState and FastDetermineNextState
+    // if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die
+    // in the next generation many of these are split up to support multithreading
+    void SetCell(Cell& cell, Cell::State state) noexcept;
+    void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
+    void FastDetermineNextState(int32_t ruleset);
+    void CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
+    [[nodiscard]] uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
+    void ApplyNextState() noexcept;
+
+    // rulesets
+    void ConwayRules(Cell& cell) const noexcept;
+    void FastConwayRules(Cell& cell) const noexcept;
+    void DayAndNightRules(Cell& cell) const noexcept;
+    void LifeWithoutDeathRules(Cell& cell) const noexcept;
+    void HighlifeRules(Cell& cell) const noexcept;
+    void SeedsRules(Cell& cell) const noexcept;
+    void BriansBrainRules(Cell& cell) const noexcept;
+
+    void ResetCounts() noexcept
+    {
+        _numDead = 0;
+        _numLive = 0;
+        _numBorn = 0;
+        _numDying = 0;
+        _numOld = 0;
+    }
+
   private:
-    std::vector<Cell> _cells;
-    std::mutex _lockboard;
+	  int _threadcount{1};
+	  std::mutex _lockboard;
+	  std::vector<Cell> _cells;
 
-    uint16_t _width{0};
-    uint16_t _height{0};
-    uint32_t _generation{0};
+	  uint16_t _width{ 0 };
+	  uint16_t _height{ 0 };
 
-    uint32_t _numDead{0};
-    uint32_t _numLive{0};
-    uint32_t _numBorn{0};
-    uint32_t _numOld{0};
-    uint32_t _numDying{0};
-    uint32_t _OldAge{0xFFFFFFFF};
-    uint16_t _maxage{100};
-
-    int _threadcount{1};
+	  uint32_t _generation{ 0 };
+	  uint32_t _numDead{ 0 };
+	  uint32_t _numLive{ 0 };
+	  uint32_t _numBorn{ 0 };
+	  uint32_t _numOld{ 0 };
+	  uint32_t _numDying{ 0 };
+	  uint32_t _OldAge{ 0xFFFFFFFF };
+	  uint16_t _maxage{ 100 };
 };

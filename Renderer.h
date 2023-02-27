@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.UI.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 

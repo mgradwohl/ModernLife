@@ -31,22 +31,28 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 }
 
 
-Board::Board()
+Board::Board() noexcept
 {
 	ML_METHOD;
 
 	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
 	_threadcount = std::clamp(_threadcount, 2, 8);
+}
 
-	_cells.reserve(250000);
+void Board::Reserve(size_t max)
+{
+	ML_METHOD;
+
+	_cells.reserve(max);
 }
 
 void Board::Update(int32_t ruleset)
 {
+	// TODO Alive Count is just not accurate
 	std::scoped_lock lock { _lockboard };
-	//ResetCounts();
-	FastUpdateBoardWithNextState(ruleset);
-	ApplyNextStateToBoard();
+	ResetCounts();
+	FastDetermineNextState(ruleset);
+	ApplyNextState();
 }
 
 void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
@@ -59,6 +65,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_maxage = maxage;
 	_cells.clear();
 	ResetCounts();
+	_generation = 0;
 
 	if (gsl::narrow_cast<size_t>(_height * width) > _cells.capacity())
 	{
@@ -70,6 +77,29 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	ML_TRACE("New board size: {}x{} cellcount: {} _cells.size:{}", _width, _height, newsize, _cells.size());
 }
 
+bool Board::CopyShape(Shape& shape, uint16_t startX, uint16_t startY)
+{
+	ML_METHOD;
+	ResetCounts();
+	for (uint16_t y = 0; y < shape.Height(); y++)
+	{
+		for (uint16_t x = 0; x < shape.Width(); x++)
+		{
+			Cell& cell = GetCell(x + startX, y + startY);
+			if (shape.IsAlive(x, y))
+			{
+				
+				SetCell(cell, Cell::State::Live);
+			}
+			else
+			{
+				SetCell(cell, Cell::State::Dead);
+			}
+		}
+	}
+	return true;
+}
+
 void Board::PrintBoard()
 {
 	std::wcout << (*this) << std::endl;
@@ -77,11 +107,11 @@ void Board::PrintBoard()
 
 void Board::SetCell(Cell& cell, Cell::State state) noexcept
 {
-	if (cell.GetState() == state)
-	{
-		// if the state didn't change, do nothing
-		return;
-	}
+	//if (cell.GetState() == state)
+	//{
+	//	// if the state didn't change, do nothing
+	//	return;
+	//}
 
 	// set the state to the new state
 	// TODO we should also reduce the count of the previous state to keep them accurate
@@ -92,22 +122,12 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	{
 		case Cell::State::Dead:
 		{
-			_numLive--;
 			_numDead++;
-			if (_numLive < 0)
-			{
-				_numLive = 0;
-			}
 			break;
 		}
 		case Cell::State::Live:
 		{
 			_numLive++;
-			_numDead--;
-			if (_numDead < 0)
-			{
-				_numDead = 0;
-			}
 			break;
 		}
 		case Cell::State::Born:
@@ -201,21 +221,21 @@ uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 	return count;
 }
 
-void Board::ApplyNextStateToBoard() noexcept
+void Board::ApplyNextState() noexcept
 {
 	_generation++;
 
 	for (auto& cell : _cells)
 	{
 		const auto state = cell.GetState();
-		if (state == Cell::State::Born)
+		if (state == Cell::State::Born || state == Cell::State::Live)
 		{
 			SetCell(cell, Cell::State::Live);
 			cell.Age(0);
 			continue;
 		}
 
-		if (state == Cell::State::Dying)
+		if (state == Cell::State::Dying || state == Cell::State::Live)
 		{
 			SetCell(cell, Cell::State::Dead);
 			continue;
@@ -224,7 +244,6 @@ void Board::ApplyNextStateToBoard() noexcept
 		cell.Age(cell.Age() + 1);
 	}
 }
-
 
 void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 {
@@ -239,7 +258,7 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 	double rp = 0.0f;
 	int ra = 0;
 	{
-		std::lock_guard<std::mutex> lock(_lockboard);
+		std::scoped_lock lock { _lockboard };
 		for (auto& cell : _cells)
 		{
 			rp = pdis(gen);
@@ -284,7 +303,7 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t 
 	}
 }
 
-void Board::FastUpdateBoardWithNextState(int32_t ruleset)
+void Board::FastDetermineNextState(int32_t ruleset)
 {
 	ML_METHOD;
 
@@ -292,18 +311,17 @@ void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 	const auto rowsPerThread = gsl::narrow_cast<uint16_t>(Height() / _threadcount);
 	const auto remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
 
-	// create a scope block so the vector dtor will be called and auto join the threads
 	std::vector<std::jthread> threads;
 	for (int t = 0; t < _threadcount - 1; t++)
 	{
-		//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
+		//ML_TRACE("FastDetermineNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
 
-		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
+		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
 		rowStart += rowsPerThread;
 
 	}
-	//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
-	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
+	//ML_TRACE("FastDetermineNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
+	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept

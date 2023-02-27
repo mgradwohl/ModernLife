@@ -11,7 +11,7 @@
 #undef GetCurrentTime
 
 #include <string>
-
+#include <sstream>
 #include <algorithm>
 #include <WinUser.h>
 
@@ -32,8 +32,12 @@
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
+#include <winrt/Windows.Storage.h>
+#include <winrt/Windows.Storage.Pickers.h>
+#include <Shobjidl.h>
 
 #include "Log.h"
+#include "Shape.h"
 #include "Renderer.h"
 #include "TimerHelper.h"
 #include "fpscounter.h"
@@ -45,27 +49,24 @@ namespace winrt::ModernLife::implementation
     void MainWindow::InitializeComponent()
     {
         Util::Log::Init();
-        ML_INFO("Log Initialized");
         ML_METHOD;
+        ML_INFO("Log Initialized");
 
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
 
-
-        SetMyTitleBar();
-
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
+        SetMyTitleBar();
         timer.Tick({ this, &MainWindow::OnTick });
-
         OnFirstRun();
-
         StartGameLoop();
     }
 
     void MainWindow::OnFirstRun()
     {
         ML_METHOD;
+
         //initializes _dpi
         _dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         const float dpi2 = canvasBoard().Dpi();
@@ -80,29 +81,40 @@ namespace winrt::ModernLife::implementation
             __debugbreak();
 		}
 
-        // initializes _canvasDevice
+        // initializes _canvasDevice and renderer
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         _renderer.Attach(_canvasDevice, _dpi, MaxAge());
 
         // initializes _canvasSize and _windowSize
         SetBestCanvasandWindowSizes();
 
-        // initialize the board
-        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
-        _renderer.Size(BoardWidth(), BoardHeight());
-        RandomizeBoard();
+        // initialize the board & renderer
+        _board.Reserve(gsl::narrow_cast<size_t>(sliderBoardWidth().Maximum() * sliderBoardWidth().Maximum()));
+        OnBoardResized();
+    }
 
+    void MainWindow::Pause()
+    {
+        SetStatus("Paused. Press Play to start. Left mouse button to draw. Right right mouse button to erase.");
+        timer.Stop();
+        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
+        GoButton().Label(L"Play");
+    }
 
-        InvalidateIfNeeded();
+    void MainWindow::Play()
+    {
+        SetStatus("Running... Left mouse button to draw. Right right mouse button to erase.");
+        timer.Start();
+        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
+        GoButton().Label(L"Pause");
     }
 
     void MainWindow::StartGameLoop()
     {
         ML_METHOD;
+
         // prep the play button
-        timer.Stop();
-        GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
-        GoButton().Label(L"Play");
+        Pause();
 
         // start the FPSCounter
         fps.Start();
@@ -115,7 +127,13 @@ namespace winrt::ModernLife::implementation
     {
         _board.Update(_ruleset);
         canvasBoard().Invalidate();
-        canvasStats().Invalidate();
+    }
+
+    void MainWindow::PumpProperties()
+    {
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"FPSAverage" });
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"GenerationCount" });
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"LiveCount" });
     }
 
     void MainWindow::InvalidateIfNeeded()
@@ -123,11 +141,96 @@ namespace winrt::ModernLife::implementation
         if (!timer.IsRunning())
         {
             canvasBoard().Invalidate();
-            canvasStats().Invalidate();
         }
+        PumpProperties();
     }
 
-    void winrt::ModernLife::implementation::MainWindow::OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    Windows::Foundation::IAsyncOperation<winrt::hstring> MainWindow::PickShapeFileAsync()
+    {
+        ML_METHOD;
+
+        Windows::Storage::Pickers::FileOpenPicker openPicker;
+        auto initializeWithWindow{ openPicker.as<::IInitializeWithWindow>() };
+        initializeWithWindow->Initialize(GetWindowHandle());
+        openPicker.ViewMode(Windows::Storage::Pickers::PickerViewMode::List);
+        openPicker.SuggestedStartLocation(Windows::Storage::Pickers::PickerLocationId::Desktop);
+        openPicker.FileTypeFilter().ReplaceAll({ L".cells" });
+        Windows::Storage::StorageFile sfile = co_await openPicker.PickSingleFileAsync();
+        if (sfile == nullptr)
+        {
+            ML_TRACE("File failed to open or file picker canceled.");
+            co_return winrt::hstring(L"");
+        }
+        co_return sfile.Path();
+    }
+
+    fire_and_forget MainWindow::ShowMessageBox(const hstring& title, const hstring& message)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::ContentDialog dialog;
+
+        // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+        dialog.XamlRoot(this->Content().XamlRoot());
+        dialog.Style( Microsoft::UI::Xaml::Application::Current().Resources().TryLookup(winrt::box_value(L"DefaultContentDialogStyle")).as<Microsoft::UI::Xaml::Style>() );
+        dialog.Title(winrt::box_value(title));
+        dialog.Content(winrt::box_value(message));
+        dialog.PrimaryButtonText(L"OK");
+        dialog.DefaultButton(winrt::Microsoft::UI::Xaml::Controls::ContentDialogButton::Primary);
+
+        auto result = co_await dialog.ShowAsync();
+    }
+
+    winrt::fire_and_forget MainWindow::LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    {
+        ML_METHOD; 
+
+        // keep the current board playing in the background while the user picks a file
+        auto filepicker = co_await PickShapeFileAsync();
+        std::string file = winrt::to_string(filepicker);
+
+        // load the shape
+        Shape shape(file);
+        shape.Load();
+
+        const uint16_t maxsize = gsl::narrow_cast<uint16_t>(sliderBoardWidth().Maximum());
+        // if it's too big, bail
+        if (shape.MaxDimension() > maxsize)
+        {
+            ML_TRACE("Board is too small for shape");
+            hstring title = L"Shape too big";
+
+            std::ostringstream wss;
+            wss << shape.Name() << " is too big for ModernLife.\r\n\r\nWidth: " << shape.Width() << " Height: " << shape.Height() << std::endl;
+            SetStatus(wss.str());
+
+            hstring wmsg = winrt::to_hstring(wss.str());
+            ShowMessageBox(title, wmsg);
+            co_return;
+        }
+        Pause();
+        RandomPercent(0);
+
+        // Resize the board to ensure the shape fits
+        // try to leave space around it
+        uint16_t size = shape.MaxDimension() * 2;
+
+        if (size > maxsize)
+        {
+            // if the shape + padding is too big, just max out the board size
+            size = maxsize;
+        }
+        BoardWidth(size);
+
+        // Copy the shape to the board
+        const uint16_t startX = (_board.Width() - shape.Width()) / 2;
+        const uint16_t startY = (_board.Height() - shape.Height()) / 2;
+        _board.CopyShape(shape, startX, startY);
+        SetStatus("Loaded " + shape.Name());
+
+        InvalidateIfNeeded();
+        co_return;
+    }
+
+    void MainWindow::OnPointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
     {
         if (sender != canvasBoard())
         {
@@ -146,7 +249,6 @@ namespace winrt::ModernLife::implementation
         {
 			_PointerMode = PointerMode::None;
 		}
-
     }
 
     void MainWindow::OnPointerMoved([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
@@ -156,33 +258,29 @@ namespace winrt::ModernLife::implementation
 			return;
 		}
 
-        bool on = false;
-        if (_PointerMode == PointerMode::Left)
-        {
-            on = true;
-		}
-        else if (_PointerMode == PointerMode::Right)
-        {
-            on = false;
-        }
+        bool on = (_PointerMode == PointerMode::Left);
 
         for (const Microsoft::UI::Input::PointerPoint& point : e.GetIntermediatePoints(canvasBoard().as<Microsoft::UI::Xaml::UIElement>()))
         {
             const GridPoint g = _renderer.GetCellAtPoint(point.Position());
 
             //ML_TRACE("Point {},{} Cell grid {},{}", point.Position().X, point.Position().Y, g.x, g.y);
+            //SetStatus("Drawing. Left mouse button to draw. Right right mouse button to erase.");
+
             _board.TurnCellOn(g, on);
         }
         InvalidateIfNeeded();
     }
 
-    void winrt::ModernLife::implementation::MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
+    void MainWindow::OnPointerReleased([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
     {
+        //SetStatus("Drawing mode completed.");
         _PointerMode = PointerMode::None;
     }
     
-    void winrt::ModernLife::implementation::MainWindow::OnPointerExited([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
+    void MainWindow::OnPointerExited([[maybe_unused]] winrt::Windows::Foundation::IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e) noexcept
     {
+        //SetStatus("Drawing mode completed.");
         _PointerMode = PointerMode::None;
     }
 
@@ -204,10 +302,11 @@ namespace winrt::ModernLife::implementation
         // setup offsets for sensible default window size
         constexpr int border = 20; // from XAML TODO can we call 'measure' and just retrieve the border width?
         constexpr int stackpanelwidth = 200; // from XAML TODO can we call 'measure' and just retrieve the stackpanel width?
+        constexpr int statusheight = 28;
 
         // ResizeClient wants pixels, not DIPs
         const int wndWidth = gsl::narrow_cast<int>((_renderer.CanvasSize() + stackpanelwidth + border) * _dpi / 96.0f);
-        const int wndHeight = gsl::narrow_cast<int>((_renderer.CanvasSize() + border) * _dpi / 96.0f);
+        const int wndHeight = gsl::narrow_cast<int>((_renderer.CanvasSize() + border + statusheight) * _dpi / 96.0f);
 
         // resize the window
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)
@@ -229,60 +328,64 @@ namespace winrt::ModernLife::implementation
             _renderer.Render(args.DrawingSession(), _board);
         }
         fps.AddFrame();
+        PumpProperties();
     }
 
-    void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    void MainWindow::SetStatus(const std::string& message)
     {
-        // ok to do this in function local scope
-        using namespace Microsoft::UI::Xaml::Controls;
-        using namespace Microsoft::UI::Xaml::Media;
-
-        // copy colors, font details etc from other controls to make this canvas visually consistent with the rest of the app
-        Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
-        canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
-        canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
-
-        const Windows::UI::Color colorBack{ splitView().PaneBackground().as<SolidColorBrush>().Color() };
-        const Windows::UI::Color colorText{ PaneHeader().Foreground().as<SolidColorBrush>().Color() };
-
-        args.DrawingSession().Clear(colorBack);
-
-        // create the strings to draw
-        std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
-        std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}",
-            timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.Size(),
-            _dpi, _renderer.CanvasSize(), _renderer.BackbufferSize(), _renderer.DipsPerCell(), _renderer.ThreadCount());
-
-        // draw the text left aligned
-        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
-        args.DrawingSession().DrawText(strTitle, 0, 0, 160, 100, colorText, canvasFmt);
-
-        // draw the values right aligned
-        canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
-        args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
-        args.DrawingSession().Flush();
+        _statusMain = message;
+        _propertyChanged(*this, PropertyChangedEventArgs{ L"StatusMain" });
     }
+
+    //void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
+    //{
+    //    // ok to do this in function local scope
+    //    using namespace Microsoft::UI::Xaml::Controls;
+    //    using namespace Microsoft::UI::Xaml::Media;
+
+    //    // copy colors, font details etc from other controls to make this canvas visually consistent with the rest of the app
+    //    Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
+    //    canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
+    //    canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
+
+    //    const Windows::UI::Color colorBack{ splitView().PaneBackground().as<SolidColorBrush>().Color() };
+    //    const Windows::UI::Color colorText{ PaneHeader().Foreground().as<SolidColorBrush>().Color() };
+
+    //    args.DrawingSession().Clear(colorBack);
+
+    //    // create the strings to draw
+    //    std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
+    //    std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}",
+    //        timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.Size(),
+    //        _dpi, _renderer.CanvasSize(), _renderer.BackbufferSize(), _renderer.DipsPerCell(), _renderer.ThreadCount());
+
+    //    // draw the text left aligned
+    //    canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
+    //    args.DrawingSession().DrawText(strTitle, 0, 0, 160, 100, colorText, canvasFmt);
+
+    //    // draw the values right aligned
+    //    canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
+    //    args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
+    //    //args.DrawingSession().Flush();
+    //}
 
     // property & event handlers
     void MainWindow::GoButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
         if (timer.IsRunning())
         {
-            timer.Stop();
-            GoButton().Label(L"Play");
-            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Play));
-
+            Pause();
         }
         else
         {
-            timer.Start();
-            GoButton().Icon(Microsoft::UI::Xaml::Controls::SymbolIcon(Microsoft::UI::Xaml::Controls::Symbol::Pause));
-            GoButton().Label(L"Pause");
+            Play();
         }
     }
 
     void MainWindow::OnRandomizeBoard()
     {
+        SetStatus("Board reset");
+
         RandomizeBoard();
         InvalidateIfNeeded();
 
@@ -299,6 +402,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnCanvasDeviceChanged()
     {
         ML_METHOD;
+        SetStatus("Canvas device changed");
 
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         OnDPIChanged();
@@ -310,6 +414,7 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnDPIChanged()
     {
         ML_METHOD;
+        SetStatus("DPI changed");
 
         const auto dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         if (_dpi != dpi)
@@ -323,10 +428,11 @@ namespace winrt::ModernLife::implementation
     void MainWindow::OnBoardResized()
     {
         ML_METHOD;
-
+        SetStatus("Board resized");
         // create the board, lock it in the case that OnTick is updating it
         // we lock it because changing board parameters will call StartGameLoop()
-        timer.Stop();
+        Pause();
+
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         _renderer.Size(BoardWidth(), BoardHeight());
 
@@ -379,6 +485,7 @@ namespace winrt::ModernLife::implementation
 
         if (args.PropertyName() == L"FirstTime")
         {
+            //SetStatus("First run event.");
             //OnFirstRun();
         }
     }
@@ -432,6 +539,27 @@ namespace winrt::ModernLife::implementation
         }
     }
 
+    [[nodiscard]] hstring MainWindow::StatusMain() const
+    {
+        return winrt::to_hstring(_statusMain);
+    }
+
+    [[nodiscard]] hstring MainWindow::LiveCount() const
+    {
+        return winrt::to_hstring(_board.GetLiveCount());
+    }
+
+    [[nodiscard]] hstring MainWindow::GenerationCount() const
+    {
+        return winrt::to_hstring(_board.Generation());
+    }
+
+    [[nodiscard]] hstring MainWindow::FPSAverage() const
+    {
+        std::string f = std::format("{:.2f}", fps.FPS());
+        return winrt::to_hstring(f);
+    }
+
     [[nodiscard]] uint16_t MainWindow::RandomPercent() const noexcept
     {
         return _randompercent;
@@ -448,19 +576,11 @@ namespace winrt::ModernLife::implementation
 
     [[nodiscard]] uint16_t MainWindow::BoardWidth() const noexcept
     {
-        //if (_boardwidth != _board.Width())
-        //{
-        //    __debugbreak;
-        //}
         return _boardwidth;
     }
 
     [[nodiscard]] uint16_t MainWindow::BoardHeight() const noexcept
     {
-        //if (_boardheight != _board.Height())
-        //{
-        //    __debugbreak;
-        //}
         return _boardheight;
     }
 
@@ -482,8 +602,6 @@ namespace winrt::ModernLife::implementation
     void MainWindow::CanvasBoard_SizeChanged([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::SizeChangedEventArgs const& e)
     {
         _renderer.Size(BoardWidth(), BoardHeight());
-        // might need to BuildSpriteSheet here
-        // TODO test
     }
 
     [[nodiscard]] hstring MainWindow::GetRandomPercentText(double_t value) const
@@ -544,6 +662,7 @@ namespace winrt::ModernLife::implementation
         auto windowNative{ this->try_as<::IWindowNative>() };
         HWND hWnd{ nullptr };
         winrt::check_hresult(windowNative->get_WindowHandle(&hWnd));
+                
         return hWnd;
     }
 
@@ -565,11 +684,14 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
+        ML_METHOD;
+        Util::Log::Shutdown();
         //PropertyChangedRevoker();
     }
 
     void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept
     {
-        // TODO lots to do here
+        // TODO lots to do here if we let the user resize the window and that resizes the canvas
+        // right now the canvas size is fixed
     }
 }

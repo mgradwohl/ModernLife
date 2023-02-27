@@ -18,6 +18,7 @@
     <ClCompile Include="HSVColorHelper.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Shape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -29,6 +30,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MLAssert.h" />
+    <ClInclude Include="Shape.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">

@@ -25,7 +25,7 @@ public:
 		_end = std::chrono::high_resolution_clock::now();
 	}
 
-	[[nodiscard]] double FPS() noexcept
+	[[nodiscard]] double FPS() const noexcept
 	{
 		return _fps;
 	}

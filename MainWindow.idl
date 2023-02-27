@@ -4,13 +4,17 @@
 namespace ModernLife
 {
     [default_interface]
-    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         MainWindow();
         UInt16 RandomPercent;
         UInt16 BoardWidth;
         UInt16 MaxAge;
         Boolean ShowLegend;
+        String StatusMain{ get; };
+        String FPSAverage{ get; };
+        String GenerationCount { get; };
+        String LiveCount{ get; };
         String GetRandomPercentText(Double value);
         String GetBoardWidthText(Double value);
         Microsoft.UI.Xaml.Controls.Slider sliderRandomPercent{get;};
