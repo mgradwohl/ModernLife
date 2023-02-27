@@ -49,6 +49,7 @@ void Board::Reserve(size_t max)
 
 void Board::Update(int32_t ruleset)
 {
+	// TODO Alive Count is just not accurate
 	ResetCounts();
 	FastUpdateBoardWithNextState(ruleset);
 	ApplyNextStateToBoard();
