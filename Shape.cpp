@@ -37,16 +37,6 @@ bool Shape::Load()
 
 	_name = _path.filename().string();
 
-	//_name = gsl::at(_notes, 0);
-	//if (_name.starts_with("!Name: "))
-	//{
-	//	_name.erase(0, 7);
-	//}
-	//else if (_name.starts_with("!Name:"))
-	//{
-	//	_name.erase(0, 6);
-	//}
-
 	Dump();
 
 	Parse();

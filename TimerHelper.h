@@ -17,7 +17,10 @@ public:
     TimerHelper& operator=(TimerHelper&&) = delete;
 
     // destruct
-    ~TimerHelper() = default;
+    ~TimerHelper()
+    {
+        _timer.Tick(_eventtoken);
+    }
 
     TimerHelper(int fps, bool repeating)
     {
