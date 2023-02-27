@@ -296,10 +296,11 @@ namespace winrt::ModernLife::implementation
         // setup offsets for sensible default window size
         constexpr int border = 20; // from XAML TODO can we call 'measure' and just retrieve the border width?
         constexpr int stackpanelwidth = 200; // from XAML TODO can we call 'measure' and just retrieve the stackpanel width?
+        constexpr int statusheight = 28;
 
         // ResizeClient wants pixels, not DIPs
         const int wndWidth = gsl::narrow_cast<int>((_renderer.CanvasSize() + stackpanelwidth + border) * _dpi / 96.0f);
-        const int wndHeight = gsl::narrow_cast<int>((_renderer.CanvasSize() + border) * _dpi / 96.0f);
+        const int wndHeight = gsl::narrow_cast<int>((_renderer.CanvasSize() + border + statusheight) * _dpi / 96.0f);
 
         // resize the window
         if (auto appWnd = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(idWnd); appWnd)

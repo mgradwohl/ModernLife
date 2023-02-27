@@ -31,7 +31,7 @@ std::wostream& operator<<(std::wostream& stream, Board& board)
 }
 
 
-Board::Board()
+Board::Board() noexcept
 {
 	ML_METHOD;
 
@@ -49,7 +49,7 @@ void Board::Reserve(size_t max)
 
 void Board::Update(int32_t ruleset)
 {
-	std::scoped_lock lock { _lockboard };
+	ResetCounts();
 	FastUpdateBoardWithNextState(ruleset);
 	ApplyNextStateToBoard();
 }
@@ -118,22 +118,12 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	{
 		case Cell::State::Dead:
 		{
-			_numLive--;
-			if (_numLive == MAXUINT32)
-			{
-				_numLive = 0;
-			}
 			_numDead++;
 			break;
 		}
 		case Cell::State::Live:
 		{
 			_numLive++;
-			_numDead--;
-			//if (_numDead < 0)
-			//{
-			//	_numDead = 0;
-			//}
 			break;
 		}
 		case Cell::State::Born:
@@ -265,7 +255,8 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 	double rp = 0.0f;
 	int ra = 0;
 	{
-		std::lock_guard<std::mutex> lock(_lockboard);
+		// create a scope block so the vector dtor will be called and auto join the threads
+		std::scoped_lock lock { _lockboard };
 		for (auto& cell : _cells)
 		{
 			rp = pdis(gen);
@@ -281,6 +272,7 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 			}
 		}
 	}
+	//_lastLiveCount = _numLive;
 }
 
 void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset)
@@ -319,17 +311,21 @@ void Board::FastUpdateBoardWithNextState(int32_t ruleset)
 	const auto remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
 
 	// create a scope block so the vector dtor will be called and auto join the threads
-	std::vector<std::jthread> threads;
-	for (int t = 0; t < _threadcount - 1; t++)
 	{
-		//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
+		std::scoped_lock lock { _lockboard };
 
-		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
-		rowStart += rowsPerThread;
+		std::vector<std::jthread> threads;
+		for (int t = 0; t < _threadcount - 1; t++)
+		{
+			//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
 
+			threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), ruleset });
+			rowStart += rowsPerThread;
+
+		}
+		//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
+		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 	}
-	//ML_TRACE("FastUpdateBoardWithNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
-	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState,this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), ruleset });
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept

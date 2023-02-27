@@ -20,7 +20,7 @@ class Board
 {
   public:
 
-    Board();
+    Board() noexcept;
     ~Board() = default;
 
     // move/copy constuct
@@ -102,7 +102,11 @@ class Board
 
     [[nodiscard]] uint32_t GetLiveCount() const noexcept
     {
-        return _numLive;
+        if (_numLive != 0)
+        {
+            return _numLive;
+        }
+        return _lastLiveCount;
     }
 
     [[nodiscard]] uint32_t GetBornCount() const noexcept
@@ -122,16 +126,7 @@ class Board
 
     void ResetCounts() noexcept
     {
-        //uint32_t _generation{ 0 };
-        //uint32_t _numDead{ 0 };
-        //uint32_t _numLive{ 0 };
-        //uint32_t _numBorn{ 0 };
-        //uint32_t _numOld{ 0 };
-        //uint32_t _numDying{ 0 };
-        //uint32_t _OldAge{ 0xFFFFFFFF };
-        //uint16_t _maxage{ 100 };
-
-        //_generation = 0;
+        _lastLiveCount = _numLive;
         _numDead = 0;
         _numLive = 0;
         _numBorn = 0;
@@ -169,6 +164,7 @@ class Board
     uint32_t _generation{0};
     uint32_t _numDead{0};
     uint32_t _numLive{0};
+    uint32_t _lastLiveCount = 0;;
     uint32_t _numBorn{0};
     uint32_t _numOld{0};
     uint32_t _numDying{0};
