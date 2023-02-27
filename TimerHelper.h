@@ -15,8 +15,8 @@ public:
     TimerHelper(int fps, bool repeating)
     {
         //std::scoped_lock lock { _locktimer };
-        _controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
-        _queue = _controller.DispatcherQueue();
+        //_controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+        _queue = Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();  //_controller.DispatcherQueue();
         _timer = _queue.CreateTimer();
         _timer.Stop();
         _timer.IsRepeating(repeating);
