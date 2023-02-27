@@ -27,8 +27,8 @@ public:
     TimerHelper(TimerHelper&&) = delete;
 
     // copy/move
-    TimerHelper& operator=(TimerHelper&) = delete;
-    TimerHelper& operator=(TimerHelper&&) = delete;
+    //TimerHelper& operator=(TimerHelper&) = delete;
+    //TimerHelper& operator=(TimerHelper&&) = delete;
 
     // destruct
     ~TimerHelper()
