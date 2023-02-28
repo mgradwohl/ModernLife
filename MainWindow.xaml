@@ -129,26 +129,21 @@
                     <TextBlock Text="BOARD SIZE" Margin="0,24,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
                     <Slider x:Name="sliderBoardWidth" Margin="12,0,12,0" Minimum = "25" Maximum = "700" TickFrequency = "50" SmallChange="10" TickPlacement = "Outside"
                          Value="{x:Bind BoardWidth, Mode=TwoWay}"/>
-                    <TextBlock x:Name="textBoardWidth" Text="{x:Bind GetBoardWidthText(sliderBoardWidth.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <TextBlock x:Name="textBoardWidth" Text="{x:Bind GetBoardWidthText(sliderBoardWidth.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
 
                     <TextBlock Text="BOARD INITIALIZATION" Margin="0,24,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
                     <Slider x:Name="sliderRandomPercent" Margin="12,0,12,0" Minimum = "0" Maximum = "100" TickFrequency = "5" SmallChange="5" TickPlacement = "Outside"
                          Value="{x:Bind RandomPercent, Mode=TwoWay}"/>
-                    <TextBlock x:Name="textRandomPercent" Text="{x:Bind GetRandomPercentText(sliderRandomPercent.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <TextBlock x:Name="textRandomPercent" Text="{x:Bind GetRandomPercentText(sliderRandomPercent.Value), Mode=OneWay}" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
 
-                    <TextBlock Text="MAXIMUM AGE" Margin="0,24,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <TextBlock Text="MAXIMUM AGE" Margin="0,24,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"/>
                     <Slider x:Name="sliderMaxAge" Margin="12,0,12,0" Minimum = "100" Maximum = "10000" TickFrequency = "100" SmallChange="50" TickPlacement = "Outside"
                          Value="{x:Bind MaxAge, Mode=TwoWay}" />
 
                     <TextBlock Text="SHOW LEGEND" Margin="0,24,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
                     <ToggleSwitch HorizontalAlignment="Center" Margin="12,0,12,0" x:Name="toggleCanvas" IsOn="{x:Bind ShowLegend, Mode=TwoWay}"></ToggleSwitch>
-
-                    <!--<TextBlock Text="STATS" HorizontalAlignment="Center" Margin="0,24,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
-                    <Grid Margin="6,6,6,6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="160" Height="190">
-                        <canvas:CanvasControl x:Name="canvasStats" Draw="CanvasStats_Draw" />
-                    </Grid>-->
                     <TextBlock Text="LEARN MORE" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,24,0,0" Style="{StaticResource BaseTextBlockStyle}"/>
-                    <TextBlock TextWrapping="WrapWholeWords" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}">
+                    <TextBlock TextWrapping="WrapWholeWords" HorizontalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}">
                     <Span xml:space="preserve"><Run>YouTube </Run><Hyperlink NavigateUri="https://youtu.be/Kk2MH9O4pXY">John Conway</Hyperlink></Span>
                     </TextBlock>
                 </StackPanel>

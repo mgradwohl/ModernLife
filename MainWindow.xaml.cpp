@@ -36,9 +36,6 @@
 #include <winrt/Windows.Storage.Pickers.h>
 #include <Shobjidl.h>
 
-#include <wil/cppwinrt.h>
-#include <wil/cppwinrt_helpers.h>
-
 #include "Log.h"
 #include "Shape.h"
 #include "Renderer.h"
@@ -52,9 +49,8 @@ namespace winrt::ModernLife::implementation
     void MainWindow::InitializeComponent()
     {
         Util::Log::Init();
-        ML_INFO("Log Initialized");
         ML_METHOD;
-
+        ML_INFO("Log Initialized");
 
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
@@ -62,7 +58,7 @@ namespace winrt::ModernLife::implementation
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
         SetMyTitleBar();
-        timer.Tick({ this, &MainWindow::OnTick });
+        timer.Tick({ get_strong(), &MainWindow::OnTick });
         OnFirstRun();
         StartGameLoop();
     }
@@ -127,8 +123,10 @@ namespace winrt::ModernLife::implementation
         InvalidateIfNeeded();
     }
 
-    void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
+    winrt::fire_and_forget MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
     {
+        ML_METHOD;
+        co_await winrt::resume_background();
         _board.Update(_ruleset);
         canvasBoard().Invalidate();
     }
@@ -340,38 +338,6 @@ namespace winrt::ModernLife::implementation
         _statusMain = message;
         _propertyChanged(*this, PropertyChangedEventArgs{ L"StatusMain" });
     }
-
-    //void MainWindow::CanvasStats_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
-    //{
-    //    // ok to do this in function local scope
-    //    using namespace Microsoft::UI::Xaml::Controls;
-    //    using namespace Microsoft::UI::Xaml::Media;
-
-    //    // copy colors, font details etc from other controls to make this canvas visually consistent with the rest of the app
-    //    Microsoft::Graphics::Canvas::Text::CanvasTextFormat canvasFmt{};
-    //    canvasFmt.FontFamily(PaneHeader().FontFamily().Source());
-    //    canvasFmt.FontSize(gsl::narrow_cast<float>(PaneHeader().FontSize()));
-
-    //    const Windows::UI::Color colorBack{ splitView().PaneBackground().as<SolidColorBrush>().Color() };
-    //    const Windows::UI::Color colorText{ PaneHeader().Foreground().as<SolidColorBrush>().Color() };
-
-    //    args.DrawingSession().Clear(colorBack);
-
-    //    // create the strings to draw
-    //    std::wstring strTitle{ L"FPS\r\nGeneration\r\nAlive\r\nTotal Cells\r\n\r\nDPI\r\nCanvas Size\r\nBackbuffer Size\r\nCell Size\r\nThreads" };
-    //    std::wstring strContent = std::format(L"{}:{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:8L}\r\n\r\n{:.1f}\r\n{:8L}\r\n{:8L}\r\n{:.2f}\r\n{:8L}",
-    //        timer.FPS(), fps.FPS(), _board.Generation(), _board.GetLiveCount(), _board.Size(),
-    //        _dpi, _renderer.CanvasSize(), _renderer.BackbufferSize(), _renderer.DipsPerCell(), _renderer.ThreadCount());
-
-    //    // draw the text left aligned
-    //    canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Left);
-    //    args.DrawingSession().DrawText(strTitle, 0, 0, 160, 100, colorText, canvasFmt);
-
-    //    // draw the values right aligned
-    //    canvasFmt.HorizontalAlignment(Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Right);
-    //    args.DrawingSession().DrawText(strContent, 0, 0, 160, 100, colorText, canvasFmt);
-    //    //args.DrawingSession().Flush();
-    //}
 
     // property & event handlers
     void MainWindow::GoButton_Click([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
@@ -686,13 +652,12 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    winrt::fire_and_forget MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
+    void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
         ML_METHOD;
-
-        co_await wil::resume_foreground(timer.GetQueue());
-        timer.Revoke(); //should be called by destructor
+        //timer.Revoke();
         Util::Log::Shutdown();
+        //PropertyChangedRevoker();
     }
 
     void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept
