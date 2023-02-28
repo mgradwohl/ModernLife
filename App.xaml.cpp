@@ -9,6 +9,7 @@
 #include <iostream>
 #include <locale>
 
+#include "Log.h"
 using namespace winrt;
 using namespace ModernLife;
 using namespace ModernLife::implementation;
@@ -22,6 +23,11 @@ using namespace ModernLife::implementation;
 /// </summary>
 App::App()
 {
+    Util::Log::Init();
+    ML_INFO("Log Initialized");
+
+    ML_METHOD;
+
     // make sure Windows and C++ runtime are set for utf8
     auto UTF8 = std::locale("en_US.UTF-8");
     std::locale::global(UTF8);
@@ -40,6 +46,11 @@ App::App()
         }
     });
 #endif
+}
+
+App::~App()
+{
+    Util::Log::Shutdown();
 }
 
 /// <summary>

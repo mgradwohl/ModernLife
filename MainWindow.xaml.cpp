@@ -36,6 +36,9 @@
 #include <winrt/Windows.Storage.Pickers.h>
 #include <Shobjidl.h>
 
+#include <wil/cppwinrt.h>
+#include <wil/cppwinrt_helpers.h>
+
 #include "Log.h"
 #include "Shape.h"
 #include "Renderer.h"
@@ -48,9 +51,7 @@ namespace winrt::ModernLife::implementation
 {
     void MainWindow::InitializeComponent()
     {
-        Util::Log::Init();
         ML_METHOD;
-        ML_INFO("Log Initialized");
 
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
@@ -682,11 +683,12 @@ namespace winrt::ModernLife::implementation
         }
     }
 
-    void MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
+    winrt::fire_and_forget MainWindow::OnWindowClosed([[maybe_unused]] IInspectable const& sender, [[maybe_unused]] winrt::Microsoft::UI::Xaml::WindowEventArgs const& args) noexcept
     {
         ML_METHOD;
-        timer.Revoke();
-        Util::Log::Shutdown();
+
+        co_await wil::resume_foreground(timer.GetQueue());
+        timer.Revoke(); //should be called by destructor
         //PropertyChangedRevoker();
     }
 

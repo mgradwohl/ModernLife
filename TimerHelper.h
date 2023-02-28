@@ -3,6 +3,9 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 
+#include <wil/cppwinrt.h>
+#include <wil/cppwinrt_helpers.h>
+
 #include "Log.h"
 
 // https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuetimer.tick?view=windows-app-sdk-1.2
@@ -16,7 +19,8 @@ public:
     {
         //std::scoped_lock lock { _locktimer };
         //_controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
-        _queue = Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();  //_controller.DispatcherQueue();
+        _controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
+        _queue = _controller.DispatcherQueue(); //Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();  //
         _timer = _queue.CreateTimer();
         _timer.Stop();
         _timer.IsRepeating(repeating);
@@ -31,23 +35,29 @@ public:
     //TimerHelper& operator=(TimerHelper&&) = delete;
 
     // destruct
-    ~TimerHelper()
+    __declspec(noinline) ~TimerHelper()
     {
         ML_METHOD;
 
         Revoke();
     }
 
-    const void Revoke()
+    winrt::fire_and_forget Revoke()
     {
 		ML_METHOD;
+
+        co_await _controller.ShutdownQueueAsync();
+        //co_await wil::resume_foreground(_queue);
+
         std::scoped_lock lock { _locktimer };
         if (!_needsRevoke)
         {
-            return;
+            co_return;
         }
         _timer.Stop();
-		_timer.Tick(_eventtoken);
+        _timer.Tick(_eventtoken);
+        //_timer.~DispatcherQueueTimer();
+
         _needsRevoke = false;
 	}
 
@@ -101,6 +111,11 @@ public:
 			_fps = fps;
             _timer.Interval(std::chrono::milliseconds(1000 / _fps));
         }
+    }
+
+    [[nodiscard]] winrt::Microsoft::UI::Dispatching::DispatcherQueue& GetQueue()
+    {
+        return _queue;
     }
 
 private:
