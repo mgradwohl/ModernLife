@@ -142,7 +142,7 @@ namespace winrt::ModernLife::implementation
     {
         if (!timer.IsRunning())
         {
-            canvasBoard().Invalidate();
+            OnTick(nullptr, nullptr);
         }
         PumpProperties();
     }
