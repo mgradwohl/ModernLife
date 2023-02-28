@@ -51,7 +51,10 @@ namespace winrt::ModernLife::implementation
 {
     void MainWindow::InitializeComponent()
     {
+        Util::Log::Init();
+        ML_INFO("Log Initialized");
         ML_METHOD;
+
 
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
@@ -689,6 +692,7 @@ namespace winrt::ModernLife::implementation
 
         co_await wil::resume_foreground(timer.GetQueue());
         timer.Revoke(); //should be called by destructor
+        Util::Log::Shutdown();
     }
 
     void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept

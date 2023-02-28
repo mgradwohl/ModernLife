@@ -46,7 +46,7 @@ public:
     {
 		ML_METHOD;
 
-        co_await _controller.ShutdownQueueAsync();
+        //co_await _controller.ShutdownQueueAsync();
 
         std::scoped_lock lock { _locktimer };
         if (!_needsRevoke)
