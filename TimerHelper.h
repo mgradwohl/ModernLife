@@ -47,7 +47,6 @@ public:
 		ML_METHOD;
 
         co_await _controller.ShutdownQueueAsync();
-        //co_await wil::resume_foreground(_queue);
 
         std::scoped_lock lock { _locktimer };
         if (!_needsRevoke)
@@ -56,7 +55,6 @@ public:
         }
         _timer.Stop();
         _timer.Tick(_eventtoken);
-        //_timer.~DispatcherQueueTimer();
 
         _needsRevoke = false;
 	}

@@ -689,7 +689,6 @@ namespace winrt::ModernLife::implementation
 
         co_await wil::resume_foreground(timer.GetQueue());
         timer.Revoke(); //should be called by destructor
-        //PropertyChangedRevoker();
     }
 
     void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept
