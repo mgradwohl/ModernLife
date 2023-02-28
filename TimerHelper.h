@@ -17,7 +17,6 @@ public:
 
     TimerHelper(int fps, bool repeating)
     {
-        //_controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
         //_controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
         //_queue = _controller.DispatcherQueue();
         _queue = Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
