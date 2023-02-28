@@ -36,6 +36,9 @@
 #include <winrt/Windows.Storage.Pickers.h>
 #include <Shobjidl.h>
 
+#include <wil/cppwinrt.h>
+#include <wil/cppwinrt_helpers.h>
+
 #include "Log.h"
 #include "Shape.h"
 #include "Renderer.h"
@@ -126,7 +129,7 @@ namespace winrt::ModernLife::implementation
     winrt::fire_and_forget MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
     {
         ML_METHOD;
-        co_await winrt::resume_background();
+        co_await wil::resume_foreground(this->DispatcherQueue());
         _board.Update(_ruleset);
         canvasBoard().Invalidate();
     }
