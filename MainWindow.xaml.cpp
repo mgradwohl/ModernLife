@@ -185,6 +185,7 @@ namespace winrt::ModernLife::implementation
         dialog.DefaultButton(winrt::Microsoft::UI::Xaml::Controls::ContentDialogButton::Primary);
 
         auto result = co_await dialog.ShowAsync();
+        result;
     }
 
     winrt::fire_and_forget MainWindow::LoadShape_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
