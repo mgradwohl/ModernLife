@@ -52,8 +52,8 @@ namespace winrt::ModernLife::implementation
     void MainWindow::InitializeComponent()
     {
         Util::Log::Init();
-        ML_METHOD;
         ML_INFO("Log Initialized");
+        ML_METHOD;
 
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
@@ -84,7 +84,7 @@ namespace winrt::ModernLife::implementation
             __debugbreak();
 		}
 
-        // initializes _canvasDevice and renderer
+        // initialize _canvasDevice
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
         // initialize board
@@ -92,6 +92,7 @@ namespace winrt::ModernLife::implementation
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         RandomizeBoard();
 
+        // intitialize renderer
         _renderer.Attach(_canvasDevice, _dpi, MaxAge());
         _renderer.Size(BoardWidth(), BoardHeight());
 
