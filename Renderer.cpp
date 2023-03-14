@@ -22,11 +22,17 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
     ML_TRACE("Maximum Bitmap size {} pixels", _canvasDevice.MaximumBitmapSizeInPixels());
     _dpi = dpi;
     _spriteMaxIndex = maxindex;
+    ML_TRACE("Renderer DPI {}", _dpi);
 
     // determined internally
     _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
     _threadcount = std::clamp(_threadcount, 2, 8);
     //_threadcount = 1;
+}
+
+void Renderer::WindowResize()
+{
+    SetupRenderTargets();
 }
 
 void Renderer::SetupRenderTargets()
@@ -35,6 +41,7 @@ void Renderer::SetupRenderTargets()
 
     // Calculate important internal vales for the spritesheet and backbuffer slices
     _dipsPerCellDimension = _bestbackbuffersize / gsl::narrow_cast<float>(_boardwidth);
+    ML_TRACE("DIPs per cell {}", _dipsPerCellDimension);
 
     _spritesPerRow = gsl::narrow_cast<uint16_t>(1 + std::sqrt(_spriteMaxIndex));
     _spriteDipsPerRow = _dipsPerCellDimension * gsl::narrow_cast<float>(_spritesPerRow);
@@ -308,7 +315,8 @@ void Renderer::Dpi(float dpi)
     {
         // TODO if the dpi changes we need to rebuild the spritesheet and much more
         _dpi = dpi;
-        BuildSpriteSheet();
+        SetupRenderTargets();
+        //BuildSpriteSheet();
     }
 }
 

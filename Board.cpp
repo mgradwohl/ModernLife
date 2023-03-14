@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <random>
 #include <iostream>
+#include <execution>
 
 #include <deps/gsl/include/gsl/gsl>
 #include "Log.h"
@@ -225,25 +226,45 @@ void Board::ApplyNextState() noexcept
 {
 	_generation++;
 
-	for (auto& cell : _cells)
+	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [this](Cell& cell)
 	{
-		const auto state = cell.GetState();
-		if (state == Cell::State::Live)
-		{
-			SetCell(cell, Cell::State::Live);
-		}
-		else if (state == Cell::State::Dying || state == Cell::State::Dead)
-		{
-			SetCell(cell, Cell::State::Dead);
-		}
-		else if (state == Cell::State::Born)
-		{
-			SetCell(cell, Cell::State::Live);
-			cell.Age(0);
-		}
+			const auto state = cell.GetState();
+			if (state == Cell::State::Live)
+			{
+				SetCell(cell, Cell::State::Live);
+			}
+			else if (state == Cell::State::Dying || state == Cell::State::Dead)
+			{
+				SetCell(cell, Cell::State::Dead);
+			}
+			else if (state == Cell::State::Born)
+			{
+				SetCell(cell, Cell::State::Live);
+				cell.Age(0);
+			}
 
-		cell.GetOlder();
-	}
+			cell.GetOlder();
+		});
+
+	//for (auto& cell : _cells)
+	//{
+	//	const auto state = cell.GetState();
+	//	if (state == Cell::State::Live)
+	//	{
+	//		SetCell(cell, Cell::State::Live);
+	//	}
+	//	else if (state == Cell::State::Dying || state == Cell::State::Dead)
+	//	{
+	//		SetCell(cell, Cell::State::Dead);
+	//	}
+	//	else if (state == Cell::State::Born)
+	//	{
+	//		SetCell(cell, Cell::State::Live);
+	//		cell.Age(0);
+	//	}
+
+	//	cell.GetOlder();
+	//}
 }
 
 void Board::RandomizeBoard(float alivepct, uint16_t maxage)

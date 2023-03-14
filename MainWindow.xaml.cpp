@@ -86,14 +86,16 @@ namespace winrt::ModernLife::implementation
 
         // initializes _canvasDevice and renderer
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
-        _renderer.Attach(_canvasDevice, _dpi, MaxAge());
 
-        // initializes _canvasSize and _windowSize
-        SetBestCanvasandWindowSizes();
-
-        // initialize the board & renderer
+        // initialize board
         _board.Reserve(gsl::narrow_cast<size_t>(sliderBoardWidth().Maximum() * sliderBoardWidth().Maximum()));
-        OnBoardResized();
+        _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
+        RandomizeBoard();
+
+        _renderer.Attach(_canvasDevice, _dpi, MaxAge());
+        _renderer.Size(BoardWidth(), BoardHeight());
+
+        SetBestCanvasandWindowSizes();
     }
 
     void MainWindow::Pause()
@@ -292,6 +294,10 @@ namespace winrt::ModernLife::implementation
     void MainWindow::SetBestCanvasandWindowSizes()
     {
         ML_METHOD;
+        if (_dpi == 0.0f)
+        {
+            return;
+        }
 
         const Microsoft::UI::WindowId idWnd = Microsoft::UI::GetWindowIdFromWindow(GetWindowHandle());
 
@@ -392,9 +398,14 @@ namespace winrt::ModernLife::implementation
         const auto dpi = gsl::narrow_cast<float>(GetDpiForWindow(GetWindowHandle()));
         if (_dpi != dpi)
         {
+            ML_TRACE("MainWindow DPI changed from {} to {}", dpi, _dpi);
             _dpi = dpi;
             _renderer.Dpi(_dpi);
             // TODO if dpi changes there's a lot of work to do in the renderer
+        }
+        else
+        {
+            ML_TRACE("MainWindow DPI Not Changed {}", _dpi);
         }
     }
 
@@ -665,6 +676,17 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::OnWindowResized([[maybe_unused]] Windows::Foundation::IInspectable const& sender, [[maybe_unused]] Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args) noexcept
     {
+        ML_METHOD;
+
+        if (_dpi == 0)
+        {
+            ML_TRACE("Ignoring resize, DPI == 0");
+            return;
+        }
+
+        SetBestCanvasandWindowSizes();
+         _renderer.WindowResize();
+
         // TODO lots to do here if we let the user resize the window and that resizes the canvas
         // right now the canvas size is fixed
     }
