@@ -5,7 +5,7 @@
 #include <string>
 
 #include "Cell.h"
-#include"Log.h"
+#include "Log.h"
 
 bool Shape::Load()
 {

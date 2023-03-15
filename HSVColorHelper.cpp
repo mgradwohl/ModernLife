@@ -4,6 +4,8 @@
 #include <winrt/Windows.UI.h>
 #include <winrt/Microsoft.UI.h>
 #include <deps/gsl/include/gsl/gsl>
+#include <directxmath.h>
+#include "Log.h"
 
 // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB
 [[nodiscard]] winrt::Windows::UI::Color HSVColorHelper::HSVtoColor(float h, float s, float v)
@@ -17,7 +19,24 @@
         return winrt::Windows::UI::Colors::Black();
     }
 
-    h /= 60;
+    //ML_TRACE("HSV color is: {}, {}, {}", h, s, v);
+    const DirectX::XMFLOAT4 hsv{h / 360.0f, s, v, 0.0f };
+    const DirectX::XMVECTOR hsvv {DirectX::XMLoadFloat4(&hsv)};
+    const DirectX::XMVECTOR rgbv {DirectX::XMColorHSVToRGB(hsvv)};
+    DirectX::XMFLOAT4A rgb;
+    DirectX::XMStoreFloat4A(&rgb, rgbv);
+
+    rgb.x = rgb.x * 255.0f;
+    rgb.y = rgb.y * 255.0f;
+    rgb.z = rgb.z * 255.0f;
+
+    winrt::Windows::UI::Color colorDX = winrt::Microsoft::UI::ColorHelper::FromArgb(255, std::lround(rgb.x), std::lround(rgb.y), std::lround(rgb.z));
+    //ML_TRACE("DX color is: {}, {}, {}", rgb.x, rgb.y, rgb.z);
+
+    return colorDX;
+
+
+    /*h /= 60;
     const int i{ gsl::narrow_cast<int>(std::floor(h)) };
     const float f{ h - i };
     const float p{ v * (1 - s) };
@@ -71,6 +90,8 @@
     const uint8_t g{ gsl::narrow_cast<uint8_t>(dg * 255) };
     const uint8_t b{ gsl::narrow_cast<uint8_t>(db * 255) };
 
-    return winrt::Microsoft::UI::ColorHelper::FromArgb(255, r, g, b);
+    winrt::Windows::UI::Color colorMe = winrt::Microsoft::UI::ColorHelper::FromArgb(255, r, g, b);
+
+    ML_TRACE("My color is: {}, {}, {}", r, g, b);*/
 }
 
