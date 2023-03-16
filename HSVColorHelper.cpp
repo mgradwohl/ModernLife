@@ -5,6 +5,7 @@
 #include <winrt/Microsoft.UI.h>
 #include <deps/gsl/include/gsl/gsl>
 #include <directxmath.h>
+
 #include "Log.h"
 
 // Adapted from https://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20XYZ%20&%20XYZ%20to%20RGB
