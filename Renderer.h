@@ -17,8 +17,6 @@ public:
 	Renderer() = default;
 	void Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, float dpi, uint16_t maxindex);
 
-	void WindowResize();
-
 	// assign
 	Renderer(const Renderer&) = delete;
 	Renderer& operator=(const Renderer&) = delete;
@@ -33,6 +31,7 @@ public:
 	void Device(const Microsoft::Graphics::Canvas::CanvasDevice& device);
 
 	void FindBestCanvasSize(size_t windowHeight);
+	void WindowResize();
 
 	GridPoint GetCellAtPoint(Windows::Foundation::Point point) noexcept;
 

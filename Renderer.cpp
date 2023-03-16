@@ -27,7 +27,6 @@ void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, f
     // determined internally
     _threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
     _threadcount = std::clamp(_threadcount, 2, 8);
-    //_threadcount = 1;
 }
 
 void Renderer::WindowResize()

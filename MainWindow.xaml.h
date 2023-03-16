@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
-#pragma once
+﻿#pragma once
 
 #include "MainWindow.g.h"
 
@@ -54,7 +51,7 @@ namespace winrt::ModernLife::implementation
         void PumpProperties();
 
         // drawing stats
-        void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        //void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
 
         void Pause();
         void Play();
