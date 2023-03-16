@@ -54,7 +54,7 @@ namespace winrt::ModernLife::implementation
         void PumpProperties();
 
         // drawing stats
-        void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
+        //void CanvasStats_Draw(Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args);
 
         void Pause();
         void Play();

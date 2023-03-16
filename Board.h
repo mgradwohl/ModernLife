@@ -12,6 +12,11 @@ struct GridPoint
 {
     uint16_t x;
     uint16_t y;
+
+    bool operator==(const GridPoint& other) const noexcept
+    {
+        return x == other.x && y == other.y;
+    }
 };
 
 // for visualization purposes (0,0) is the top left.
@@ -50,67 +55,67 @@ class Board
     void PrintBoard();
 
     // getters
-    const void MaxAge(uint16_t maxage) noexcept
+    void MaxAge(uint16_t maxage) noexcept
     {
         _maxage = maxage;
     }
 
-    [[nodiscard]] const uint16_t MaxAge() const noexcept
+    [[nodiscard]] uint16_t MaxAge() const noexcept
     {
         return _maxage;
     }
 
-    const void OldAge(uint32_t age) noexcept
+    void OldAge(uint32_t age) noexcept
     {
         _OldAge = age;
     }
 
-    [[nodiscard]] const uint32_t GetOldAge() const noexcept
+    [[nodiscard]] uint32_t GetOldAge() const noexcept
     {
         return _OldAge;
     }
 
-    [[nodiscard]] const uint32_t GetDeadCount() const noexcept
+    [[nodiscard]] uint32_t GetDeadCount() const noexcept
     {
         return _numDead;
     }
 
-    [[nodiscard]] const uint32_t GetLiveCount() const noexcept
+    [[nodiscard]] uint32_t GetLiveCount() const noexcept
     {
         return _numLive;
     }
 
-    [[nodiscard]] const uint32_t GetBornCount() const noexcept
+    [[nodiscard]] uint32_t GetBornCount() const noexcept
     {
         return _numBorn;
     }
 
-    [[nodiscard]] const uint32_t GetOldCount() const noexcept
+    [[nodiscard]] uint32_t GetOldCount() const noexcept
     {
         return _numOld;
     }
 
-    [[nodiscard]] const uint32_t GetDyingCount() const noexcept
+    [[nodiscard]] uint32_t GetDyingCount() const noexcept
     {
         return _numDying;
     }
 
-    [[nodiscard]] const uint32_t Generation() const noexcept
+    [[nodiscard]] uint32_t Generation() const noexcept
     {
         return _generation;
     }
 
-    [[nodiscard]] const uint16_t Width() const noexcept
+    [[nodiscard]] uint16_t Width() const noexcept
     {
         return _width;
     }
 
-    [[nodiscard]] const uint16_t Height() const noexcept
+    [[nodiscard]] uint16_t Height() const noexcept
     {
         return _height;
     }
 
-    [[nodiscard]] const uint32_t Size() const noexcept
+    [[nodiscard]] uint32_t Size() const noexcept
     {
         return _height * _width;
     }
@@ -124,7 +129,7 @@ private:
     void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
     void FastDetermineNextState(int32_t ruleset);
     void CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
-    [[nodiscard]] const uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
+    [[nodiscard]] uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
     void ApplyNextState() noexcept;
 
     // rulesets

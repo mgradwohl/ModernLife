@@ -108,14 +108,7 @@ void Board::PrintBoard()
 
 void Board::SetCell(Cell& cell, Cell::State state) noexcept
 {
-	//if (cell.GetState() == state)
-	//{
-	//	// if the state didn't change, do nothing
-	//	return;
-	//}
-
 	// set the state to the new state
-	// TODO we should also reduce the count of the previous state to keep them accurate
 	cell.SetState(state);
 
 	// update counts for the new states
@@ -197,7 +190,7 @@ void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 	GetCell(x,y).Neighbors(count);
 }
 
-const uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
+uint8_t Board::CountLiveNotDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;
@@ -246,6 +239,7 @@ void Board::ApplyNextState() noexcept
 			cell.GetOlder();
 		});
 
+	// does not use std::execution::par
 	//for (auto& cell : _cells)
 	//{
 	//	const auto state = cell.GetState();

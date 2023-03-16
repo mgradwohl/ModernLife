@@ -19,7 +19,7 @@ public:
     {
         //_controller = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnDedicatedThread();
         //_queue = _controller.DispatcherQueue();
-        _queue = Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        _queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
         _timer = _queue.CreateTimer();
         _timer.Stop();
         _timer.IsRepeating(repeating);
@@ -99,7 +99,7 @@ public:
 		return _fps;
     }
     
-    [[nodiscard]] void FPS(int fps)
+    void FPS(int fps)
     {
         //std::scoped_lock lock { _locktimer };
         using namespace  std::literals::chrono_literals;
