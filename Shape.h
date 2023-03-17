@@ -57,7 +57,7 @@ public:
 
 	[[nodiscard]] bool IsAlive(uint16_t x, uint16_t y)
 	{
-		return gsl::at(_cells, x + y * _width).IsAlive();
+		return _cells.at(x + y * _width).IsAlive();
 	}
 
 private:

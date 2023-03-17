@@ -136,7 +136,7 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
     {
         //ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}", dest.X, dest.Y, dest.Width, dest.Height, source.X, source.Y, source.Width, source.Height);
 
-        ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
+        ds.DrawImage(_backbuffers.at(k), dest, source);
         dest.Y += canvasSliceHeight;
     }
     dest.Height = _bestcanvassize - canvasSliceHeight * gsl::narrow_cast<float>(k);
@@ -144,7 +144,7 @@ void Renderer::Render(const Microsoft::Graphics::Canvas::CanvasDrawingSession& d
 
     //ML_TRACE("Destination: {},{},{},{}\t Source: {},{},{},{}", dest.X, dest.Y, dest.Width, dest.Height, source.X, source.Y, source.Width, source.Height);
 
-    ds.DrawImage(gsl::at(_backbuffers, k), dest, source);
+    ds.DrawImage(_backbuffers.at(k), dest, source);
 
     ds.Flush();
     ds.Close();
@@ -168,7 +168,7 @@ void Renderer::RenderOffscreen(const Board& board)
     _dsList.clear();
     for (int j = 0; j < _threadcount; j++)
     {
-        _dsList.push_back({ gsl::at(_backbuffers, j).CreateDrawingSession() });
+        _dsList.push_back({ _backbuffers.at(j).CreateDrawingSession() });
     }
 
     // technically the board could be changing underneath us, but we're only reading the cells not writing to them
@@ -180,12 +180,12 @@ void Renderer::RenderOffscreen(const Board& board)
     {
         //ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, startRow + _rowsPerSlice);
 
-        threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
+        threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, _dsList.at(t), std::ref(board), startRow, gsl::narrow_cast<uint16_t>(startRow + _rowsPerSlice) });
         startRow += _rowsPerSlice;
     }
 
     //ML_TRACE("RenderOffscreen Start Row: {} EndRow: {}", startRow, board.Height());
-    threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, gsl::at(_dsList, t), std::ref(board), startRow, board.Height() });
+    threads.emplace_back(std::jthread{ &Renderer::DrawHorizontalRows, this, _dsList.at(t), std::ref(board), startRow, board.Height() });
 }
 
 void Renderer::DrawHorizontalRows(const Microsoft::Graphics::Canvas::CanvasDrawingSession& ds, const Board& board, uint16_t startRow, uint16_t endRow) const
