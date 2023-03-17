@@ -11,6 +11,7 @@
 #include <Shobjidl.h>
 #include <directxmath.h>
 
+#include <chrono>
 #include <locale>
 #include <string>
 #include <iostream>
@@ -24,6 +25,11 @@
 #include <fstream>
 #include <filesystem>
 #include <iostream>
+#include <map>
+#include <mutex>
+#include <utility>
+#include <source_location>
+#include <execution>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
@@ -54,6 +60,9 @@
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Pickers.h>
+
+#include <wil/cppwinrt.h>
+#include <wil/cppwinrt_helpers.h>
 
 #include <deps/gsl/include/gsl/gsl>
 #include <deps/wil/include/wil/cppwinrt_helpers.h>
