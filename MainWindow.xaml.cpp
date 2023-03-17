@@ -10,7 +10,9 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+
 #include <WinUser.h>
+#include <Shobjidl.h>
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -31,7 +33,6 @@
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Pickers.h>
-#include <Shobjidl.h>
 
 #include <wil/cppwinrt.h>
 #include <wil/cppwinrt_helpers.h>

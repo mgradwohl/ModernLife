@@ -1,4 +1,5 @@
 ﻿#include "pch.h"
+
 #include "Board.h"
 
 #include <future>
@@ -8,6 +9,7 @@
 #include <execution>
 
 #include <deps/gsl/include/gsl/gsl>
+
 #include "Log.h"
 
 // optimized to never use std::endl until the full board is done printing

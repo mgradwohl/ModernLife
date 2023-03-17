@@ -1,7 +1,9 @@
 #include "pch.h"
+
 #include "Renderer.h"
 
 #include <functional>
+
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>

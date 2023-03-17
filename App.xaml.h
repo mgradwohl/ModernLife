@@ -1,6 +1,7 @@
 #pragma once
 
 #include "App.xaml.g.h"
+
 #include <winrt/Microsoft.UI.Xaml.h>
 
 namespace winrt::ModernLife::implementation

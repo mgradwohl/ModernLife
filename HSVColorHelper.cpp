@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "HSVColorHelper.h"
 
 #include <winrt/Windows.UI.h>

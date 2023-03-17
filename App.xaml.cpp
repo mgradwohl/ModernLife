@@ -1,12 +1,14 @@
 ﻿#include "pch.h"
 
 #include "App.xaml.h"
-#include "MainWindow.xaml.h"
 
 #include <iostream>
 #include <locale>
 
+#include "MainWindow.xaml.h"
+
 #include "Log.h"
+
 using namespace winrt;
 using namespace ModernLife;
 using namespace ModernLife::implementation;
