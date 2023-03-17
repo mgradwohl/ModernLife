@@ -5,6 +5,8 @@
 #include <fstream>
 #include <string>
 
+#include <deps/gsl/include/gsl/gsl>
+
 #include "Cell.h"
 #include "Log.h"
 
