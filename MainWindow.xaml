@@ -13,6 +13,10 @@
     
     Activated="OnWindowActivate" Closed="OnWindowClosed" SizeChanged="OnWindowResized"  >
 
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="BaseAlt"/>
+    </Window.SystemBackdrop>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>

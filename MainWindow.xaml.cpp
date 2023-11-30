@@ -56,6 +56,9 @@ namespace winrt::ModernLife::implementation
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
 
+        winrt::Microsoft::UI::Xaml::Media::MicaBackdrop backdrop;
+        SystemBackdrop(backdrop);
+
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
         SetMyTitleBar();
