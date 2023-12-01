@@ -56,6 +56,9 @@ namespace winrt::ModernLife::implementation
         //https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         MainWindowT::InitializeComponent();
 
+        winrt::Microsoft::UI::Xaml::Media::MicaBackdrop backdrop;
+        SystemBackdrop(backdrop);
+
         PropertyChanged({ this, &MainWindow::OnPropertyChanged });
 
         SetMyTitleBar();
@@ -127,11 +130,9 @@ namespace winrt::ModernLife::implementation
         InvalidateIfNeeded();
     }
 
-    winrt::fire_and_forget MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
+    void MainWindow::OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&)
     {
         ML_METHOD;
-        co_await wil::resume_foreground(this->DispatcherQueue());
-        _board.Update(_ruleset);
         canvasBoard().Invalidate();
     }
 
@@ -328,10 +329,12 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _renderer.CanvasWidth(), _renderer.CanvasHeight() };
+        _board.Update(_ruleset);
+
         if (ShowLegend())
         {
             // TODO don't stretch or shrink the _spritesheet if we don't need to
+            const Windows::Foundation::Rect destRect{ 0.0f, 0.0f, _renderer.CanvasWidth(), _renderer.CanvasHeight() };
             args.DrawingSession().DrawImage(_renderer.SpriteSheet(), destRect);
         }
         else

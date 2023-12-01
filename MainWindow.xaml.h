@@ -46,7 +46,7 @@ namespace winrt::ModernLife::implementation
 
         // starting the game and handling the timer
         void StartGameLoop();
-        winrt::fire_and_forget OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
+        void OnTick(winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer const&, IInspectable const&);
 
         void PumpProperties();
 

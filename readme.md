@@ -46,3 +46,8 @@ Pick an issue from the list, fork the repo, make your changes, and submit a pull
 If you find a problem, file it. Use the Performance Profiler to find bottlenecks and file issues. Run on different screen
 resolutions and DPIs. Build and debug on ARM devices. Write tests. Write documentation. Write code. Write more code. Run Code Analysis
 and file and fix issues. Clean up the class design. Go for it.
+
+## Updating submodules
+From Windows Terminal
+In the butternut root
+execute git submodule update --remote --merge
