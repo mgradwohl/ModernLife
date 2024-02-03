@@ -32,7 +32,7 @@
     rgb.y = rgb.y * 255.0f;
     rgb.z = rgb.z * 255.0f;
 
-    winrt::Windows::UI::Color colorDX = winrt::Microsoft::UI::ColorHelper::FromArgb(255, std::lround(rgb.x), std::lround(rgb.y), std::lround(rgb.z));
+    winrt::Windows::UI::Color colorDX = winrt::Microsoft::UI::ColorHelper::FromArgb(255, (uint8_t)std::lround(rgb.x), (uint8_t)std::lround(rgb.y), (uint8_t)std::lround(rgb.z));
     //ML_TRACE("DX color is: {}, {}, {}", rgb.x, rgb.y, rgb.z);
 
     return colorDX;

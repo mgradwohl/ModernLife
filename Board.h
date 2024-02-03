@@ -125,7 +125,7 @@ private:
     // Update calls UpdateRowsWithNextState and FastDetermineNextState
     // if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die
     // in the next generation many of these are split up to support multithreading
-    void SetCell(Cell& cell, Cell::State state) noexcept;
+    void SetCell(Cell& cell, CellState state) noexcept;
     void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
     void FastDetermineNextState(int32_t ruleset);
     void CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);

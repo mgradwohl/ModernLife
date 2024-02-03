@@ -92,11 +92,11 @@ bool Board::CopyShape(Shape& shape, uint16_t startX, uint16_t startY)
 			if (shape.IsAlive(x, y))
 			{
 				
-				SetCell(cell, Cell::State::Live);
+				SetCell(cell, CellState::Live);
 			}
 			else
 			{
-				SetCell(cell, Cell::State::Dead);
+				SetCell(cell, CellState::Dead);
 			}
 		}
 	}
@@ -108,7 +108,7 @@ void Board::PrintBoard()
 	std::wcout << (*this) << std::endl;
 }
 
-void Board::SetCell(Cell& cell, Cell::State state) noexcept
+void Board::SetCell(Cell& cell, CellState state) noexcept
 {
 	// set the state to the new state
 	cell.SetState(state);
@@ -116,27 +116,27 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 	// update counts for the new states
 	switch (state)
 	{
-		case Cell::State::Dead:
+		case CellState::Dead:
 		{
 			_numDead++;
 			break;
 		}
-		case Cell::State::Live:
+		case CellState::Live:
 		{
 			_numLive++;
 			break;
 		}
-		case Cell::State::Born:
+		case CellState::Born:
 		{
 			_numBorn++;
 			break;
 		}
-		case Cell::State::Old:
+		case CellState::Old:
 		{
 			_numOld++;
 			break;
 		}
-		case Cell::State::Dying:
+		case CellState::Dying:
 		{
 			_numDying++;
 			break;
@@ -157,11 +157,11 @@ void Board::TurnCellOn(GridPoint g, bool on)
 	Cell& cell = GetCell(g.x, g.y);
 	if (on)
 	{
-		SetCell(cell, Cell::State::Live);
+		SetCell(cell, CellState::Live);
 	}
 	else
 	{
-		SetCell(cell, Cell::State::Dead);
+		SetCell(cell, CellState::Dead);
 	}
 }
 
@@ -224,17 +224,17 @@ void Board::ApplyNextState() noexcept
 	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [this](Cell& cell)
 	{
 			const auto state = cell.GetState();
-			if (state == Cell::State::Live)
+			if (state == CellState::Live)
 			{
-				SetCell(cell, Cell::State::Live);
+				SetCell(cell, CellState::Live);
 			}
-			else if (state == Cell::State::Dying || state == Cell::State::Dead)
+			else if (state == CellState::Dying || state == CellState::Dead)
 			{
-				SetCell(cell, Cell::State::Dead);
+				SetCell(cell, CellState::Dead);
 			}
-			else if (state == Cell::State::Born)
+			else if (state == CellState::Born)
 			{
-				SetCell(cell, Cell::State::Live);
+				SetCell(cell, CellState::Live);
 				cell.Age(0);
 			}
 
@@ -245,17 +245,17 @@ void Board::ApplyNextState() noexcept
 	//for (auto& cell : _cells)
 	//{
 	//	const auto state = cell.GetState();
-	//	if (state == Cell::State::Live)
+	//	if (state == CellState::Live)
 	//	{
-	//		SetCell(cell, Cell::State::Live);
+	//		SetCell(cell, CellState::Live);
 	//	}
-	//	else if (state == Cell::State::Dying || state == Cell::State::Dead)
+	//	else if (state == CellState::Dying || state == CellState::Dead)
 	//	{
-	//		SetCell(cell, Cell::State::Dead);
+	//		SetCell(cell, CellState::Dead);
 	//	}
-	//	else if (state == Cell::State::Born)
+	//	else if (state == CellState::Born)
 	//	{
-	//		SetCell(cell, Cell::State::Live);
+	//		SetCell(cell, CellState::Live);
 	//		cell.Age(0);
 	//	}
 
@@ -283,13 +283,13 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 			rp = pdis(gen);
 			if (rp <= alivepct)
 			{
-				SetCell(cell, Cell::State::Live);
+				SetCell(cell, CellState::Live);
 				ra = adis(gen);
 				cell.Age(gsl::narrow_cast<uint16_t>(ra));
 			}
 			else
 			{
-				SetCell(cell, Cell::State::Dead);
+				SetCell(cell, CellState::Dead);
 			}
 		}
 	}
@@ -353,15 +353,15 @@ void Board::ConwayRules(Cell& cell) const noexcept
 
 	if (cell.IsAlive() && count >= 2 && count <= 3)
 	{
-		cell.SetState(Cell::State::Live);
+		cell.SetState(CellState::Live);
 	}
 	else if (cell.IsDead() && count == 3)
 	{
-		cell.SetState(Cell::State::Born);
+		cell.SetState(CellState::Born);
 	}
 	else if (cell.IsAlive())
 	{
-		cell.SetState(Cell::State::Dying);
+		cell.SetState(CellState::Dying);
 	}
 }
 
@@ -370,9 +370,9 @@ void Board::FastConwayRules(Cell& cell) const noexcept
 	const uint16_t count = cell.Neighbors();
 
 	cell.SetState(
-		cell.IsAlive() && count >= 2 && count <= 3 ? Cell::State::Live
-		: cell.IsDead() && count == 3 ? Cell::State::Born
-		: cell.IsAlive() ? Cell::State::Dying : Cell::State::Dead
+		cell.IsAlive() && count >= 2 && count <= 3 ? CellState::Live
+		: cell.IsDead() && count == 3 ? CellState::Born
+		: cell.IsAlive() ? CellState::Dying : CellState::Dead
 	);
 }
 
@@ -387,15 +387,15 @@ void Board::DayAndNightRules(Cell& cell) const noexcept
 
 	if (cell.IsAlive() && ((count >= 3) && (count != 5)))
 	{
-		cell.SetState(Cell::State::Live);
+		cell.SetState(CellState::Live);
 	}
 	else if (cell.IsDead() && (count == 3 || count >= 6))
 	{
-		cell.SetState(Cell::State::Born);
+		cell.SetState(CellState::Born);
 	}
 	else if (cell.IsAlive())
 	{
-		cell.SetState(Cell::State::Dying);
+		cell.SetState(CellState::Dying);
 	}
 }
 
@@ -410,12 +410,12 @@ void Board::LifeWithoutDeathRules(Cell& cell) const noexcept
 
 	if (cell.IsDead() && count == 3)
 	{
-		cell.SetState(Cell::State::Born);
+		cell.SetState(CellState::Born);
 	}
 	if (cell.IsDying())
 	{
 		// should never happen
-		cell.SetState(Cell::State::Live);
+		cell.SetState(CellState::Live);
 	}
 }
 
@@ -430,16 +430,16 @@ void Board::HighlifeRules(Cell& cell) const noexcept
 
 	if (cell.IsAlive() && ((count == 2) || (count == 3)))
 	{
-		cell.SetState(Cell::State::Live);
+		cell.SetState(CellState::Live);
 	}
 	else
 	if (cell.IsDead() && ((count == 3) || (count == 6)))
 	{
-		cell.SetState(Cell::State::Born);
+		cell.SetState(CellState::Born);
 	}
 	else
 	{
-		cell.SetState(Cell::State::Dying);
+		cell.SetState(CellState::Dying);
 	}
 }
 
@@ -454,11 +454,11 @@ void Board::SeedsRules(Cell& cell) const noexcept
 
 	if (cell.IsDead() && count == 2)
 	{
-		cell.SetState(Cell::State::Born);
+		cell.SetState(CellState::Born);
 	}
 	else
 	{
-		cell.SetState(Cell::State::Dying);
+		cell.SetState(CellState::Dying);
 	}
 }
 
@@ -472,21 +472,21 @@ void Board::BriansBrainRules(Cell& cell) const noexcept
 
 	const uint16_t count = cell.Neighbors();
 	
-	// Cell::State::BrianDying is a special case for this ruleset
+	// CellState::BrianDying is a special case for this ruleset
 	// so that Dying cells draw as well as Live cells
-	if (cell.GetState() == Cell::State::BrianDying)
+	if (cell.GetState() == CellState::BrianDying)
 	{
-		cell.SetState(Cell::State::Dying);
+		cell.SetState(CellState::Dying);
 	}
 	else
-	if (cell.GetState() == Cell::State::Live)
+	if (cell.GetState() == CellState::Live)
 	{
 		cell.Age(_maxage +1);
-		cell.SetState(Cell::State::BrianDying);
+		cell.SetState(CellState::BrianDying);
 	}
 	else
 	if (cell.IsDead() && count == 2)
 	{
-		cell.SetState(Cell::State::Born);
+		cell.SetState(CellState::Born);
 	}
 }

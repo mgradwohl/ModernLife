@@ -85,7 +85,6 @@ private:
 private:
 	std::mutex _lockbackbuffer;
 
-	int _threadcount{ 0 };
 	Microsoft::Graphics::Canvas::CanvasRenderTarget _backbuffersingle{nullptr};
 
 	std::vector<Microsoft::Graphics::Canvas::CanvasRenderTarget> _backbuffers;
@@ -93,14 +92,15 @@ private:
 	Microsoft::Graphics::Canvas::CanvasRenderTarget _spritesheet{ nullptr };
 	Microsoft::Graphics::Canvas::CanvasDevice _canvasDevice{ nullptr };
 
+	int _threadcount{ 0 };
 	unsigned int _pxPerCellDimension{ 0 };
 	float _dpi{ 0.0f };
 	float _imagescale{ 0.0f };
 	float _dipsPerCellDimension{ 0.0f };
-	uint16_t _rowsPerSlice{ 0 };
 	float _sliceHeight{ 0.0f };
-	uint16_t _spritesPerRow{ 0 };
 	float _spriteDipsPerRow{ 0.0f };
+	uint16_t _rowsPerSlice{ 0 };
+	uint16_t _spritesPerRow{ 0 };
 	uint16_t _boardwidth{ 0 };
 	uint16_t _boardheight{ 0 };
 	uint16_t _spriteMaxIndex{ 0 };
