@@ -89,7 +89,7 @@ namespace winrt::ModernLife::implementation
         _canvasDevice = Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
         // initialize board
-        _board.Reserve(gsl::narrow_cast<size_t>(sliderBoardWidth().Maximum() * sliderBoardWidth().Maximum()));
+        //_board.Reserve(gsl::narrow_cast<size_t>(sliderBoardWidth().Maximum() * sliderBoardWidth().Maximum()));
         _board.Resize(BoardWidth(), BoardHeight(), MaxAge());
         RandomizeBoard();
 
@@ -329,7 +329,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        _board.Update(_ruleset);
+        _board.Update(BoardRules::FastConway);
 
         if (ShowLegend())
         {

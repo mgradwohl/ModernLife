@@ -3,7 +3,7 @@
 #include <mutex>
 #include <vector>
 
-#include <deps/gsl/include/gsl/gsl>
+#include <gsl/gsl>
 
 #include "Shape.h"
 #include "Cell.h"
@@ -17,6 +17,17 @@ struct GridPoint
     {
         return x == other.x && y == other.y;
     }
+};
+
+enum class BoardRules : uint8_t
+{
+    FastConway = 1,
+    Conway,
+    DayAndNight,
+    LifeWithoutDeath,
+    BriansBrain,
+    Seeds,
+    Highlife
 };
 
 // for visualization purposes (0,0) is the top left.
@@ -46,11 +57,15 @@ class Board
         return _cells.at(x + (y * _width));
     }
 
-    void Reserve(size_t max);
+    [[nodiscard]] bool Alive(uint16_t x, uint16_t y) const noexcept
+    {
+        return GetCell(x,y).GetState() != Cell::State::Dead;
+    }
+
     void Resize(uint16_t width, uint16_t height, uint16_t maxage);
     void RandomizeBoard(float alivepct, uint16_t maxage);
     void TurnCellOn(GridPoint g, bool on);
-    void Update(int32_t ruleset);
+    void Update(BoardRules rules);
     bool CopyShape(Shape& shape, uint16_t startX, uint16_t startY);
     void PrintBoard();
 
@@ -126,8 +141,8 @@ private:
     // if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die
     // in the next generation many of these are split up to support multithreading
     void SetCell(Cell& cell, Cell::State state) noexcept;
-    void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, int32_t ruleset);
-    void FastDetermineNextState(int32_t ruleset);
+    void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, BoardRules rules);
+    void FastDetermineNextState(BoardRules rules);
     void CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
     [[nodiscard]] uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
     void ApplyNextState() noexcept;
@@ -148,11 +163,13 @@ private:
         _numBorn = 0;
         _numDying = 0;
         _numOld = 0;
+        //_generation = 0;
     }
 
   private:
 	  int _threadcount{1};
-	  std::mutex _lockboard;
+      uint16_t _maxage{ 100 };
+      std::mutex _lockboard;
 	  std::vector<Cell> _cells;
 
 	  uint16_t _width{ 0 };
@@ -165,5 +182,4 @@ private:
 	  uint32_t _numOld{ 0 };
 	  uint32_t _numDying{ 0 };
 	  uint32_t _OldAge{ 0xFFFFFFFF };
-	  uint16_t _maxage{ 100 };
 };
