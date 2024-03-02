@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <string>
+//enum class CellState   { Dead, Born, Live, Old, Dying, BrianDying } ;
+enum class CellState : unsigned char { Dead, Born, Live, Old, Dying, BrianDying };
 
 class Cell
 {
@@ -50,12 +52,12 @@ public:
         return _age;
     }
 
-    [[nodiscard]] State GetState() const noexcept
+    [[nodiscard]] CellState GetState() const noexcept
     {
         return _state;
     }
 
-    void SetState(State state) noexcept
+    void SetState(CellState state) noexcept
     {
         // if the state didn't change, do nothing
         if (_state == state)
@@ -64,7 +66,7 @@ public:
 		}
 
         _state = state;
-        if (state == Cell::State::Born)
+        if (state == CellState::Born)
         {
             _age = 0;
         }
@@ -72,7 +74,7 @@ public:
 
     [[nodiscard]] bool ShouldDraw() const noexcept
     {
-        if (_state == Cell::State::Live || _state == Cell::State::BrianDying)
+        if (_state == CellState::Live || _state == CellState::BrianDying)
         {
             return true;
         }
@@ -81,7 +83,7 @@ public:
     
     [[nodiscard]] bool IsAlive() const noexcept
     {
-        if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
+        if (_state == CellState::Live || _state == CellState::Dying || _state == CellState::Old)
         {
             return true;
         }
@@ -90,7 +92,7 @@ public:
 
     [[nodiscard]] bool IsAliveNotDying() const noexcept
     {
-        if (_state == Cell::State::Live)
+        if (_state == CellState::Live)
         {
             return true;
         }
@@ -99,7 +101,7 @@ public:
 
     [[nodiscard]] bool IsDying() const noexcept
     {
-        if (_state == Cell::State::Dying)
+        if (_state == CellState::Dying)
         {
             return true;
         }
@@ -108,7 +110,7 @@ public:
 
     [[nodiscard]] bool IsDead() const noexcept
     {
-        if (_state == Cell::State::Dead || _state == Cell::State::Born)
+        if (_state == CellState::Dead || _state == CellState::Born)
         {
             return true;
         }
