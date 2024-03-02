@@ -2,7 +2,7 @@
 
 #include <string>
 //enum class CellState   { Dead, Born, Live, Old, Dying, BrianDying } ;
-enum class CellState : unsigned char { Dead, Born, Live, Old, Dying, BrianDying };
+//enum class CellState : unsigned char { Dead, Born, Live, Old, Dying, BrianDying };
 
 class Cell
 {
@@ -52,12 +52,12 @@ public:
         return _age;
     }
 
-    [[nodiscard]] CellState GetState() const noexcept
+    [[nodiscard]] State GetState() const noexcept
     {
         return _state;
     }
 
-    void SetState(CellState state) noexcept
+    void SetState(State state) noexcept
     {
         // if the state didn't change, do nothing
         if (_state == state)
@@ -66,7 +66,7 @@ public:
 		}
 
         _state = state;
-        if (state == CellState::Born)
+        if (state == State::Born)
         {
             _age = 0;
         }
@@ -74,7 +74,7 @@ public:
 
     [[nodiscard]] bool ShouldDraw() const noexcept
     {
-        if (_state == CellState::Live || _state == CellState::BrianDying)
+        if (_state == State::Live || _state == State::BrianDying)
         {
             return true;
         }
@@ -83,7 +83,7 @@ public:
     
     [[nodiscard]] bool IsAlive() const noexcept
     {
-        if (_state == CellState::Live || _state == CellState::Dying || _state == CellState::Old)
+        if (_state == State::Live || _state == State::Dying || _state == State::Old)
         {
             return true;
         }
@@ -92,7 +92,7 @@ public:
 
     [[nodiscard]] bool IsAliveNotDying() const noexcept
     {
-        if (_state == CellState::Live)
+        if (_state == State::Live)
         {
             return true;
         }
@@ -101,7 +101,7 @@ public:
 
     [[nodiscard]] bool IsDying() const noexcept
     {
-        if (_state == CellState::Dying)
+        if (_state == State::Dying)
         {
             return true;
         }
@@ -110,7 +110,7 @@ public:
 
     [[nodiscard]] bool IsDead() const noexcept
     {
-        if (_state == CellState::Dead || _state == CellState::Born)
+        if (_state == State::Dead || _state == State::Born)
         {
             return true;
         }

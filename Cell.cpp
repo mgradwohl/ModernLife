@@ -8,15 +8,15 @@ const char* Cell::GetStateString() const noexcept
 {
 	switch (_state)
 	{
-		case CellState::Dead: return " ";
+		case Cell::State::Dead: return " ";
 			break;
-		case CellState::Born: return "o";
+		case Cell::State::Born: return "o";
 			break;
-		case CellState::Live: return "O";
+		case Cell::State::Live: return "O";
 			break;
-		case CellState::Old: return "x";
+		case Cell::State::Old: return "x";
 			break;
-		case CellState::Dying: return ".";
+		case Cell::State::Dying: return ".";
 			break;
 		default:
 			return "?";
@@ -34,15 +34,15 @@ const std::wstring& Cell::GetEmojiStateString() const
 
 	switch (_state)
 	{
-		case CellState::Dead: return sDead;
+		case Cell::State::Dead: return sDead;
 			break;
-		case CellState::Live: return sLive;
+		case Cell::State::Live: return sLive;
 			break;
-		case CellState::Born: return sBorn;
+		case Cell::State::Born: return sBorn;
 			break;
-		case CellState::Old: return sOld;
+		case Cell::State::Old: return sOld;
 			break;
-		case CellState::Dying: return sDying;
+		case Cell::State::Dying: return sDying;
 			break;
 		default:
 			return sUnknown;

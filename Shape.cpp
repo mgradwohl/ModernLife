@@ -100,7 +100,7 @@ void Shape::Parse()
 			{
 				// only turn on Cells if they are alive in the file
 				// otherwise do nothing (leave them dead)
-				_cells.at(y * _width + x).SetState(CellState::Live);
+				_cells.at(y * _width + x).SetState(Cell::State::Live);
 			}
 			x++;
 		}
