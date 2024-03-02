@@ -329,6 +329,10 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
+        // plays a sound on every update
+        // Microsoft::UI::Xaml::ElementSoundPlayer::State(Microsoft::UI::Xaml::ElementSoundPlayerState::On);
+        // Microsoft::UI::Xaml::ElementSoundPlayer::Play(winrt::Microsoft::UI::Xaml::ElementSoundKind::Invoke);
+
         _board.Update(_ruleset);
 
         if (ShowLegend())
