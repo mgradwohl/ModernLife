@@ -5,12 +5,12 @@
 class Cell
 {
 public:
-    enum class State { Dead, Born, Live, Old, Dying, BrianDying };
+    enum class State : uint8_t { Dead, Born, Live, Old, Dying, BrianDying };
 
 private:
     State _state{ State::Dead };
-    uint16_t _age{ 0 };
     uint8_t _neighbors{ 0 };
+    uint16_t _age{ 0 };
 
 public:
     Cell() = default;
