@@ -53,34 +53,39 @@
                     <DropDownButton HorizontalAlignment="Center" x:Name="dropdownRules" Content="Conway's" >
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <MenuFlyoutItem Click="ruleClick" Text="Conway's">
+                                <MenuFlyoutItem Click="ruleClick" Text="Fast Conway">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>1</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Click="ruleClick" Text="Day and Night">
+                                <MenuFlyoutItem Click="ruleClick" Text="Conway">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>2</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Click="ruleClick" Text="Life Without Death">
+                                <MenuFlyoutItem Click="ruleClick" Text="Day and Night">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>3</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Click="ruleClick" Text="Brian's Brain">
+                                <MenuFlyoutItem Click="ruleClick" Text="Life without Death">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>4</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Click="ruleClick" Text="Seeds">
+                                <MenuFlyoutItem Click="ruleClick" Text="Brian's Brain">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>5</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem Click="ruleClick" Text="Highlife">
+                                <MenuFlyoutItem Click="ruleClick" Text="Seeds">
                                     <MenuFlyoutItem.Tag>
                                         <x:Int32>6</x:Int32>
+                                    </MenuFlyoutItem.Tag>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Click="ruleClick" Text="High Life">
+                                    <MenuFlyoutItem.Tag>
+                                        <x:Int32>7</x:Int32>
                                     </MenuFlyoutItem.Tag>
                                 </MenuFlyoutItem>
                             </MenuFlyout>

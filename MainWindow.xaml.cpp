@@ -329,7 +329,7 @@ namespace winrt::ModernLife::implementation
 
     void MainWindow::CanvasBoard_Draw([[maybe_unused]] Microsoft::Graphics::Canvas::UI::Xaml::CanvasControl  const& sender, Microsoft::Graphics::Canvas::UI::Xaml::CanvasDrawEventArgs const& args)
     {
-        _board.Update(BoardRules::FastConway);
+        _board.Update(_ruleset);
 
         if (ShowLegend())
         {
@@ -618,7 +618,7 @@ namespace winrt::ModernLife::implementation
         Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
         dropdownRules().Content(winrt::box_value(item.Text()));
 
-        _ruleset = item.Tag().as<int>();
+        _ruleset = static_cast<BoardRules>(item.Tag().as<int>());
     }
 
     void MainWindow::SetMyTitleBar()

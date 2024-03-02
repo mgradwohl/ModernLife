@@ -125,7 +125,7 @@ namespace winrt::ModernLife::implementation
         bool _drawLegend{ false };
         uint16_t _randompercent{30};
         uint16_t _maxage{ 1000 };
-        int32_t _ruleset{ 1 };
+        BoardRules _ruleset{ BoardRules::FastConway };
         uint16_t _boardwidth{ 300 };
         uint16_t _boardheight{ 300 };
         PointerMode _PointerMode = PointerMode::None;
