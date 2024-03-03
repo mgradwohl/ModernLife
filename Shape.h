@@ -68,7 +68,6 @@ private:
 	uint16_t _maxdim{ 0 };
 
 	std::filesystem::path _path;
-	std::ifstream _stream;
 
 	std::string _name{ 0 };
 	std::vector<std::string> _notes;

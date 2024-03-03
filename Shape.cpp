@@ -14,16 +14,16 @@ bool Shape::Load()
 {
 	ML_METHOD;
 
-	_stream = std::ifstream(_path, std::ifstream::in);
+	std::ifstream stream = std::ifstream(_path, std::ifstream::in);
 
-    if (!_stream.is_open())
+    if (!stream.is_open())
     {
 		ML_TRACE("Failed to open file: {}", _path.string());
 		return false;
 	}
 
 	std::string line{0};
-	while (std::getline(_stream, line))
+	while (std::getline(stream, line))
 	{
 		if (line.empty())
 			continue;
@@ -36,7 +36,7 @@ bool Shape::Load()
 
 		_textcells.push_back(line);
 	}
-	_stream.close();
+	stream.close();
 
 	_name = _path.filename().string();
 

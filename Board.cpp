@@ -171,7 +171,7 @@ void Board::TurnCellOn(GridPoint g, bool on)
 void Board::CountLiveAndDyingNeighbors(uint16_t x, uint16_t y)
 {
 	// don't do this it happens for every cell every frame and will spam the Log
-	ML_METHOD;
+	//ML_METHOD;
 
 	// calculate offsets that wrap
 	const uint16_t xoleft = (x == 0) ? _width - 1 : -1;

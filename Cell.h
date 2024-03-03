@@ -10,7 +10,7 @@ public:
     enum class State : uint8_t { Dead, Born, Live, Old, Dying, BrianDying };
 
 private:
-    State _state{ State::Dead };
+    State _state{ Cell::State::Dead };
     uint8_t _neighbors{ 0 };
     uint16_t _age{ 0 };
 
@@ -66,7 +66,7 @@ public:
 		}
 
         _state = state;
-        if (state == State::Born)
+        if (state == Cell::State::Born)
         {
             _age = 0;
         }
@@ -74,7 +74,7 @@ public:
 
     [[nodiscard]] bool ShouldDraw() const noexcept
     {
-        if (_state == State::Live || _state == State::BrianDying)
+        if (_state == Cell::State::Live || _state == Cell::State::BrianDying)
         {
             return true;
         }
@@ -83,7 +83,7 @@ public:
     
     [[nodiscard]] bool IsAlive() const noexcept
     {
-        if (_state == State::Live || _state == State::Dying || _state == State::Old)
+        if (_state == Cell::State::Live || _state == Cell::State::Dying || _state == Cell::State::Old)
         {
             return true;
         }
@@ -92,7 +92,7 @@ public:
 
     [[nodiscard]] bool IsAliveNotDying() const noexcept
     {
-        if (_state == State::Live)
+        if (_state == Cell::State::Live)
         {
             return true;
         }
@@ -101,7 +101,7 @@ public:
 
     [[nodiscard]] bool IsDying() const noexcept
     {
-        if (_state == State::Dying)
+        if (_state == Cell::State::Dying)
         {
             return true;
         }
@@ -110,7 +110,7 @@ public:
 
     [[nodiscard]] bool IsDead() const noexcept
     {
-        if (_state == State::Dead || _state == State::Born)
+        if (_state == Cell::State::Dead || _state == Cell::State::Born)
         {
             return true;
         }

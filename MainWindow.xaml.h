@@ -22,7 +22,7 @@
 
 namespace winrt::ModernLife::implementation
 {
-    enum class PointerMode
+    enum class PointerMode : uint8_t
     {
         Left,
         Middle,
