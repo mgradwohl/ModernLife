@@ -48,12 +48,12 @@ class Board
 
     [[nodiscard]] const Cell& GetCell(uint16_t x, uint16_t y) const
     {
-        return _cells.at(x + (y * _width));
+        return _cells.at(static_cast<size_t>(x + (y * _width)));
     }
 
     [[nodiscard]] Cell& GetCell(uint16_t x, uint16_t y)
     {
-        return _cells.at(x + (y * _width));
+        return _cells.at(static_cast<size_t>(x + (y * _width)));
     }
 
     [[nodiscard]] bool Alive(uint16_t x, uint16_t y) const noexcept

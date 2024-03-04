@@ -88,7 +88,7 @@ void Shape::Parse()
 	}
 
 	// create a vector of Cells that is the right size, initialize to all dead Cells
-	_cells.resize(_width * _height);
+	_cells.resize(static_cast<size_t>(_width * _height));
 
 	int x = 0;
 	int y = 0;
@@ -100,7 +100,7 @@ void Shape::Parse()
 			{
 				// only turn on Cells if they are alive in the file
 				// otherwise do nothing (leave them dead)
-				_cells.at(y * _width + x).SetState(Cell::State::Live);
+				_cells.at(static_cast<size_t>(y * _width + x)).SetState(Cell::State::Live);
 			}
 			x++;
 		}

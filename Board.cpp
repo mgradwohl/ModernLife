@@ -306,14 +306,14 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 
 	switch (_ruleset)
 	{
-		case Board::Rules::FastConway:	f_rules = &Board::FastConwayRules; break;
-		case Board::Rules::DayAndNight:	f_rules = &Board::DayAndNightRules; break;
+		case Board::Rules::FastConway:			f_rules = &Board::FastConwayRules;		break;
+		case Board::Rules::DayAndNight:			f_rules = &Board::DayAndNightRules;		break;
 		case Board::Rules::LifeWithoutDeath:	f_rules = &Board::LifeWithoutDeathRules; break;
-		case Board::Rules::BriansBrain:	f_rules = &Board::BriansBrainRules; break;
-		case Board::Rules::Seeds:	f_rules = &Board::SeedsRules; break;
-		case Board::Rules::Highlife:	f_rules = &Board::HighlifeRules; break;
-		case Board::Rules::Conway: f_rules = &Board::ConwayRules; break;
-		default: f_rules = &Board::ConwayRules; break;
+		case Board::Rules::BriansBrain:			f_rules = &Board::BriansBrainRules;		break;
+		case Board::Rules::Seeds:				f_rules = &Board::SeedsRules;			break;
+		case Board::Rules::Highlife:			f_rules = &Board::HighlifeRules;		break;
+		case Board::Rules::Conway:				f_rules = &Board::ConwayRules;			break;
+		default:								f_rules = &Board::ConwayRules;			break;
 	}
 
 	for (uint16_t y = startRow; y < endRow; y++)
