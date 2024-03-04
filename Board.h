@@ -48,16 +48,19 @@ class Board
 
     [[nodiscard]] const Cell& GetCell(uint16_t x, uint16_t y) const
     {
+        Expects(x <= _width && y <= _height);
         return _cells.at(static_cast<size_t>(x + (y * _width)));
     }
 
     [[nodiscard]] Cell& GetCell(uint16_t x, uint16_t y)
     {
+        Expects(x <= _width && y <= _height);
         return _cells.at(static_cast<size_t>(x + (y * _width)));
     }
 
     [[nodiscard]] bool Alive(uint16_t x, uint16_t y) const noexcept
     {
+        Expects(x <= _width && y <= _height);
         return GetCell(x,y).GetState() != Cell::State::Dead;
     }
 

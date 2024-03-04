@@ -45,7 +45,6 @@ Board::Board() noexcept
 
 void Board::Update()
 {
-	// TODO Alive Count is just not accurate
 	std::scoped_lock lock { _lockboard };
 	ResetCounts();
 	FastDetermineNextState();
@@ -152,10 +151,7 @@ void Board::SetCell(Cell& cell, Cell::State state) noexcept
 
 void Board::TurnCellOn(GridPoint g, bool on)
 {
-	if (g.x > Width() || g.y > Height())
-	{
-		return;
-	}
+	Expects(g.x <= Width() && g.y <= Height());
 
 	Cell& cell = GetCell(g.x, g.y);
 	if (on)

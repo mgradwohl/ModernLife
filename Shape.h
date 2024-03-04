@@ -57,7 +57,8 @@ public:
 
 	[[nodiscard]] bool IsAlive(uint16_t x, uint16_t y)
 	{
-		return _cells.at(x + y * _width).IsAlive();
+		Expects(x <= _width && y <= _height);
+		return _cells.at(static_cast<size_t>(x + y * _width)).IsAlive();
 	}
 
 private:
