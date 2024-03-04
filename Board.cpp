@@ -61,7 +61,7 @@ void Board::Resize(uint16_t width, uint16_t height, uint16_t maxage)
 	_width = width;
 	_maxage = maxage;
 
-	const size_t newsize = gsl::narrow_cast<size_t>(_width * _height);
+	const auto newsize = gsl::narrow_cast<size_t>(_width * _height);
 	if (newsize > _cells.capacity())
 	{
 		// only reserve if we need more space
@@ -108,7 +108,7 @@ bool Board::CopyShape(Shape& shape, uint16_t startX, uint16_t startY)
 
 void Board::PrintBoard()
 {
-	std::wcout << (*this) << std::endl;
+	std::wcout << (*this) << "\n";
 }
 
 void Board::SetCell(Cell& cell, Cell::State state) noexcept
@@ -313,7 +313,6 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 		case Board::Rules::Seeds:				f_rules = &Board::SeedsRules;			break;
 		case Board::Rules::Highlife:			f_rules = &Board::HighlifeRules;		break;
 		case Board::Rules::Conway:				f_rules = &Board::ConwayRules;			break;
-		default:								f_rules = &Board::ConwayRules;			break;
 	}
 
 	for (uint16_t y = startRow; y < endRow; y++)

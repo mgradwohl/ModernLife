@@ -210,6 +210,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|ARM64'">$(ProjectDir);$(GeneratedFilesDir);$(IntDir);%(AdditionalIncludeDirectories);deps\spdlog\include;deps\gsl\include;deps\wil\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Win32'">$(ProjectDir);$(GeneratedFilesDir);$(IntDir);%(AdditionalIncludeDirectories);deps\spdlog\include;deps\gsl\include;deps\wil\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">$(ProjectDir);$(GeneratedFilesDir);$(IntDir);%(AdditionalIncludeDirectories);deps\spdlog\include;deps\gsl\include;deps\wil\include</AdditionalIncludeDirectories>
+      <EnablePREfast Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|ARM64'">true</EnablePREfast>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -459,6 +460,12 @@
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|ARM64'">
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <CodeAnalysisRuleSet>Good Ruleset Preview.ruleset</CodeAnalysisRuleSet>
+    <ClangTidyChecks>clang-analyzer-*,bugprone-*,readability-*,performance-*,modernize-*,-modernize-use-trailing-return-type,-readability-magic-numbers,-misc-non-private-member-variables-in-classes,</ClangTidyChecks>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|x64'">
     <VcpkgConfiguration>Release</VcpkgConfiguration>

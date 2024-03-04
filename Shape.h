@@ -23,7 +23,7 @@ public:
 	~Shape() = default;
 
 	bool Load();
-	void Dump();
+	void Dump() noexcept;
 
 	[[nodiscard]] uint16_t Width() noexcept
 	{

@@ -47,7 +47,7 @@ bool Shape::Load()
 	return true;
 }
 
-void Shape::Dump()
+void Shape::Dump() noexcept
 {
 	#ifdef ML_LOGGING
 	ML_TRACE(_name);
@@ -74,7 +74,9 @@ void Shape::Parse()
 	for (const auto& row : _textcells)
 	{
 		if (row.size() > _width)
+		{
 			_width = gsl::narrow_cast<uint16_t>(row.size());
+		}
 	}
 
 	// set the max dimension (width or height)
@@ -90,8 +92,8 @@ void Shape::Parse()
 	// create a vector of Cells that is the right size, initialize to all dead Cells
 	_cells.resize(static_cast<size_t>(_width * _height));
 
-	int x = 0;
-	int y = 0;
+	uint16_t x = 0;
+	uint16_t y = 0;
 	for (const auto& row : _textcells)
 	{
 		for (const auto& cell : row)
