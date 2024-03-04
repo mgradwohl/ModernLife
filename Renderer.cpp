@@ -18,6 +18,7 @@ using namespace winrt;
 void Renderer::Attach(const Microsoft::Graphics::Canvas::CanvasDevice& device, float dpi, uint16_t maxindex)
 {
     ML_METHOD;
+    Expects(dpi > 71);
 
     // these can change externally
     _canvasDevice = device;
