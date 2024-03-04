@@ -50,7 +50,7 @@
                     <AppBarButton HorizontalAlignment="Center" Icon="ViewAll" x:Name="LoadShape"  Label="Load Shape" Click="LoadShape_Click" />
 
                     <TextBlock Text="RULESET" Margin="0,24,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
-                    <DropDownButton HorizontalAlignment="Center" x:Name="dropdownRules" Content="Conway's" >
+                    <DropDownButton HorizontalAlignment="Center" x:Name="dropdownRules" Content="Fast Conway" >
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
                                 <MenuFlyoutItem Click="ruleClick" Text="Fast Conway">
