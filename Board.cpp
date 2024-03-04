@@ -224,14 +224,12 @@ void Board::ApplyNextState() noexcept
 {
 	_generation++;
 
-	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [this](Cell& cell)
+	// does not use std::execution::par
+	//for (auto& cell : _cells)
+	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [this](Cell& cell) noexcept
 	{
 			const auto state = cell.GetState();
-			if (state == Cell::State::Live)
-			{
-				SetCell(cell, Cell::State::Live);
-			}
-			else if (state == Cell::State::Dying || state == Cell::State::Dead)
+			if (state == Cell::State::Dying || state == Cell::State::Dead)
 			{
 				SetCell(cell, Cell::State::Dead);
 			}
@@ -242,28 +240,7 @@ void Board::ApplyNextState() noexcept
 			}
 
 			cell.GetOlder();
-		});
-
-	// does not use std::execution::par
-	//for (auto& cell : _cells)
-	//{
-	//	const auto state = cell.GetState();
-	//	if (state == Cell::State::Live)
-	//	{
-	//		SetCell(cell, Cell::State::Live);
-	//	}
-	//	else if (state == Cell::State::Dying || state == Cell::State::Dead)
-	//	{
-	//		SetCell(cell, Cell::State::Dead);
-	//	}
-	//	else if (state == Cell::State::Born)
-	//	{
-	//		SetCell(cell, Cell::State::Live);
-	//		cell.Age(0);
-	//	}
-
-	//	cell.GetOlder();
-	//}
+		}) ;
 }
 
 void Board::RandomizeBoard(float alivepct, uint16_t maxage)
