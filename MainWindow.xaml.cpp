@@ -333,7 +333,7 @@ namespace winrt::ModernLife::implementation
         // Microsoft::UI::Xaml::ElementSoundPlayer::State(Microsoft::UI::Xaml::ElementSoundPlayerState::On);
         // Microsoft::UI::Xaml::ElementSoundPlayer::Play(winrt::Microsoft::UI::Xaml::ElementSoundKind::Invoke);
 
-        _board.Update(_ruleset);
+        _board.Update();
 
         if (ShowLegend())
         {
@@ -622,7 +622,7 @@ namespace winrt::ModernLife::implementation
         Microsoft::UI::Xaml::Controls::MenuFlyoutItem item = sender.as<Microsoft::UI::Xaml::Controls::MenuFlyoutItem>();
         dropdownRules().Content(winrt::box_value(item.Text()));
 
-        _ruleset = static_cast<BoardRules>(item.Tag().as<int>());
+        _board.SetRuleset(static_cast<Board::Rules>(item.Tag().as<int>()));
     }
 
     void MainWindow::SetMyTitleBar()

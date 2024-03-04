@@ -19,24 +19,23 @@ struct GridPoint
     }
 };
 
-enum class BoardRules : uint8_t
-{
-    FastConway = 1,
-    Conway,
-    DayAndNight,
-    LifeWithoutDeath,
-    BriansBrain,
-    Seeds,
-    Highlife
-};
-
 // for visualization purposes (0,0) is the top left.
 // as x increases move right, as y increases move down
 class Board
 {
   public:
-
-    Board() noexcept;
+      enum class Rules : uint8_t
+      {
+          FastConway = 1,
+          Conway,
+          DayAndNight,
+          LifeWithoutDeath,
+          BriansBrain,
+          Seeds,
+          Highlife
+      };
+     
+     Board() noexcept;
     ~Board() = default;
 
     // move/copy constuct
@@ -65,11 +64,22 @@ class Board
     void Resize(uint16_t width, uint16_t height, uint16_t maxage);
     void RandomizeBoard(float alivepct, uint16_t maxage);
     void TurnCellOn(GridPoint g, bool on);
-    void Update(BoardRules rules);
+    void Update();
     bool CopyShape(Shape& shape, uint16_t startX, uint16_t startY);
     void PrintBoard();
 
-    // getters
+    // getters & setters
+
+    void SetRuleset(Board::Rules ruleset) noexcept
+	{
+		_ruleset = ruleset;
+	}
+
+	[[nodiscard]] Board::Rules GetRuleset() const noexcept
+	{
+		return _ruleset;
+	}
+
     void MaxAge(uint16_t maxage) noexcept
     {
         _maxage = maxage;
@@ -141,8 +151,8 @@ private:
     // if you drew the board in between those calls, you'd see the intermediate states e.g. cells born or that will die
     // in the next generation many of these are split up to support multithreading
     void SetCell(Cell& cell, Cell::State state) noexcept;
-    void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, BoardRules rules);
-    void FastDetermineNextState(BoardRules rules);
+    void UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow);
+    void FastDetermineNextState();
     void CountLiveAndDyingNeighbors(uint16_t x, uint16_t y);
     [[nodiscard]] uint8_t CountLiveNotDyingNeighbors(uint16_t x, uint16_t y);
     void ApplyNextState() noexcept;
@@ -169,6 +179,7 @@ private:
   private:
       uint32_t _threadcount{1};
       uint16_t _maxage{ 100 };
+      Board::Rules _ruleset{ Board::Rules::FastConway };
       std::mutex _lockboard;
 	  std::vector<Cell> _cells;
 

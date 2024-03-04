@@ -40,15 +40,15 @@ Board::Board() noexcept
 	ML_METHOD;
 
 	_threadcount = gsl::narrow_cast<int>(std::thread::hardware_concurrency() / 2);
-	_threadcount = std::clamp(_threadcount, 2, 8);
+	_threadcount = std::clamp((int)_threadcount, 2, 8);
 }
 
-void Board::Update(BoardRules rules)
+void Board::Update()
 {
 	// TODO Alive Count is just not accurate
 	std::scoped_lock lock { _lockboard };
 	ResetCounts();
-	FastDetermineNextState(rules);
+	FastDetermineNextState();
 	ApplyNextState();
 }
 
@@ -299,20 +299,20 @@ void Board::RandomizeBoard(float alivepct, uint16_t maxage)
 	}
 }
 
-void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, BoardRules rules)
+void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow)
 {
 	using RuleMethod = void (Board::*)(Cell&) const noexcept;
 	RuleMethod f_rules = &Board::FastConwayRules;
 
-	switch (rules)
+	switch (_ruleset)
 	{
-		case BoardRules::FastConway:	f_rules = &Board::FastConwayRules; break;
-		case BoardRules::DayAndNight:	f_rules = &Board::DayAndNightRules; break;
-		case BoardRules::LifeWithoutDeath:	f_rules = &Board::LifeWithoutDeathRules; break;
-		case BoardRules::BriansBrain:	f_rules = &Board::BriansBrainRules; break;
-		case BoardRules::Seeds:	f_rules = &Board::SeedsRules; break;
-		case BoardRules::Highlife:	f_rules = &Board::HighlifeRules; break;
-		case BoardRules::Conway: f_rules = &Board::ConwayRules; break;
+		case Board::Rules::FastConway:	f_rules = &Board::FastConwayRules; break;
+		case Board::Rules::DayAndNight:	f_rules = &Board::DayAndNightRules; break;
+		case Board::Rules::LifeWithoutDeath:	f_rules = &Board::LifeWithoutDeathRules; break;
+		case Board::Rules::BriansBrain:	f_rules = &Board::BriansBrainRules; break;
+		case Board::Rules::Seeds:	f_rules = &Board::SeedsRules; break;
+		case Board::Rules::Highlife:	f_rules = &Board::HighlifeRules; break;
+		case Board::Rules::Conway: f_rules = &Board::ConwayRules; break;
 		default: f_rules = &Board::ConwayRules; break;
 	}
 
@@ -327,7 +327,7 @@ void Board::UpdateRowsWithNextState(uint16_t startRow, uint16_t endRow, BoardRul
 	}
 }
 
-void Board::FastDetermineNextState(BoardRules rules)
+void Board::FastDetermineNextState()
 {
 	ML_METHOD;
 
@@ -336,16 +336,16 @@ void Board::FastDetermineNextState(BoardRules rules)
 	const auto remainingRows = gsl::narrow_cast<uint16_t>(Height() % _threadcount);
 
 	std::vector<std::jthread> threads;
-	for (int t = 0; t < _threadcount - 1; t++)
+	for (uint32_t t = 0; t < _threadcount - 1; t++)
 	{
 		ML_TRACE("FastDetermineNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread);
 
-		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread), rules });
+		threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread) });
 		rowStart += rowsPerThread;
 
 	}
 	ML_TRACE("FastDetermineNextState Start Row: {} EndRow: {}", rowStart, rowStart + rowsPerThread + remainingRows);
-	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows), rules });
+	threads.emplace_back(std::jthread{ &Board::UpdateRowsWithNextState, this, rowStart, gsl::narrow_cast<uint16_t>(rowStart + rowsPerThread + remainingRows) });
 }
 
 void Board::ConwayRules(Cell& cell) const noexcept
