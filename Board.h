@@ -167,7 +167,7 @@ private:
     }
 
   private:
-	  int _threadcount{1};
+      uint32_t _threadcount{1};
       uint16_t _maxage{ 100 };
       std::mutex _lockboard;
 	  std::vector<Cell> _cells;
